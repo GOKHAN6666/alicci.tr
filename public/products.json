@@ -1,0 +1,22 @@
+[
+  {
+    "id": 1,
+    "name": "Ürün 1",
+    "price": 4950,
+    "description": "Birinci ürün detay açıklaması."
+     "image": "/images/a.jpg"
+  },
+  {
+    "id": 2,
+    "name": "Ürün 2",
+    "price": 4950,
+    "description": "İkinci ürün detay açıklaması."
+    
+  },
+  {
+    "id": 3,
+    "name": "Ürün 3",
+    "price": 4950,
+    "description": "Üçüncü ürün detay açıklaması."
+  }
+]

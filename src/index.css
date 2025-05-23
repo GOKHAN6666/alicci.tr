@@ -1,30 +1,36 @@
+/* Temel Sıfırlamalar */
 body {
-  margin: 0;
-  font-family: 'Helvetica Neue', sans-serif;
-  color: #111;
-  background-color: #fff;
+  body {
+  font-family: 'Urbanist', sans-serif;
 }
 
+  margin: 0;
+  font-family: sans-serif;
+  background: #f7f7f7;
+  color: #111;
+}
+
+/* NAVIGATION */
 nav {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1.5rem 2rem;
+  padding: 16px 24px;
+  background: white;
+  position: sticky;
+  top: 0;
+  z-index: 100;
   border-bottom: 1px solid #ddd;
 }
 
 nav h1 {
-  font-size: 2rem;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  font-weight: 300;
+  font-size: 24px;
 }
 
 nav ul {
   display: flex;
-  gap: 1.5rem;
   list-style: none;
-  font-size: 0.9rem;
+  gap: 24px;
   align-items: center;
 }
 
@@ -32,280 +38,709 @@ nav ul li {
   cursor: pointer;
 }
 
-.hamburger {
+nav .hamburger {
   display: none;
-  cursor: pointer;
-}
-
-nav ul.open {
-  display: flex;
-  flex-direction: column;
-  position: absolute;
-  top: 80px;
-  right: 2rem;
-  background: white;
-  padding: 1rem 2rem;
-  border: 1px solid #ddd;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  z-index: 101;
-}
-
-.hero {
-  text-align: center;
-  padding: 6rem 2rem;
-}
-
-.hero h2 {
-  font-size: 3rem;
-  font-weight: 300;
-  margin-bottom: 1rem;
-}
-
-.hero p {
-  color: #555;
-  font-size: 1.1rem;
-  max-width: 600px;
-  margin: 0 auto 2rem;
-}
-
-.hero button {
-  padding: 0.75rem 1.5rem;
-  background-color: #000;
-  color: #fff;
-  border: none;
-  border-radius: 9999px;
-  cursor: pointer;
-}
-
-.products {
-  padding: 4rem 2rem;
-  background: #f9f9f9;
-  text-align: center;
-}
-
-.products-grid {
-  display: grid;
-  gap: 2rem;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  max-width: 1000px;
-  margin: 2rem auto 0;
-}
-
-.product-card {
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
-  overflow: hidden;
-}
-
-.product-card .image {
-  background: #ddd;
-  height: 240px;
-}
-
-.product-card .info {
-  padding: 1rem;
-  text-align: left;
-}
-
-.product-card button {
-  margin-top: 0.5rem;
-  padding: 0.5rem 1rem;
-  background: #111;
-  color: white;
-  border: none;
-  border-radius: 9999px;
   cursor: pointer;
 }
 
 .cart-button {
   position: relative;
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: opacity 0.2s ease;
-}
-
-.cart-button:hover {
-  opacity: 0.7;
-}
-
-.cart-button svg {
-  stroke: #111;
-  width: 24px;
-  height: 24px;
 }
 
 .cart-count {
   position: absolute;
   top: -6px;
-  right: -10px;
-  background: #111;
+  right: -8px;
+  background: black;
   color: white;
-  font-size: 0.7rem;
+  font-size: 12px;
+  border-radius: 50%;
   padding: 2px 6px;
-  border-radius: 9999px;
 }
 
+/* HERO */
+.hero {
+  padding: 60px 24px;
+  text-align: center;
+  background: #fff;
+}
+
+.hero h2 {
+  font-size: 32px;
+  margin-bottom: 16px;
+}
+
+.hero button {
+  margin-top: 16px;
+  padding: 10px 20px;
+  border: none;
+  background: black;
+  color: white;
+  cursor: pointer;
+}
+
+/* PRODUCTS */
+h3 {
+  padding: 24px;
+}
+
+.products-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  padding: 0 24px 48px;
+}
+
+.product-card {
+  background: white;
+  padding: 16px;
+  border: 1px solid #ddd;
+}
+
+.product-card .image {
+  background: #ccc;
+  height: 200px;
+  cursor: pointer;
+}
+
+.product-card .info {
+  margin-top: 12px;
+}
+
+.product-card button {
+  margin-top: 8px;
+  padding: 6px 12px;
+  background: black;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+/* ABOUT & CONTACT */
+.about, .contact {
+  padding: 48px 24px;
+  background: white;
+}
+
+.contact form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: 400px;
+}
+
+.contact input, .contact textarea {
+  padding: 8px;
+  border: 1px solid #ccc;
+}
+
+/* FOOTER */
+footer {
+  padding: 24px;
+  text-align: center;
+  font-size: 14px;
+  background: #f1f1f1;
+}
+
+/* INSTAGRAM LINK */
+.instagram {
+  margin-top: 8px;
+}
+
+/* CART PANEL */
 .cart-overlay {
   position: fixed;
   top: 0;
   left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: rgba(0, 0, 0, 0.4);
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.4);
   z-index: 99;
 }
 
 .cart-panel {
   position: fixed;
   top: 0;
-  right: 0;
-  width: 100%;
-  max-width: 320px;
-  height: 100vh;
+  right: -100%;
+  width: 300px;
+  height: 100%;
   background: white;
-  box-shadow: -2px 0 8px rgba(0, 0, 0, 0.15);
-  padding: 2rem 1rem;
+  padding: 24px;
   z-index: 100;
+  transition: right 0.3s ease-in-out;
   overflow-y: auto;
-  transform: translateX(0);
-  transition: transform 0.3s ease-in-out;
-  display: flex;
-  flex-direction: column;
+}
+
+.cart-panel.open {
+  right: 0;
 }
 
 .close-cart {
   position: absolute;
-  top: 1rem;
-  right: 1rem;
+  top: 10px;
+  right: 16px;
+  font-size: 20px;
   background: none;
   border: none;
-  font-size: 2rem;
   cursor: pointer;
-  color: #111;
 }
 
-footer {
-  background: #f0f0f0;
-  padding: 2rem;
-  text-align: center;
-  font-size: 0.85rem;
-  color: #777;
+.cart-panel ul {
+  list-style: none;
+  padding: 0;
 }
 
+.cart-panel li {
+  margin-bottom: 12px;
+}
+
+.cart-panel .total {
+  font-weight: bold;
+  margin-top: 12px;
+}
+
+/* PRODUCT DETAIL MODAL */
+.product-detail-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.product-detail {
+  background: white;
+  padding: 24px;
+  max-width: 600px;
+  width: 90%;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  position: relative;
+}
+
+.close-detail {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  font-size: 20px;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.detail-image-placeholder {
+  height: 300px;
+  background: #ccc;
+}
+
+.add-button {
+  padding: 10px;
+  background: black;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+/* ANIMATION */
+.fade-in {
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* 🌐 MOBILE STYLES */
 @media (max-width: 768px) {
-  .hamburger {
+  nav .hamburger {
     display: block;
   }
 
   nav ul {
+    position: absolute;
+    top: 64px;
+    right: 0;
+    background: white;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 16px;
+    gap: 16px;
     display: none;
+    width: 200px;
+    border-left: 1px solid #ddd;
+    border-bottom: 1px solid #ddd;
   }
 
   nav ul.open {
     display: flex;
   }
 
+  .products-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .hero h2 {
+    font-size: 24px;
+  }
+
+  .product-detail {
+    padding: 16px;
+    max-width: 95%;
+  }
+
+  .detail-image-placeholder {
+    height: 200px;
+  }
+
   .cart-panel {
-    width: 100%;
-    max-width: 100%;
+    width: 90%;
   }
 }
-.cart-item {
+.product-detail {
+  width: 90%;
+  max-width: 800px;
+  height: 600px; /* SABİT yükseklik */
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.detail-image-placeholder {
+  flex: 1;
+  background-size: cover;
+  background-position: center;
+  height: 60%;
+}
+
+.detail-info {
+  flex: none;
+  padding: 20px;
+  height: 40%;
+  overflow-y: auto;
+}
+
+@media (max-width: 768px) {
+  .product-detail {
+    height: 90vh;
+  }
+
+  .detail-image-placeholder {
+    height: 50%;
+  }
+
+  .detail-info {
+    height: 50%;
+  }
+}.about-content {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 40px 20px;
+  text-align: left;
+}body {
+  font-family: 'Inter', sans-serif;
+}
+
+.contact {
+  background-color: #f5f5f5;
+  padding: 40px 20px;
+}
+
+.contact h3, .contact form {
+  max-width: 800px;
+  margin: 0 auto;
+  text-align: left;
+}
+.product-detail {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+.detail-card {
+  background: white;
+  padding: 20px;
+  max-width: 500px;
+  border-radius: 10px;
+  text-align: center;
+}
+.detail-card img {
+  width: 100%;
+  height: auto;
+  margin-bottom: 10px;
+}
+/* Sepet paneli */
+.cart-panel {
+  position: fixed;
+  top: 0;
+  right: -100%;
+  width: 300px;
+  height: 100vh;
+  background: #fff;
+  box-shadow: -2px 0 8px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  transition: right 0.3s ease;
+  z-index: 999;
+  overflow-y: auto;
+}
+
+.cart-panel.open {
+  right: 0;
+}
+
+.cart-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.3);
+  z-index: 998;
+}
+
+.close-cart {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  float: right;
+  margin-bottom: 10px;
+}
+
+/* Ürün silme butonu */
+.cart-panel ul li {
   display: flex;
   justify-content: space-between;
   margin-bottom: 10px;
-  font-size: 0.95rem;
 }
 
-.cart-item button {
-  background: transparent;
-  color: #c00;
+.cart-panel ul li button {
+  background: none;
   border: none;
+  color: red;
   cursor: pointer;
-  font-size: 0.85rem;
+  font-size: 16px;
 }
 
-.total {
-  margin-top: 1.5rem;
-  font-size: 1rem;
-  text-align: right;
+/* Sepet sayacı */
+.cart-count {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  background: black;
+  color: white;
+  font-size: 12px;
+  padding: 2px 6px;
+  border-radius: 50%;
 }
-.contact {
-  padding: 4rem 2rem;
-  max-width: 600px;
-  margin: 0 auto;
+
+/* Ürün detay modalı */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: white;
+  padding: 24px;
+  max-width: 400px;
+  width: 90%;
+  border-radius: 8px;
   text-align: center;
 }
 
-.contact h3 {
-  font-size: 2rem;
-  margin-bottom: 1rem;
+.modal-content h2 {
+  margin-bottom: 10px;
 }
 
-.contact p {
-  color: #555;
-  margin-bottom: 2rem;
+.modal-content p {
+  margin-bottom: 10px;
 }
 
-.contact form {
+.modal-content button {
+  margin: 5px;
+  padding: 8px 12px;
+  border: none;
+  background: #111;
+  color: white;
+  cursor: pointer;
+  border-radius: 4px;
+}
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(17, 17, 17, 0.6); /* Daha koyu arka plan */
   display: flex;
-  flex-direction: column;
-  gap: 1rem;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 20px;
 }
 
-.contact input,
-.contact textarea {
-  padding: 0.75rem 1rem;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  font-family: inherit;
-  font-size: 1rem;
+.modal-content {
+  background: #fefefe;
+  border-radius: 12px;
+  padding: 32px;
+  width: 100%;
+  max-width: 420px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  animation: slideIn 0.3s ease-out;
+  text-align: left;
 }
 
-.contact textarea {
-  resize: vertical;
-  min-height: 120px;
+.modal-content h2 {
+  margin-bottom: 12px;
+  font-size: 22px;
+  font-weight: 600;
+  color: #111;
 }
 
-.contact button {
+.modal-content p {
+  margin-bottom: 16px;
+  font-size: 16px;
+  color: #444;
+}
+
+.modal-content button {
+  margin-top: 8px;
+  padding: 10px 18px;
+  border: none;
+  border-radius: 6px;
   background-color: #111;
   color: white;
-  border: none;
-  border-radius: 9999px;
-  padding: 0.75rem 1.5rem;
+  font-size: 14px;
   cursor: pointer;
-  transition: background 0.3s ease;
+  transition: background 0.2s ease;
 }
 
-.contact button:hover {
+.modal-content button:hover {
   background-color: #333;
 }
 
-.contact .email {
-  margin-top: 2rem;
-  color: #777;
-  font-size: 0.9rem;
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
-.about {
-  padding: 60px 20px;
-  background-color: #f9f9f9;
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(17, 17, 17, 0.6); /* Koyu overlay */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 20px;
+  backdrop-filter: blur(4px); /* Cam efekti */
+}
+
+.modal-content {
+  background: white;
+  border-radius: 16px;
+  padding: 36px;
+  width: 100%;
+  max-width: 480px;
+  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.2); /* Gölgelendirme */
+  animation: fadeSlideIn 0.35s ease-out;
+  text-align: left;
+  font-family: 'Segoe UI', 'Helvetica Neue', sans-serif;
+}
+
+.modal-content h2 {
+  margin-bottom: 14px;
+  font-size: 24px;
+  font-weight: 600;
   color: #111;
-  text-align: center;
-  font-family: 'DM Sans', sans-serif;
+  letter-spacing: -0.4px;
 }
 
-.about h3 {
-  font-size: 2rem;
+.modal-content p {
   margin-bottom: 20px;
-  font-weight: 500;
+  font-size: 16px;
+  color: #444;
+  line-height: 1.6;
 }
 
-.about p {
-  max-width: 700px;
-  margin: 0 auto 20px;
+.modal-content button {
+  display: inline-block;
+  margin-top: 12px;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  background-color: #111;
+  color: white;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.25s ease;
+}
+
+.modal-content button:hover {
+  background-color: #333;
+}
+
+@keyframes fadeSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.4);
+  z-index: 999;
+}
+
+.modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: white;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+  max-width: 90%;
+  width: 400px;
+  z-index: 1000;
+  font-family: 'Georgia', serif;
+  text-align: center;
+}
+
+.close-modal {
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+}
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 999;
+}
+
+.modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: #fff;
+  padding: 2.5rem 2rem;
+  border-radius: 16px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+  max-width: 90%;
+  width: 420px;
+  z-index: 1000;
+  font-family: 'Georgia', serif;
+  text-align: center;
+}
+
+.modal h2 {
+  font-size: 1.8rem;
+  margin-bottom: 1rem;
+  color: #111;
+}
+
+.modal-text {
+  font-size: 1.1rem;
+  line-height: 1.7;
+  color: #444;
+}
+
+.close-modal {
+  position: absolute;
+  top: 12px;
+  right: 18px;
+  background: none;
+  border: none;
+  font-size: 28px;
+  font-weight: bold;
+  color: #666;
+  cursor: pointer;
+}
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  background: rgba(0,0,0,0.4);
+  z-index: 999;
+}
+
+.modal {
+  position: fixed;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  background: white;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+  z-index: 1000;
+  max-width: 400px;
+  width: 90%;
+}
+
+.modal-close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.modal-content h3 {
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.modal-content p {
   font-size: 1rem;
-  line-height: 1.6;
+  margin-bottom: 0.25rem;
 }
