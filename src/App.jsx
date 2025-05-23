@@ -1,10 +1,20 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import './index.css';
 
 export default function App() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [cartItems, setCartItems] = useState([]);
+
+  const aboutRef = useRef(null);
+  const contactRef = useRef(null);
+
+  const scrollToSection = (ref) => {
+    if (ref.current) {
+      ref.current.scrollIntoView({ behavior: 'smooth' });
+      setMenuOpen(false);
+    }
+  };
 
   return (
     <>
@@ -21,9 +31,8 @@ export default function App() {
         </div>
 
         <ul className={menuOpen ? 'open' : ''}>
-          <li>Koleksiyon</li>
-          <li>Hakkımızda</li>
-          <li>İletişim</li>
+          <li onClick={() => scrollToSection(aboutRef)}>Hakkımızda</li>
+          <li onClick={() => scrollToSection(contactRef)}>İletişim</li>
           <div className="cart-button" onClick={() => setIsCartOpen(true)}>
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -69,13 +78,49 @@ export default function App() {
         </div>
       </section>
 
-      <footer>© 2025 ALICCI • Tüm hakları saklıdır.</footer>
+      <section className="about" ref={aboutRef}>
+        <h3>Hakkımızda</h3>
+        <p>
+          ALICCI, sadeliği ve zarafeti benimseyen erkekler için kuruldu. Sessiz lüks;
+          gösterişten uzak, detayda gizli bir zenginliktir. Koleksiyonlarımız,
+          yüksek kalite kumaşlar ve özenli işçilikle hazırlanır.
+        </p>
+        <p>
+          İstanbul'da doğan ALICCI, global düzeyde sessiz lüks anlayışını temsil
+          etmeye kararlıdır. Her parça, zamansız bir stilin temsilcisi olarak
+          tasarlanır.
+        </p>
+      </section>
+
+      <section className="contact" ref={contactRef}>
+        <h3>İletişim</h3>
+        <form action="https://formspree.io/f/xeogwvzd" method="POST">
+          <input type="text" name="name" placeholder="Adınız" required />
+          <input type="email" name="email" placeholder="E-posta" required />
+          <textarea name="message" placeholder="Mesajınız" required></textarea>
+          <button type="submit">Gönder</button>
+        </form>
+      </section>
+
+      <footer>
+        © 2025 ALICCI • Tüm hakları saklıdır.
+        <div className="instagram">
+          <a href="https://instagram.com/alicciofficial" target="_blank" rel="noopener noreferrer">
+            Instagram / @alicciofficial
+          </a>
+        </div>
+      </footer>
 
       {isCartOpen && (
         <>
-          <div className="cart-overlay" onClick={() => setIsCartOpen(false)}></div>
-          <div className="cart-panel">
-            <button className="close-cart" onClick={() => setIsCartOpen(false)}>×</button>
+          <div
+            className="cart-overlay"
+            onClick={() => setIsCartOpen(false)}
+          ></div>
+          <div className={`cart-panel ${isCartOpen ? 'open' : ''}`}>
+            <button className="close-cart" onClick={() => setIsCartOpen(false)}>
+              ×
+            </button>
             <h3>Sepetiniz</h3>
             {cartItems.length === 0 ? (
               <p>Sepetiniz boş.</p>
