@@ -1,5 +1,5 @@
-import { useState, useRef, useEffect } from 'react';
-import './index.css';
+import { useState, useRef, useEffect } from "react";
+import "./index.css";
 
 export default function App() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -12,56 +12,62 @@ export default function App() {
 
   const scrollToSection = (ref) => {
     if (ref.current) {
-      ref.current.scrollIntoView({ behavior: 'smooth' });
+      ref.current.scrollIntoView({ behavior: "smooth" });
       setMenuOpen(false);
     }
   };
 
-  const products = [
-    { id: 1, name: 'Ürün 1', price: 4950, description: 'Yüksek kaliteli kumaş ile üretilmiş premium bir parçadır.' },
-    { id: 2, name: 'Ürün 2', price: 4950, description: 'Zarif dikiş detayları ve zamansız tasarımı ile öne çıkar.' },
-    { id: 3, name: 'Ürün 3', price: 4950, description: 'Modern kesim ve minimal çizgilerle günlük şıklık sağlar.' },
-  ];
-
   useEffect(() => {
-    document.body.style.overflow = selectedProduct ? 'hidden' : 'auto';
+    document.body.style.overflow = selectedProduct ? "hidden" : "";
   }, [selectedProduct]);
 
-  const removeFromCart = (index) => {
-    const updatedCart = [...cartItems];
-    updatedCart.splice(index, 1);
-    setCartItems(updatedCart);
-  };
+  const productsData = [
+    { id: 1, name: "Ürün 1", price: 4950 },
+    { id: 2, name: "Ürün 2", price: 4950 },
+    { id: 3, name: "Ürün 3", price: 4950 },
+  ];
 
   const totalPrice = cartItems.reduce((sum, item) => sum + item.price, 0);
 
   return (
     <>
-      <nav>
-        <h1>ALICCI</h1>
-        <div className="hamburger" onClick={() => setMenuOpen(!menuOpen)}>
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none"
-            stroke="#111" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <line x1="3" y1="6" x2="21" y2="6" />
-            <line x1="3" y1="12" x2="21" y2="12" />
-            <line x1="3" y1="18" x2="21" y2="18" />
-          </svg>
-        </div>
-        <ul className={menuOpen ? 'open' : ''}>
-          <li onClick={() => scrollToSection(aboutRef)}>Hakkımızda</li>
-          <li onClick={() => scrollToSection(contactRef)}>İletişim</li>
-          <div className="cart-button" onClick={() => setIsCartOpen(true)}>
-            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="#111" strokeWidth="1.5">
-              <path d="M3 3h2l.4 2M7 13h13l-1.5 7H6L5 6H3" />
-              <circle cx="9" cy="21" r="1" />
-              <circle cx="18" cy="21" r="1" />
+      {!selectedProduct && (
+        <nav>
+          <h1>ALICCI</h1>
+
+          <div className="hamburger" onClick={() => setMenuOpen(!menuOpen)}>
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none"
+              stroke="#111" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="3" y1="6" x2="21" y2="6" />
+              <line x1="3" y1="12" x2="21" y2="12" />
+              <line x1="3" y1="18" x2="21" y2="18" />
             </svg>
-            {cartItems.length > 0 && (
-              <div className="cart-count">{cartItems.length}</div>
-            )}
           </div>
-        </ul>
-      </nav>
+
+          <ul className={menuOpen ? 'open' : ''}>
+            <li onClick={() => scrollToSection(aboutRef)}>Hakkımızda</li>
+            <li onClick={() => scrollToSection(contactRef)}>İletişim</li>
+            <div className="cart-button" onClick={() => setIsCartOpen(true)}>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="22"
+                height="22"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="#111"
+                strokeWidth="1.5"
+              >
+                <path d="M3 3h2l.4 2M7 13h13l-1.5 7H6L5 6H3" />
+                <circle cx="9" cy="21" r="1" />
+                <circle cx="18" cy="21" r="1" />
+              </svg>
+              {cartItems.length > 0 && (
+                <div className="cart-count">{cartItems.length}</div>
+              )}
+            </div>
+          </ul>
+        </nav>
+      )}
 
       <section className="hero">
         <h2>Sessiz Lüksün Yeni Tanımı</h2>
@@ -72,7 +78,7 @@ export default function App() {
       <section className="products">
         <h3>Yeni Sezon</h3>
         <div className="products-grid">
-          {products.map((item) => (
+          {productsData.map((item) => (
             <div key={item.id} className="product-card">
               <div className="image" onClick={() => setSelectedProduct(item)}></div>
               <div className="info">
@@ -123,7 +129,7 @@ export default function App() {
       {isCartOpen && (
         <>
           <div className="cart-overlay" onClick={() => setIsCartOpen(false)}></div>
-          <div className={`cart-panel ${isCartOpen ? 'open' : ''}`}>
+          <div className={`cart-panel open`}>
             <button className="close-cart" onClick={() => setIsCartOpen(false)}>×</button>
             <h3>Sepetiniz</h3>
             {cartItems.length === 0 ? (
@@ -133,8 +139,12 @@ export default function App() {
                 <ul>
                   {cartItems.map((item, index) => (
                     <li key={index}>
-                      {item.name} - ₺{item.price}
-                      <button className="remove-button" onClick={() => removeFromCart(index)}>Sil</button>
+                      {item.name} – ₺{item.price}
+                      <button onClick={() => {
+                        const updated = [...cartItems];
+                        updated.splice(index, 1);
+                        setCartItems(updated);
+                      }}>Sil</button>
                     </li>
                   ))}
                 </ul>
@@ -146,21 +156,23 @@ export default function App() {
       )}
 
       {selectedProduct && (
-        <>
-          <div className="modal-overlay" onClick={() => setSelectedProduct(null)}></div>
-          <div className="modal">
-            <button className="modal-close" onClick={() => setSelectedProduct(null)}>
-              <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-            <div className="modal-content">
-              <h3>{selectedProduct.name}</h3>
-              <p>₺{selectedProduct.price}</p>
-              <p>{selectedProduct.description}</p>
+        <div className="modal-backdrop" onClick={() => setSelectedProduct(null)}>
+          <div className="product-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="product-image" />
+            <div className="product-info">
+              <h2>{selectedProduct.name}</h2>
+              <p className="desc">Bu ürün ALICCI koleksiyonunun zarif parçalarındandır. Yüksek kaliteli kumaş ve modern kesim ile üretilmiştir.</p>
+              <button
+                onClick={() => {
+                  setCartItems([...cartItems, selectedProduct]);
+                  setSelectedProduct(null);
+                }}
+              >
+                Sepete Ekle
+              </button>
             </div>
           </div>
-        </>
+        </div>
       )}
     </>
   );
