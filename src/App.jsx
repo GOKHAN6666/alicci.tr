@@ -103,8 +103,8 @@ export default function App() {
       <footer>
         © 2025 ALICCI • Tüm hakları saklıdır.
         <div className="instagram">
-          <a href="https://instagram.com/alicciofficial" target="_blank" rel="noopener noreferrer">
-            Instagram / @alicciofficial
+          <a href="https://instagram.com/alicci.official" target="_blank" rel="noopener noreferrer">
+            Instagram / @alicci.official
           </a>
         </div>
       </footer>
