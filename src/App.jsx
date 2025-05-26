@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import "./index.css";
 
 export default function App() {
@@ -6,6 +6,7 @@ export default function App() {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [cartItems, setCartItems] = useState([]);
   const [selectedProduct, setSelectedProduct] = useState(null);
+  const [selectedSize, setSelectedSize] = useState(null);
 
   const aboutRef = useRef(null);
   const contactRef = useRef(null);
@@ -48,22 +49,12 @@ export default function App() {
             <li onClick={() => scrollToSection(aboutRef)}>Hakkımızda</li>
             <li onClick={() => scrollToSection(contactRef)}>İletişim</li>
             <div className="cart-button" onClick={() => setIsCartOpen(true)}>
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="22"
-                height="22"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="#111"
-                strokeWidth="1.5"
-              >
+              <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="#111" strokeWidth="1.5">
                 <path d="M3 3h2l.4 2M7 13h13l-1.5 7H6L5 6H3" />
                 <circle cx="9" cy="21" r="1" />
                 <circle cx="18" cy="21" r="1" />
               </svg>
-              {cartItems.length > 0 && (
-                <div className="cart-count">{cartItems.length}</div>
-              )}
+              {cartItems.length > 0 && <div className="cart-count">{cartItems.length}</div>}
             </div>
           </ul>
         </nav>
@@ -80,13 +71,13 @@ export default function App() {
         <div className="products-grid">
           {productsData.map((item) => (
             <div key={item.id} className="product-card">
-              <div className="image" onClick={() => setSelectedProduct(item)}></div>
+              <div className="image" onClick={() => {
+                setSelectedProduct(item);
+                setSelectedSize(null);
+              }}></div>
               <div className="info">
                 <h4>{item.name}</h4>
                 <p>₺{item.price}</p>
-                <button onClick={() => setCartItems([...cartItems, item])}>
-                  Sepete Ekle
-                </button>
               </div>
             </div>
           ))}
@@ -95,16 +86,8 @@ export default function App() {
 
       <section className="about" ref={aboutRef}>
         <h3>Hakkımızda</h3>
-        <p>
-          ALICCI, sadeliği ve zarafeti benimseyen erkekler için kuruldu. Sessiz lüks;
-          gösterişten uzak, detayda gizli bir zenginliktir. Koleksiyonlarımız,
-          yüksek kalite kumaşlar ve özenli işçilikle hazırlanır.
-        </p>
-        <p>
-          İstanbul'da doğan ALICCI, global düzeyde sessiz lüks anlayışını temsil
-          etmeye kararlıdır. Her parça, zamansız bir stilin temsilcisi olarak
-          tasarlanır.
-        </p>
+        <p>ALICCI, sadeliği ve zarafeti benimseyen erkekler için kuruldu. Sessiz lüks; gösterişten uzak, detayda gizli bir zenginliktir. Koleksiyonlarımız, yüksek kalite kumaşlar ve özenli işçilikle hazırlanır.</p>
+        <p>İstanbul'da doğan ALICCI, global düzeyde sessiz lüks anlayışını temsil etmeye kararlıdır. Her parça, zamansız bir stilin temsilcisi olarak tasarlanır.</p>
       </section>
 
       <section className="contact" ref={contactRef}>
@@ -139,7 +122,7 @@ export default function App() {
                 <ul>
                   {cartItems.map((item, index) => (
                     <li key={index}>
-                      {item.name} – ₺{item.price}
+                      {item.name} – ₺{item.price} ({item.size})
                       <button onClick={() => {
                         const updated = [...cartItems];
                         updated.splice(index, 1);
@@ -162,10 +145,28 @@ export default function App() {
             <div className="product-info">
               <h2>{selectedProduct.name}</h2>
               <p className="desc">Bu ürün ALICCI koleksiyonunun zarif parçalarındandır. Yüksek kaliteli kumaş ve modern kesim ile üretilmiştir.</p>
+
+              <div className="size-select">
+                <p>Beden Seç:</p>
+                {["S", "M", "L", "XL"].map((size) => (
+                  <button
+                    key={size}
+                    className={selectedSize === size ? "selected" : ""}
+                    onClick={() => setSelectedSize(size)}
+                  >
+                    {size}
+                  </button>
+                ))}
+              </div>
+
               <button
                 onClick={() => {
-                  setCartItems([...cartItems, selectedProduct]);
-                  setSelectedProduct(null);
+                  if (selectedSize) {
+                    setCartItems([...cartItems, { ...selectedProduct, size: selectedSize }]);
+                    setSelectedProduct(null);
+                  } else {
+                    alert("Lütfen beden seçin.");
+                  }
                 }}
               >
                 Sepete Ekle
@@ -177,3 +178,4 @@ export default function App() {
     </>
   );
 }
+
