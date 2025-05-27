@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
+import emailjs from "emailjs-com";
 import "./index.css";
-import emailjs from "@emailjs/browser";
 
 export default function App() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -8,12 +8,12 @@ export default function App() {
   const [cartItems, setCartItems] = useState([]);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [selectedSize, setSelectedSize] = useState(null);
-  const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
-  const [formData, setFormData] = useState({ name: "", surname: "", email: "" });
-
+  const [orderModalOpen, setOrderModalOpen] = useState(false);
   const aboutRef = useRef(null);
   const contactRef = useRef(null);
   const productsRef = useRef(null);
+  const nameRef = useRef();
+  const emailRef = useRef();
 
   const scrollToSection = (ref) => {
     if (ref.current) {
@@ -23,8 +23,8 @@ export default function App() {
   };
 
   useEffect(() => {
-    document.body.style.overflow = selectedProduct ? "hidden" : "";
-  }, [selectedProduct]);
+    document.body.style.overflow = selectedProduct || orderModalOpen ? "hidden" : "";
+  }, [selectedProduct, orderModalOpen]);
 
   const productsData = [
     { id: 1, name: "Ürün 1", price: 4950 },
@@ -34,39 +34,31 @@ export default function App() {
 
   const totalPrice = cartItems.reduce((sum, item) => sum + item.price, 0);
 
-  const handleCheckout = (e) => {
-    e.preventDefault();
-
-    if (!formData.name || !formData.surname || !formData.email) {
-      alert("Lütfen tüm bilgileri doldurun.");
-      return;
-    }
-
-    if (cartItems.length === 0) {
-      alert("Sepetiniz boş.");
+  const handleOrder = () => {
+    if (!nameRef.current?.value || !emailRef.current?.value) {
+      alert("Lütfen adınızı ve e-posta adresinizi girin.");
       return;
     }
 
     const templateParams = {
-      name: formData.name,
-      surname: formData.surname,
-      email: formData.email,
-      items: cartItems
-        .map((item) => `${item.name} (${item.size}) - ₺${item.price}`)
-        .join(", "),
+      name: nameRef.current.value,
+      email: emailRef.current.value,
+      items: cartItems.map(item => `${item.name} (${item.size})`).join(", "),
+      total: totalPrice,
     };
 
-    emailjs
-      .send("service_iyppib9", "ALICCI", templateParams, "5dI_FI0HT2oHrlQj5")
-      .then(() => {
-        setIsCartOpen(false);
-        setCartItems([]);
-        setIsOrderModalOpen(true);
-      })
-      .catch((error) => {
-        console.error("EmailJS Error:", error);
-        alert("Sipariş gönderilirken hata oluştu.");
-      });
+    emailjs.send(
+      "service_iyppib9",
+      "ALICCI",
+      templateParams,
+      "5dI_FI0HT2oHrlQj5"
+    ).then(() => {
+      setCartItems([]);
+      setIsCartOpen(false);
+      setOrderModalOpen(true);
+    }).catch((error) => {
+      console.error("Email gönderilemedi:", error);
+    });
   };
 
   return (
@@ -75,7 +67,8 @@ export default function App() {
         <nav>
           <h1>ALICCI</h1>
           <div className="hamburger" onClick={() => setMenuOpen(!menuOpen)}>
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#111" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none"
+              stroke="#111" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <line x1="3" y1="6" x2="21" y2="6" />
               <line x1="3" y1="12" x2="21" y2="12" />
               <line x1="3" y1="18" x2="21" y2="18" />
@@ -85,7 +78,12 @@ export default function App() {
             <li onClick={() => scrollToSection(aboutRef)}>Hakkımızda</li>
             <li onClick={() => scrollToSection(contactRef)}>İletişim</li>
             <div className="cart-button" onClick={() => setIsCartOpen(true)}>
-              🛒 {cartItems.length > 0 && <div className="cart-count">{cartItems.length}</div>}
+              <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" stroke="#111" strokeWidth="1.5" fill="none">
+                <path d="M3 3h2l.4 2M7 13h13l-1.5 7H6L5 6H3" />
+                <circle cx="9" cy="21" r="1" />
+                <circle cx="18" cy="21" r="1" />
+              </svg>
+              {cartItems.length > 0 && <div className="cart-count">{cartItems.length}</div>}
             </div>
           </ul>
         </nav>
@@ -117,12 +115,13 @@ export default function App() {
 
       <section className="about" ref={aboutRef}>
         <h3>Hakkımızda</h3>
-        <p>ALICCI, sadeliği ve zarafeti benimseyen erkekler için kuruldu.</p>
+        <p>ALICCI, sadeliği ve zarafeti benimseyen erkekler için kuruldu. Sessiz lüks; gösterişten uzak, detayda gizli bir zenginliktir.</p>
+        <p>Koleksiyonlarımız, yüksek kalite kumaşlar ve özenli işçilikle hazırlanır.</p>
       </section>
 
       <section className="contact" ref={contactRef}>
         <h3>İletişim</h3>
-        <form>
+        <form action="https://formspree.io/f/xeogwvzd" method="POST">
           <input type="text" name="name" placeholder="Adınız" required />
           <input type="email" name="email" placeholder="E-posta" required />
           <textarea name="message" placeholder="Mesajınız" required></textarea>
@@ -162,42 +161,21 @@ export default function App() {
                   ))}
                 </ul>
                 <p className="total">Toplam: ₺{totalPrice}</p>
-                <form onSubmit={handleCheckout} className="checkout-form">
-                  <input
-                    type="text"
-                    placeholder="Ad"
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    required
-                  />
-                  <input
-                    type="text"
-                    placeholder="Soyad"
-                    value={formData.surname}
-                    onChange={(e) => setFormData({ ...formData, surname: e.target.value })}
-                    required
-                  />
-                  <input
-                    type="email"
-                    placeholder="E-posta"
-                    value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    required
-                  />
-                  <button type="submit">Ödeme Yap (iyzico yakında)</button>
-                </form>
+                <input type="text" placeholder="Adınız Soyadınız" ref={nameRef} required />
+                <input type="email" placeholder="E-posta adresiniz" ref={emailRef} required />
+                <button onClick={handleOrder}>Siparişi Tamamla</button>
               </>
             )}
           </div>
         </>
       )}
 
-      {isOrderModalOpen && (
-        <div className="modal-backdrop" onClick={() => setIsOrderModalOpen(false)}>
-          <div className="product-modal" onClick={(e) => e.stopPropagation()}>
-            <h2>Teşekkürler</h2>
-            <p>Siparişiniz alınmıştır, 1-3 iş günü içinde kargolanacaktır.</p>
-            <button onClick={() => setIsOrderModalOpen(false)}>Kapat</button>
+      {orderModalOpen && (
+        <div className="modal-backdrop" onClick={() => setOrderModalOpen(false)}>
+          <div className="order-confirmation" onClick={(e) => e.stopPropagation()}>
+            <h2>Teşekkürler!</h2>
+            <p>Siparişiniz alınmıştır. 1-3 iş günü içinde kargolanacaktır.</p>
+            <button onClick={() => setOrderModalOpen(false)}>Kapat</button>
           </div>
         </div>
       )}
@@ -208,7 +186,7 @@ export default function App() {
             <div className="product-image" />
             <div className="product-info">
               <h2>{selectedProduct.name}</h2>
-              <p className="desc">Yüksek kaliteli kumaş ve modern kesim.</p>
+              <p className="desc">Bu ürün ALICCI koleksiyonunun zarif parçalarındandır.</p>
               <div className="size-select">
                 <p>Beden Seç:</p>
                 {["S", "M", "L", "XL"].map((size) => (

@@ -631,4 +631,11 @@ button:hover {
   cursor: pointer;
   user-select: none;
 }
+* {
+  user-select: none; /* Metin imlecini kaldırır */
+}
+
+form input, form textarea, form button {
+  user-select: auto !important; /* Form alanlarında seçime izin ver */
+}
 
