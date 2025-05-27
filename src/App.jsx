@@ -9,6 +9,7 @@ export default function App() {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [selectedSize, setSelectedSize] = useState(null);
   const [orderModalOpen, setOrderModalOpen] = useState(false);
+  const [paymentModalOpen, setPaymentModalOpen] = useState(false);
   const aboutRef = useRef(null);
   const contactRef = useRef(null);
   const productsRef = useRef(null);
@@ -23,8 +24,9 @@ export default function App() {
   };
 
   useEffect(() => {
-    document.body.style.overflow = selectedProduct || orderModalOpen ? "hidden" : "";
-  }, [selectedProduct, orderModalOpen]);
+    document.body.style.overflow =
+      selectedProduct || orderModalOpen || paymentModalOpen ? "hidden" : "";
+  }, [selectedProduct, orderModalOpen, paymentModalOpen]);
 
   const productsData = [
     { id: 1, name: "Ürün 1", price: 4950 },
@@ -43,22 +45,20 @@ export default function App() {
     const templateParams = {
       name: nameRef.current.value,
       email: emailRef.current.value,
-      items: cartItems.map(item => `${item.name} (${item.size})`).join(", "),
+      items: cartItems.map((item) => `${item.name} (${item.size})`).join(", "),
       total: totalPrice,
     };
 
-    emailjs.send(
-      "service_iyppib9",
-      "ALICCI",
-      templateParams,
-      "5dI_FI0HT2oHrlQj5"
-    ).then(() => {
-      setCartItems([]);
-      setIsCartOpen(false);
-      setOrderModalOpen(true);
-    }).catch((error) => {
-      console.error("Email gönderilemedi:", error);
-    });
+    emailjs
+      .send("service_iyppib9", "template_ftuypl8", templateParams, "5dI_FI0HT2oHrlQj5")
+      .then(() => {
+        setCartItems([]);
+        setIsCartOpen(false);
+        setPaymentModalOpen(true); // ödeme modalını aç
+      })
+      .catch((error) => {
+        console.error("Email gönderilemedi:", error);
+      });
   };
 
   return (
@@ -67,23 +67,41 @@ export default function App() {
         <nav>
           <h1>ALICCI</h1>
           <div className="hamburger" onClick={() => setMenuOpen(!menuOpen)}>
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none"
-              stroke="#111" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg
+              width="28"
+              height="28"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="#111"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
               <line x1="3" y1="6" x2="21" y2="6" />
               <line x1="3" y1="12" x2="21" y2="12" />
               <line x1="3" y1="18" x2="21" y2="18" />
             </svg>
           </div>
-          <ul className={menuOpen ? 'open' : ''}>
+          <ul className={menuOpen ? "open" : ""}>
             <li onClick={() => scrollToSection(aboutRef)}>Hakkımızda</li>
             <li onClick={() => scrollToSection(contactRef)}>İletişim</li>
             <div className="cart-button" onClick={() => setIsCartOpen(true)}>
-              <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" stroke="#111" strokeWidth="1.5" fill="none">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="22"
+                height="22"
+                viewBox="0 0 24 24"
+                stroke="#111"
+                strokeWidth="1.5"
+                fill="none"
+              >
                 <path d="M3 3h2l.4 2M7 13h13l-1.5 7H6L5 6H3" />
                 <circle cx="9" cy="21" r="1" />
                 <circle cx="18" cy="21" r="1" />
               </svg>
-              {cartItems.length > 0 && <div className="cart-count">{cartItems.length}</div>}
+              {cartItems.length > 0 && (
+                <div className="cart-count">{cartItems.length}</div>
+              )}
             </div>
           </ul>
         </nav>
@@ -92,7 +110,9 @@ export default function App() {
       <section className="hero">
         <h2>Sessiz Lüksün Yeni Tanımı</h2>
         <p>Sadelik, zarafet ve kalite. ALICCI, görünmeyeni giyenler için.</p>
-        <button onClick={() => scrollToSection(productsRef)}>Koleksiyonu Keşfet</button>
+        <button onClick={() => scrollToSection(productsRef)}>
+          Koleksiyonu Keşfet
+        </button>
       </section>
 
       <section className="products" ref={productsRef}>
@@ -100,10 +120,13 @@ export default function App() {
         <div className="products-grid">
           {productsData.map((item) => (
             <div key={item.id} className="product-card">
-              <div className="image" onClick={() => {
-                setSelectedProduct(item);
-                setSelectedSize(null);
-              }}></div>
+              <div
+                className="image"
+                onClick={() => {
+                  setSelectedProduct(item);
+                  setSelectedSize(null);
+                }}
+              ></div>
               <div className="info">
                 <h4>{item.name}</h4>
                 <p>₺{item.price}</p>
@@ -115,7 +138,10 @@ export default function App() {
 
       <section className="about" ref={aboutRef}>
         <h3>Hakkımızda</h3>
-        <p>ALICCI, sadeliği ve zarafeti benimseyen erkekler için kuruldu. Sessiz lüks; gösterişten uzak, detayda gizli bir zenginliktir.</p>
+        <p>
+          ALICCI, sadeliği ve zarafeti benimseyen erkekler için kuruldu. Sessiz
+          lüks; gösterişten uzak, detayda gizli bir zenginliktir.
+        </p>
         <p>Koleksiyonlarımız, yüksek kalite kumaşlar ve özenli işçilikle hazırlanır.</p>
       </section>
 
@@ -132,7 +158,11 @@ export default function App() {
       <footer>
         © 2025 ALICCI • Tüm hakları saklıdır.
         <div className="instagram">
-          <a href="https://instagram.com/alicci.official" target="_blank" rel="noopener noreferrer">
+          <a
+            href="https://instagram.com/alicci.official"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             Instagram / @alicci.official
           </a>
         </div>
@@ -170,12 +200,18 @@ export default function App() {
         </>
       )}
 
-      {orderModalOpen && (
-        <div className="modal-backdrop" onClick={() => setOrderModalOpen(false)}>
+      {paymentModalOpen && (
+        <div className="modal-backdrop" onClick={() => setPaymentModalOpen(false)}>
           <div className="order-confirmation" onClick={(e) => e.stopPropagation()}>
-            <h2>Teşekkürler!</h2>
-            <p>Siparişiniz alınmıştır. 1-3 iş günü içinde kargolanacaktır.</p>
-            <button onClick={() => setOrderModalOpen(false)}>Kapat</button>
+            <h2>Ödeme Sayfası</h2>
+            <iframe
+              src="https://sandbox-merchant.iyzipay.com/payment/checkout-form/1a2b3c4d5e"
+              width="100%"
+              height="500"
+              style={{ border: "none" }}
+              title="iyzico Ödeme"
+            ></iframe>
+            <button onClick={() => setPaymentModalOpen(false)}>Kapat</button>
           </div>
         </div>
       )}
