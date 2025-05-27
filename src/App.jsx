@@ -11,6 +11,9 @@ export default function App() {
   const [orderModalOpen, setOrderModalOpen] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [showReturnForm, setShowReturnForm] = useState(false);
+  const [hasOrdered, setHasOrdered] = useState(() => {
+    return localStorage.getItem("hasOrdered") === "true";
+  });
 
   const aboutRef = useRef(null);
   const contactRef = useRef(null);
@@ -54,11 +57,13 @@ export default function App() {
     };
 
     emailjs
-      .send("service_iyppib9", "ALICCI", templateParams, "5dI_FI0HT2oHrlQj5")
+      .send("service_iyppib9", "template_ftuypl8", templateParams, "5dI_FI0HT2oHrlQj5")
       .then(() => {
         setCartItems([]);
         setIsCartOpen(false);
         setShowPaymentModal(true);
+        setHasOrdered(true);
+        localStorage.setItem("hasOrdered", "true"); // 🔐 Kalıcı olarak işaretle
       })
       .catch((error) => {
         console.error("Email gönderilemedi:", error);
@@ -104,7 +109,9 @@ export default function App() {
             <li onClick={() => scrollToSection(productsRef)}>Koleksiyon</li>
             <li onClick={() => scrollToSection(aboutRef)}>Hakkımızda</li>
             <li onClick={() => scrollToSection(contactRef)}>İletişim</li>
-            <li onClick={() => setShowReturnForm(true)}>İade Talebi</li>
+            {hasOrdered && (
+              <li onClick={() => setShowReturnForm(true)}>İade Talebi</li>
+            )}
             <div className="cart-button" onClick={() => setIsCartOpen(true)}>
               <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" stroke="#111" strokeWidth="1.5" fill="none">
                 <path d="M3 3h2l.4 2M7 13h13l-1.5 7H6L5 6H3" />

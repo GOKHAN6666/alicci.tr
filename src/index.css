@@ -1198,3 +1198,7 @@ h1 {
 .order-confirmation button:hover {
   background: #333;
 }
+.product-card:hover {
+  transform: scale(1.02);
+  transition: 0.3s ease;
+}
