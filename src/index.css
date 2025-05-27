@@ -1170,3 +1170,31 @@ h1 {
   cursor: pointer;
   font-size: 14px;
 }
+.order-confirmation form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.order-confirmation input,
+.order-confirmation textarea {
+  padding: 10px;
+  border: 1px solid #ccc;
+  background: #fff;
+  font-size: 14px;
+  font-family: inherit;
+  border-radius: 4px;
+}
+
+.order-confirmation button {
+  background: black;
+  color: white;
+  padding: 10px;
+  font-size: 14px;
+  border: none;
+  cursor: pointer;
+}
+
+.order-confirmation button:hover {
+  background: #333;
+}
