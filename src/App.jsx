@@ -1,4 +1,6 @@
+// Değişiklik yoksa aynı kalsın:
 import React, { useState, useRef, useEffect } from "react";
+import emailjs from "@emailjs/browser";
 import "./index.css";
 
 export default function App() {
@@ -7,6 +9,7 @@ export default function App() {
   const [cartItems, setCartItems] = useState([]);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [selectedSize, setSelectedSize] = useState(null);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   const aboutRef = useRef(null);
   const contactRef = useRef(null);
@@ -30,12 +33,38 @@ export default function App() {
 
   const totalPrice = cartItems.reduce((sum, item) => sum + item.price, 0);
 
+  const handleOrder = () => {
+    if (cartItems.length === 0) {
+      alert("Sepetiniz boş.");
+      return;
+    }
+
+    const templateParams = {
+      message: cartItems
+        .map((item) => `${item.name} (${item.size}) - ₺${item.price}`)
+        .join("\n"),
+      total: totalPrice,
+    };
+
+    emailjs
+      .send("service_iyppib9", "ALICCI", templateParams, "5dI_FI0HT2oHrlQj5")
+      .then(() => {
+        setCartItems([]);
+        setIsCartOpen(false);
+        setShowSuccessModal(true);
+        setTimeout(() => setShowSuccessModal(false), 4000);
+      })
+      .catch((error) => {
+        console.error("Email gönderme hatası:", error);
+        alert("Sipariş gönderilemedi.");
+      });
+  };
+
   return (
     <>
       {!selectedProduct && (
         <nav>
           <h1>ALICCI</h1>
-
           <div className="hamburger" onClick={() => setMenuOpen(!menuOpen)}>
             <svg width="28" height="28" viewBox="0 0 24 24" fill="none"
               stroke="#111" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -44,7 +73,6 @@ export default function App() {
               <line x1="3" y1="18" x2="21" y2="18" />
             </svg>
           </div>
-
           <ul className={menuOpen ? 'open' : ''}>
             <li onClick={() => scrollToSection(aboutRef)}>Hakkımızda</li>
             <li onClick={() => scrollToSection(contactRef)}>İletişim</li>
@@ -63,7 +91,7 @@ export default function App() {
       <section className="hero">
         <h2>Sessiz Lüksün Yeni Tanımı</h2>
         <p>Sadelik, zarafet ve kalite. ALICCI, görünmeyeni giyenler için.</p>
-        <button>Koleksiyonu Keşfet</button>
+        <button onClick={() => scrollToSection(aboutRef)}>Koleksiyonu Keşfet</button>
       </section>
 
       <section className="products">
@@ -112,7 +140,7 @@ export default function App() {
       {isCartOpen && (
         <>
           <div className="cart-overlay" onClick={() => setIsCartOpen(false)}></div>
-          <div className={`cart-panel open`}>
+          <div className="cart-panel open">
             <button className="close-cart" onClick={() => setIsCartOpen(false)}>×</button>
             <h3>Sepetiniz</h3>
             {cartItems.length === 0 ? (
@@ -132,10 +160,20 @@ export default function App() {
                   ))}
                 </ul>
                 <p className="total">Toplam: ₺{totalPrice}</p>
+                <button className="order-button" onClick={handleOrder}>Siparişi Tamamla</button>
               </>
             )}
           </div>
         </>
+      )}
+
+      {showSuccessModal && (
+        <div className="modal-backdrop" onClick={() => setShowSuccessModal(false)}>
+          <div className="product-modal" onClick={(e) => e.stopPropagation()}>
+            <h2>Teşekkürler!</h2>
+            <p>Siparişiniz alınmıştır. 1-3 iş günü içinde kargolanacaktır.</p>
+          </div>
+        </div>
       )}
 
       {selectedProduct && (
@@ -178,4 +216,3 @@ export default function App() {
     </>
   );
 }
-

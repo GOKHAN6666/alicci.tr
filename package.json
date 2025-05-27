@@ -10,10 +10,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "react": "^18.x.x",
-"react-dom": "^18.x.x",
-
+    "@emailjs/browser": "^4.4.1",
     "@supabase/supabase-js": "^2.49.8",
+    "emailjs-com": "^3.2.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-router-dom": "^7.6.0"
