@@ -1,0 +1,142 @@
+/* src/AdminPanel.css */
+
+.admin-panel-container {
+    padding: 20px;
+    max-width: 1200px;
+    margin: 20px auto;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.admin-panel-title {
+    text-align: center;
+    color: #333;
+    margin-bottom: 30px;
+}
+
+.admin-section {
+    background-color: #fff;
+    padding: 20px;
+    margin-bottom: 20px;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.admin-section h2 {
+    color: #007bff;
+    margin-bottom: 15px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+}
+
+.add-product-form,
+.add-cargo-form {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.add-product-form input,
+.add-cargo-form input,
+.add-cargo-form select {
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    width: 100%;
+    box-sizing: border-box; /* Padding'in genişliğe dahil edilmesini sağlar */
+}
+
+.add-product-form button,
+.add-cargo-form button {
+    grid-column: span 2; /* Butonun iki sütunu kaplamasını sağlar */
+    background-color: #28a745;
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+}
+
+.add-product-form button:hover,
+.add-cargo-form button:hover {
+    background-color: #218838;
+}
+
+.product-list,
+.order-list,
+.cargo-list {
+    list-style: none;
+    padding: 0;
+}
+
+.product-item,
+.order-item,
+.cargo-item {
+    background-color: #f4f4f4;
+    padding: 15px;
+    margin-bottom: 10px;
+    border-radius: 6px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap; /* Küçük ekranlarda sarmalamayı sağlar */
+    gap: 10px;
+}
+
+.product-thumb {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 4px;
+    margin-right: 10px;
+}
+
+.product-item span {
+    flex-grow: 1;
+}
+
+.product-item button,
+.order-item button,
+.cargo-item button {
+    background-color: #dc3545;
+    color: white;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s ease;
+}
+
+.product-item button:hover,
+.order-item button:hover,
+.cargo-item button:hover {
+    background-color: #c82333;
+}
+
+.order-details, .cargo-item {
+    line-height: 1.6;
+    font-size: 0.95em;
+}
+
+.order-details ul {
+    margin-left: 20px;
+    list-style: disc;
+}
+
+.order-details select {
+    padding: 5px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    margin-left: 10px;
+}
+
+.error-message {
+    color: red;
+    text-align: center;
+    margin-top: 20px;
+}

@@ -1,115 +1,412 @@
 import React, { useState, useRef, useEffect } from "react";
 import emailjs from "emailjs-com";
-import "./index.css";
+import "./index.css"; // Ana stil dosyanızın yolu
+import AdminPanel from "./AdminPanel"; // AdminPanel bileşenini import et
+import { supabase } from "./supabaseClient"; // Supabase client'ı import et
 
 export default function App() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
-  const [cartItems, setCartItems] = useState([]);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [selectedSize, setSelectedSize] = useState(null);
-  const [orderModalOpen, setOrderModalOpen] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [showReturnForm, setShowReturnForm] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  // Sipariş geçmişini kontrol etmek için yerel depolamayı kullan (opsiyonel)
   const [hasOrdered, setHasOrdered] = useState(() => localStorage.getItem("hasOrdered") === "true");
 
+  // Supabase'den çekilecek ürünler için state
+  const [products, setProducts] = useState([]);
+  const [loadingProducts, setLoadingProducts] = useState(true); // Ürünler yükleniyor mu?
+  const [productsError, setProductsError] = useState(null); // Ürün yükleme hatası
+
+  // Kargo takip sistemi için state'ler
+  const [showTrackingModal, setShowTrackingModal] = useState(false);
+  const [trackingEmail, setTrackingEmail] = useState("");
+  const [trackingOrderId, setTrackingOrderId] = useState("");
+  const [trackingResult, setTrackingResult] = useState(null);
+  const [trackingError, setTrackingError] = useState("");
+  const [loadingTracking, setLoadingTracking] = useState(false); // Kargo takip bilgisi yükleniyor mu?
+
+  // Admin Panel için yeni state'ler
+  const [showAdminLogin, setShowAdminLogin] = useState(false);
+  const [adminPassword, setAdminPassword] = useState("");
+  const [loggedInAsAdmin, setLoggedInAsAdmin] = useState(false);
+
+  // Ref'ler (bölümlere kaydırma ve form elemanları için)
   const aboutRef = useRef(null);
   const contactRef = useRef(null);
   const productsRef = useRef(null);
-  const nameRef = useRef();
-  const emailRef = useRef();
+  const customerNameRef = useRef(null); // Ödeme formundaki müşteri adı ref'i
+  const customerEmailRef = useRef(null); // Ödeme formundaki müşteri e-posta ref'i
+  const customerAddressRef = useRef(null); // Ödeme formundaki müşteri adres ref'i
+  const customerPhoneRef = useRef(null); // Ödeme formundaki müşteri telefon ref'i
 
+  // Admin şifresi (gerçek bir projede .env'den gelmeli veya daha güvenli yönetilmeli)
+  // .env dosyanızda VITE_ADMIN_PASSWORD="sizin_admin_sifreniz" şeklinde tanımlı olmalı
+  const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD || "varsayilan_sifre";
+
+  // Sepet öğelerini localStorage'dan yükle (uygulama ilk yüklendiğinde)
+  const [cartItems, setCartItems] = useState(() => {
+    try {
+      const storedCartItems = localStorage.getItem('cartItems');
+      return storedCartItems ? JSON.parse(storedCartItems) : [];
+    } catch (error) {
+      console.error("Sepet öğeleri localStorage'dan yüklenirken hata oluştu:", error);
+      return [];
+    }
+  });
+
+  // Sepet öğeleri değiştiğinde localStorage'a kaydet
+  useEffect(() => {
+    localStorage.setItem('cartItems', JSON.stringify(cartItems));
+  }, [cartItems]);
+
+  // Supabase'den ürünleri çekme fonksiyonu
+  useEffect(() => {
+    const fetchProductsData = async () => {
+      setLoadingProducts(true);
+      setProductsError(null);
+      // 'products' tablosundan tüm veriyi seç
+      const { data, error } = await supabase.from("products").select("*");
+      if (error) {
+        console.error("Ürün çekme hatası:", error);
+        setProductsError("Ürünler yüklenirken bir hata oluştu.");
+      } else {
+        setProducts(data);
+      }
+      setLoadingProducts(false);
+    };
+    fetchProductsData();
+  }, []); // [] ile sadece bileşen yüklendiğinde bir kez çalışır
+
+
+  // Kargo firmalarına özel link oluşturma fonksiyonu
+  const getCargoTrackingLink = (firmName, trackingCode) => {
+    switch (firmName.toLowerCase()) {
+      case "aras kargo":
+        return `https://www.araskargo.com.tr/tr/online-servisler/gonderi-takip?kod=${trackingCode}`;
+      case "yurtiçi kargo":
+        return `https://www.yurticikargo.com/tr/online-servisler/gonderi-sorgula?code=${trackingCode}`;
+      case "mng kargo":
+        return `https://www.mngkargo.com.tr/gonderi-takip?kargotakipno=${trackingCode}`;
+      default:
+        return "#"; // Bilinmeyen firma için boş link
+    }
+  };
+
+  // Kargo takip sorgulama (Supabase'den çekecek şekilde güncellendi)
+  const handleTrackingSearch = async () => {
+    setTrackingResult(null);
+    setTrackingError("");
+    setLoadingTracking(true);
+
+    try {
+      // 'KARGO' tablosu adı büyük harfle kullanıldı (Supabase'deki gibi)
+      const { data, error } = await supabase
+        .from("KARGO")
+        .select("*")
+        .eq("email", trackingEmail) // E-posta ile filtrele
+        .eq("order_id", trackingOrderId) // Sipariş ID'si ile filtrele
+        .single(); // Sadece tek bir sonuç bekliyoruz
+
+      if (error && error.code === 'PGRST116') { // PGRST116: "no rows in result" (Supabase'den veri bulunamadı)
+        setTrackingError("Bu takip koduyla ilgili kayıt bulunamadı. E-posta ve sipariş numarasını kontrol ediniz.");
+      } else if (error) {
+        console.error("Kargo sorgulama hatası:", error);
+        setTrackingError("Kargo bilgisi alınırken bir hata oluştu: " + error.message);
+      } else {
+        // Eğer data varsa, takip linkini oluştur
+        if (data) {
+          data.takipLinki = getCargoTrackingLink(data.cargo_company, data.tracking_code);
+          setTrackingResult(data);
+        } else {
+          // Bu kısma normalde düşmemeli, çünkü PGRST116 hatası yukarıda yakalanıyor.
+          setTrackingError("Kargo bilgisi bulunamadı. E-posta ve sipariş numarasını kontrol ediniz.");
+        }
+      }
+    } catch (err) {
+      console.error("Kargo takibi sırasında beklenmeyen bir hata oluştu:", err);
+      setTrackingError("Kargo takibi sırasında beklenmeyen bir hata oluştu.");
+    } finally {
+      setLoadingTracking(false); // Yükleme durumunu kapat
+    }
+  };
+
+  // Bölüme kaydırma fonksiyonu
   const scrollToSection = (ref) => {
     if (ref.current) {
       ref.current.scrollIntoView({ behavior: "smooth" });
-      setMenuOpen(false);
+      setMenuOpen(false); // Menüyü kapat
     }
   };
 
-  useEffect(() => {
-    document.body.style.overflow =
-      selectedProduct || orderModalOpen || showPaymentModal || showReturnForm || showSuccessModal
-        ? "hidden"
-        : "";
-  }, [selectedProduct, orderModalOpen, showPaymentModal, showReturnForm, showSuccessModal]);
-
-  useEffect(() => {
-    const query = new URLSearchParams(window.location.search);
-    const isSuccess = query.get("odeme") === "basarili";
-    const emailSent = localStorage.getItem("emailSent");
-
-    if (isSuccess && emailSent !== "true") {
-      const orderInfo = JSON.parse(localStorage.getItem("orderInfo"));
-      if (orderInfo) {
-        emailjs
-          .send("service_iyppib9", "template_ftuypl8", orderInfo, "5dI_FI0HT2oHrlQj5")
-          .then(() => {
-            localStorage.setItem("emailSent", "true");
-            setShowSuccessModal(true);
-          })
-          .catch((error) => {
-            console.error("Email gönderilemedi:", error);
-          });
-      }
+  // Admin Giriş İşlemi
+  const handleAdminLogin = () => {
+    if (adminPassword === ADMIN_PASSWORD) {
+      setLoggedInAsAdmin(true); // Admin olarak giriş yapıldı
+      setShowAdminLogin(false); // Giriş modalını kapat
+      setAdminPassword(""); // Şifreyi temizle
+    } else {
+      alert("Hatalı şifre!");
+      setAdminPassword(""); // Şifreyi temizle
     }
-  }, []);
+  };
 
-  const productsData = [
-    { id: 1, name: "Ürün 1", price: 4950 },
-    { id: 2, name: "Ürün 2", price: 4950 },
-    { id: 3, name: "Ürün 3", price: 4950 },
-  ];
+  // Sepete ürün ekleme fonksiyonu
+  const handleAddToCart = () => {
+    if (selectedProduct && selectedSize) {
+      const existingItemIndex = cartItems.findIndex(
+        (item) => item.id === selectedProduct.id && item.size === selectedSize
+      );
 
-  const totalPrice = cartItems.reduce((sum, item) => sum + item.price, 0);
+      if (existingItemIndex > -1) {
+        // Eğer ürün zaten sepetteyse miktarını artır
+        const updatedCartItems = [...cartItems];
+        updatedCartItems[existingItemIndex].quantity += 1;
+        setCartItems(updatedCartItems);
+      } else {
+        // Ürün sepette yoksa yeni olarak ekle
+        setCartItems([
+          ...cartItems,
+          {
+            id: selectedProduct.id,
+            name: selectedProduct.name,
+            price: selectedProduct.price,
+            image: selectedProduct.image,
+            size: selectedSize,
+            quantity: 1,
+          },
+        ]);
+      }
+      setSelectedProduct(null); // Seçili ürünü sıfırla
+      setSelectedSize(null); // Seçili bedeni sıfırla
+      setIsCartOpen(true); // Sepete eklendikten sonra sepeti aç
+    } else {
+      alert('Lütfen bir ürün ve beden seçin.');
+    }
+  };
 
-  const handleOrder = () => {
-    if (!nameRef.current?.value || !emailRef.current?.value) {
-      alert("Lütfen adınızı ve e-posta adresinizi girin.");
+  // Sepetten ürün çıkarma
+  const handleRemoveFromCart = (itemToRemove) => {
+    setCartItems(cartItems.filter(item => !(item.id === itemToRemove.id && item.size === itemToRemove.size)));
+  };
+
+  // Sepet miktarını güncelleme
+  const handleUpdateQuantity = (itemToUpdate, newQuantity) => {
+    if (newQuantity < 1) {
+      handleRemoveFromCart(itemToUpdate); // Miktar 0 veya altına düşerse ürünü kaldır
+      return;
+    }
+    setCartItems(
+      cartItems.map((item) =>
+        item.id === itemToUpdate.id && item.size === itemToUpdate.size
+          ? { ...item, quantity: newQuantity }
+          : item
+      )
+    );
+  };
+
+  // Sepet toplamını hesaplama
+  const calculateTotal = () => {
+    return cartItems.reduce((total, item) => total + item.price * item.quantity, 0).toFixed(2);
+  };
+
+  // Benzersiz sipariş ID'si oluşturma (kargo takibi için)
+  const generateUniqueOrderId = () => {
+    const timestamp = Date.now();
+    const random = Math.floor(Math.random() * 10000); // Daha fazla rastgelelik
+    return `ALC-${timestamp}-${random}`; // Kendi formatınızı kullanın
+  };
+
+  // Sipariş verme işlemi (Supabase'e kaydedecek)
+  const handlePlaceOrder = async () => {
+    // Ref'lerden müşteri bilgilerini al
+    const customerName = customerNameRef.current.value;
+    const customerEmail = customerEmailRef.current.value;
+    const customerAddress = customerAddressRef.current.value;
+    const customerPhone = customerPhoneRef.current.value;
+
+    if (cartItems.length === 0) {
+      alert('Sepetiniz boş. Lütfen ürün ekleyin.');
+      return;
+    }
+    if (!customerName || !customerEmail || !customerAddress || !customerPhone) {
+      alert('Lütfen tüm müşteri bilgilerini doldurun.');
       return;
     }
 
-    const orderInfo = {
-      name: nameRef.current.value,
-      email: emailRef.current.value,
-      items: cartItems.map((item) => `${item.name} (${item.size})`).join(", "),
-      total: totalPrice,
-    };
+    const orderId = generateUniqueOrderId(); // Benzersiz sipariş ID'si oluştur
 
-    localStorage.setItem("orderInfo", JSON.stringify(orderInfo));
-    localStorage.setItem("hasOrdered", "true");
-    localStorage.setItem("emailSent", "false");
-    setCartItems([]);
-    setIsCartOpen(false);
-    setHasOrdered(true);
-    setShowPaymentModal(true);
+    try {
+      const { data: orderData, error: orderError } = await supabase.from('order').insert([
+        {
+          order_id: orderId, // Kendi oluşturduğumuz sipariş ID'si
+          customer_name: customerName,
+          customer_email: customerEmail,
+          customer_address: customerAddress,
+          customer_phone: customerPhone,
+          order_items: cartItems, // Sepet içeriğini JSON olarak sakla
+          total_price: parseFloat(calculateTotal()),
+          order_status: 'Pending', // Varsayılan durum
+        },
+      ]).select(); // Eklenen veriyi geri almak için select() kullan
+
+      if (orderError) {
+        console.error('Sipariş verilirken hata oluştu:', orderError);
+        alert('Sipariş verilirken bir hata oluştu: ' + orderError.message);
+      } else {
+        // İyzipay'e yönlendirme öncesi sipariş bilgilerini kaydet
+        localStorage.setItem("orderInfo", JSON.stringify({
+          name: customerName,
+          email: customerEmail,
+          items: cartItems.map((item) => `${item.name} (${item.size}) x${item.quantity}`).join(", "),
+          total: calculateTotal(),
+          custom_order_id: orderId,
+        }));
+        localStorage.setItem("hasOrdered", "true");
+        localStorage.setItem("emailSent", "false"); // EmailJS için bayrak
+
+        // Sepeti temizle
+        setCartItems([]);
+        localStorage.removeItem('cartItems');
+
+        // Ödeme modalını göster ve İyzipay'e yönlendir (simülasyon)
+        setShowPaymentModal(true);
+        // Gerçek bir senaryoda burada iyzipay ödeme akışı başlatılır
+        // Örn: window.location.href = "https://sandbox-merchant.iyzipay.com/checkoutform/initialize/sample";
+
+        // Kargo takibi için de otomatik bir giriş oluştur
+        // Bu giriş, yönetici tarafından daha sonra güncellenecektir.
+        const { error: cargoError } = await supabase.from('KARGO').insert({
+          order_id: orderId,
+          email: customerEmail,
+          cargo_company: 'Beklemede', // Yönetici tarafından güncellenecek
+          tracking_code: 'Beklemede', // Yönetici tarafından güncellenecek
+          status: 'Sipariş Alındı', // Başlangıç durumu
+        });
+
+        if (cargoError) {
+          console.error('Kargo bilgisi eklenirken hata oluştu (otomatik):', cargoError);
+          // Kullanıcıya bu hatayı göstermek yerine loglamak daha iyi olabilir.
+        }
+      }
+    } catch (err) {
+      console.error('Sipariş işlemi sırasında beklenmeyen bir hata oluştu:', err);
+      alert('Sipariş verilirken beklenmeyen bir hata oluştu.');
+    }
   };
 
-  const handleReturnSubmit = (e) => {
+  // İade formu gönderme (emailjs ile)
+  const sendReturnEmail = (e) => {
     e.preventDefault();
-    const form = e.target;
 
-    const returnParams = {
-      user_name: form.name.value,
-      user_email: form.email.value,
-      order_detail: form.order.value,
-      reason: form.reason.value,
-    };
-
+    // EmailJS servis, şablon ve kullanıcı ID'lerini kendi bilgilerinizle güncelleyin
+    // service_iyppib9 -> sizin servis ID'niz
+    // template_ftuypl8 -> sizin dönüş şablon ID'niz
+    // 5dI_FI0HT2oHrlQj5 -> sizin kullanıcı (public) ID'niz
     emailjs
-      .send("service_iyppib9", "ALICCI_Return", returnParams, "5dI_FI0HT2oHrlQj5")
-      .then(() => {
-        setShowReturnForm(false);
-        alert("İade talebiniz alınmıştır.");
-      })
-      .catch((error) => {
-        console.error("İade formu gönderilemedi:", error);
-      });
+      .sendForm(
+        "service_iyppib9", // EmailJS Service ID
+        "template_ftuypl8", // EmailJS Template ID (İade şablonunuz)
+        e.target,
+        "5dI_FI0HT2oHrlQj5" // EmailJS User ID (Public Key)
+      )
+      .then(
+        (result) => {
+          console.log(result.text);
+          alert("İade talebiniz başarıyla gönderildi!");
+          setShowReturnForm(false); // Formu kapat
+        },
+        (error) => {
+          console.error("İade talebi gönderilirken hata oluştu:", error);
+          alert("İade talebi gönderilirken bir hata oluştu.");
+        }
+      );
   };
 
+  // Modallar açıldığında body'nin kaymasını engelle
+  useEffect(() => {
+    const anyModalOpen =
+      selectedProduct ||
+      isCartOpen ||
+      showPaymentModal ||
+      showReturnForm ||
+      showSuccessModal ||
+      showTrackingModal ||
+      showAdminLogin;
+
+    if (anyModalOpen) {
+      document.body.style.overflow = "hidden"; // Kaydırmayı kapat
+    } else {
+      document.body.style.overflow = "unset"; // Kaydırmayı aç
+    }
+
+    // Bileşen ayrıldığında veya bağımlılıklar değiştiğinde temizleme
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, [selectedProduct, isCartOpen, showPaymentModal, showReturnForm, showSuccessModal, showTrackingModal, showAdminLogin]);
+
+  // Sayfa yüklendiğinde ve iyzipay'den geri dönüldüğünde EmailJS ile sipariş e-postası gönderimi
+  useEffect(() => {
+    const query = new URLSearchParams(window.location.search);
+    const isSuccess = query.get("odeme") === "basarili"; // URL'deki parametreyi kontrol et
+    const emailSentFlag = localStorage.getItem("emailSent"); // Bayrak kontrolü
+
+    if (isSuccess && emailSentFlag !== "true") {
+      const orderInfo = JSON.parse(localStorage.getItem("orderInfo"));
+      if (orderInfo) {
+        // İyzipay'den geri döndüğümüzde e-postayı gönder
+        emailjs
+          .send("service_iyppib9", "template_ftuypl8", orderInfo, "5dI_FI0HT2oHrlQj5") // Sizin EmailJS şablonunuzu kullanın
+          .then(() => {
+            console.log("Sipariş e-postası başarıyla gönderildi!");
+            localStorage.setItem("emailSent", "true"); // E-postanın gönderildiğini işaretle
+            setShowSuccessModal(true); // Başarı modalını göster
+            localStorage.removeItem("orderInfo"); // Sipariş bilgisini temizle
+          })
+          .catch((error) => {
+            console.error("Sipariş e-postası gönderilirken hata oluştu:", error);
+          });
+      }
+      // URL'deki parametreyi temizle (sayfa yenilenince tekrar tetiklenmemesi için)
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }, []); // Sadece bir kez çalışır
+
+
+  // Eğer admin olarak giriş yapılmışsa AdminPanel'i göster
+  if (loggedInAsAdmin) {
+    return <AdminPanel />;
+  }
+
+  // Normal uygulama arayüzü
   return (
     <>
-      {!selectedProduct && (
+      {/* Sadece geliştirme ortamında ve admin girişi yapılmamışsa Admin giriş butonu */}
+      {import.meta.env.DEV && !loggedInAsAdmin && (
+        <button
+          onClick={() => setShowAdminLogin(true)}
+          style={{
+            position: 'fixed',
+            top: '10px',
+            left: '10px',
+            zIndex: 1001,
+            padding: '8px 12px',
+            backgroundColor: '#007bff',
+            color: 'white',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer',
+          }}
+        >
+          Admin Girişi
+        </button>
+      )}
+
+      {/* Navbar sadece modal veya sepet açık olmadığında görünsün. */}
+      {!(selectedProduct || isCartOpen || showPaymentModal || showReturnForm || showSuccessModal || showTrackingModal || showAdminLogin) && (
         <nav>
           <h1>ALICCI</h1>
           <div className="hamburger" onClick={() => setMenuOpen(!menuOpen)}>
@@ -132,40 +429,89 @@ export default function App() {
               </svg>
               {cartItems.length > 0 && <div className="cart-count">{cartItems.length}</div>}
             </div>
+            <li>
+              <button
+                className="px-3 py-1 border border-black text-black bg-white hover:bg-black hover:text-white transition"
+                onClick={() => setShowTrackingModal(true)}
+              >
+                Kargo Takibi
+              </button>
+            </li>
           </ul>
         </nav>
       )}
 
+      {/* Admin Giriş Modalı */}
+      {showAdminLogin && (
+        <div className="modal-backdrop" onClick={() => setShowAdminLogin(false)}>
+          <div className="modal-content-base tracking-modal-content" onClick={(e) => e.stopPropagation()}>
+            <button className="close-modal" onClick={() => setShowAdminLogin(false)}>×</button>
+            <h2>Admin Girişi</h2>
+            <input
+              type="password"
+              placeholder="Şifre"
+              value={adminPassword}
+              onChange={(e) => setAdminPassword(e.target.value)}
+              onKeyPress={(e) => {
+                if (e.key === 'Enter') {
+                  handleAdminLogin();
+                }
+              }}
+              required
+            />
+            <button onClick={handleAdminLogin}>Giriş Yap</button>
+          </div>
+        </div>
+      )}
+
+
+      {/* Hero Section */}
       <section className="hero">
         <h2>Sessiz Lüksün Yeni Tanımı</h2>
         <p>Sadelik, zarafet ve kalite. ALICCI, görünmeyeni giyenler için.</p>
         <button onClick={() => scrollToSection(productsRef)}>Koleksiyonu Keşfet</button>
       </section>
 
+      {/* Products Section (Şimdi Supabase'den ürünleri çekecek) */}
       <section className="products" ref={productsRef}>
         <h3>Yeni Sezon</h3>
         <div className="products-grid">
-          {productsData.map((item) => (
-            <div key={item.id} className="product-card">
-              <div className="image" onClick={() => {
-                setSelectedProduct(item);
-                setSelectedSize(null);
-              }}></div>
-              <div className="info">
-                <h4>{item.name}</h4>
-                <p>₺{item.price}</p>
+          {loadingProducts ? (
+            <p>Ürünler yükleniyor...</p>
+          ) : productsError ? (
+            <p className="error-message">{productsError}</p>
+          ) : products.length === 0 ? (
+            <p>Gösterilecek ürün bulunmamaktadır.</p>
+          ) : (
+            products.map((item) => (
+              <div key={item.id} className="product-card">
+                <img
+                  src={item.image} // Supabase'deki sütun adı 'image'
+                  alt={item.name}
+                  className="product-card-image"
+                  onClick={() => {
+                    setSelectedProduct(item);
+                    setSelectedSize(null);
+                  }}
+                />
+                <div className="info">
+                  <h4>{item.name}</h4>
+                  <p>₺{item.price}</p>
+                </div>
               </div>
-            </div>
-          ))}
+            ))
+          )}
         </div>
       </section>
 
+      {/* About Section */}
       <section className="about" ref={aboutRef}>
         <h3>Hakkımızda</h3>
         <p>ALICCI, sadeliği ve zarafeti benimseyen erkekler için kuruldu. Sessiz lüks; gösterişten uzak, detayda gizli bir zenginliktir.</p>
         <p>Koleksiyonlarımız, yüksek kalite kumaşlar ve özenli işçilikle hazırlanır.</p>
       </section>
 
+      {/* Contact Section */}
       <section className="contact" ref={contactRef}>
         <h3>İletişim</h3>
         <form action="https://formspree.io/f/xeogwvzd" method="POST">
@@ -176,6 +522,7 @@ export default function App() {
         </form>
       </section>
 
+      {/* Footer */}
       <footer>
         © 2025 ALICCI • Tüm hakları saklıdır.
         <div className="instagram">
@@ -185,11 +532,12 @@ export default function App() {
         </div>
       </footer>
 
+      {/* Sepet Paneli (Modal) */}
       {isCartOpen && (
         <>
           <div className="cart-overlay" onClick={() => setIsCartOpen(false)}></div>
           <div className="cart-panel open">
-            <button className="close-cart" onClick={() => setIsCartOpen(false)}>×</button>
+            <button className="close-modal" onClick={() => setIsCartOpen(false)}>×</button>
             <h3>Sepetiniz</h3>
             {cartItems.length === 0 ? (
               <p>Sepetiniz boş.</p>
@@ -197,72 +545,148 @@ export default function App() {
               <>
                 <ul>
                   {cartItems.map((item, index) => (
-                    <li key={index}>
-                      {item.name} – ₺{item.price} ({item.size})
-                      <button onClick={() => {
-                        const updated = [...cartItems];
-                        updated.splice(index, 1);
-                        setCartItems(updated);
-                      }}>Sil</button>
+                    <li key={`${item.id}-${item.size}-${index}`}> {/* Benzersiz anahtar için index eklendi */}
+                      {item.name} – ₺{item.price} ({item.size}) - Adet: {item.quantity}
+                      <div className="quantity-control">
+                        <button onClick={() => handleUpdateQuantity(item, item.quantity - 1)}>-</button>
+                        <span>{item.quantity}</span>
+                        <button onClick={() => handleUpdateQuantity(item, item.quantity + 1)}>+</button>
+                      </div>
+                      <button onClick={() => handleRemoveFromCart(item)}>Sil</button>
                     </li>
                   ))}
                 </ul>
-                <p className="total">Toplam: ₺{totalPrice}</p>
-                <input type="text" placeholder="Adınız Soyadınız" ref={nameRef} required />
-                <input type="email" placeholder="E-posta adresiniz" ref={emailRef} required />
-                <button onClick={handleOrder}>Siparişi Tamamla</button>
+                <p className="total">Toplam: ₺{calculateTotal()}</p>
+                {/* Ödeme formuna geçiş için müşteri bilgileri */}
+                <div className="customer-info-form">
+                    <input type="text" placeholder="Adınız Soyadınız" ref={customerNameRef} required />
+                    <input type="email" placeholder="E-posta adresiniz" ref={customerEmailRef} required />
+                    <input type="text" placeholder="Adresiniz" ref={customerAddressRef} required />
+                    <input type="tel" placeholder="Telefon Numaranız" ref={customerPhoneRef} required />
+                </div>
+                <button onClick={handlePlaceOrder}>Siparişi Tamamla</button>
               </>
             )}
           </div>
         </>
       )}
 
-      {showPaymentModal && (
-        <div className="modal-backdrop" onClick={() => setShowPaymentModal(false)}>
-          <div className="order-confirmation" onClick={(e) => e.stopPropagation()}>
-            <h2>Ödeme Ekranı</h2>
-            <p>Şimdi ödeme için yönlendiriliyorsunuz...</p>
-            <a href="https://sandbox-merchant.iyzipay.com/checkoutform/initialize/sample" target="_blank" rel="noopener noreferrer">
-              <button>Ödeme Sayfasına Git</button>
-            </a>
-            <button onClick={() => setShowPaymentModal(false)}>Kapat</button>
+      {/* Kargo Takip Modal */}
+      {showTrackingModal && (
+        <div className="modal-backdrop" onClick={() => { setShowTrackingModal(false); setTrackingResult(null); setTrackingEmail(""); setTrackingOrderId(""); setTrackingError(""); }}>
+          <div
+            className="modal-content-base tracking-modal-content"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button className="close-modal" onClick={() => { setShowTrackingModal(false); setTrackingResult(null); setTrackingEmail(""); setTrackingOrderId(""); setTrackingError(""); }}>×</button>
+            <h2 className="text-xl mb-4 font-semibold">Kargo Takibi</h2>
+            {!trackingResult ? (
+              <>
+                <input
+                  type="email"
+                  placeholder="E-posta adresiniz"
+                  value={trackingEmail}
+                  onChange={(e) => setTrackingEmail(e.target.value)}
+                  required
+                />
+                <input
+                  type="text"
+                  placeholder="Sipariş Numaranız (ALC- ile başlayan)"
+                  value={trackingOrderId}
+                  onChange={(e) => setTrackingOrderId(e.target.value)}
+                  required
+                />
+                <button
+                  onClick={handleTrackingSearch}
+                  className="bg-black text-white py-2"
+                  disabled={loadingTracking}
+                >
+                  {loadingTracking ? "Sorgulanıyor..." : "Sorgula"}
+                </button>
+                {trackingError && <p className="text-red-500 mt-2">{trackingError}</p>}
+              </>
+            ) : (
+              <div className="mt-4 text-sm text-left">
+                <p><strong>Kargo Firması:</strong> {trackingResult.cargo_company}</p>
+                <p><strong>Takip Kodu:</strong> {trackingResult.tracking_code}</p>
+                <p><strong>Durum:</strong> {trackingResult.status}</p>
+                <a
+                  href={trackingResult.takipLinki}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600 underline mt-2 inline-block"
+                >
+                  Kargo Takip Sayfasına Git
+                </a>
+                <br />
+                <button
+                  onClick={() => setTrackingResult(null)}
+                  className="bg-gray-200 text-black py-2 mt-4"
+                >
+                  Yeni Sorgu
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}
 
+
+      {/* Ödeme Modalı (Sadece bilgilendirme, gerçek ödeme değil) */}
+      {showPaymentModal && (
+        <div className="modal-backdrop" onClick={() => setShowPaymentModal(false)}>
+          <div className="modal-content-base order-confirmation" onClick={(e) => e.stopPropagation()}>
+            <button className="close-modal" onClick={() => setShowPaymentModal(false)}>×</button>
+            <h2>Ödeme Ekranı Simülasyonu</h2>
+            <p>Gerçek bir ödeme entegrasyonu olmadığı için, ödeme sayfasına yönlendirme simüle ediliyor.</p>
+            <p>Şimdi aşağıdaki butona tıklayarak iyzipay'in örnek ödeme sayfasına gidebilirsiniz.</p>
+            <a href="https://sandbox-merchant.iyzipay.com/checkoutform/initialize/sample" target="_blank" rel="noopener noreferrer">
+              <button>İyzipay Ödeme Sayfasına Git</button>
+            </a>
+            <p className="mt-4">Ödeme tamamlandıktan sonra bu siteye geri dönebilirsiniz. Siparişiniz otomatik olarak işlenecektir.</p>
+          </div>
+        </div>
+      )}
+
+      {/* Başarılı Sipariş Modalı */}
       {showSuccessModal && (
         <div className="modal-backdrop" onClick={() => setShowSuccessModal(false)}>
-          <div className="order-confirmation" onClick={(e) => e.stopPropagation()}>
+          <div className="modal-content-base order-confirmation" onClick={(e) => e.stopPropagation()}>
+            <button className="close-modal" onClick={() => setShowSuccessModal(false)}>×</button>
             <h2>Teşekkürler!</h2>
             <p>Siparişiniz başarıyla alındı ve e-posta adresinize gönderildi.</p>
+            <p>Sipariş Numaranız: <strong>{JSON.parse(localStorage.getItem("orderInfo"))?.custom_order_id}</strong></p>
             <button onClick={() => setShowSuccessModal(false)}>Kapat</button>
           </div>
         </div>
       )}
 
+      {/* İade Formu Modalı */}
       {showReturnForm && (
         <div className="modal-backdrop" onClick={() => setShowReturnForm(false)}>
-          <div className="order-confirmation" onClick={(e) => e.stopPropagation()}>
+          <div className="modal-content-base order-confirmation" onClick={(e) => e.stopPropagation()}>
+            <button className="close-modal" onClick={() => setShowReturnForm(false)}>×</button>
             <h2>İade Talebi</h2>
-            <form onSubmit={handleReturnSubmit}>
+            <form onSubmit={sendReturnEmail}>
               <input type="text" name="name" placeholder="Ad Soyad" required />
               <input type="email" name="email" placeholder="E-posta" required />
-              <input type="text" name="order" placeholder="Sipariş Detayı" required />
+              <input type="text" name="order" placeholder="Sipariş Numarası veya Detayı" required />
               <textarea name="reason" placeholder="İade Sebebi" required />
               <button type="submit">Gönder</button>
             </form>
-            <button onClick={() => setShowReturnForm(false)}>Kapat</button>
           </div>
         </div>
       )}
 
+      {/* Ürün Detay Modalı */}
       {selectedProduct && (
         <div className="modal-backdrop" onClick={() => setSelectedProduct(null)}>
-          <div className="product-modal" onClick={(e) => e.stopPropagation()}>
-            <div className="product-image" />
+          <div className="modal-content-base product-modal" onClick={(e) => e.stopPropagation()}>
+            <button className="close-modal" onClick={() => setSelectedProduct(null)}>×</button>
+            <img src={selectedProduct.image} alt={selectedProduct.name} className="product-modal-image" />
             <div className="product-info">
               <h2>{selectedProduct.name}</h2>
-              <p className="desc">Bu ürün ALICCI koleksiyonunun zarif parçalarındandır.</p>
+              <p className="desc">{selectedProduct.description || "Bu ürün ALICCI koleksiyonunun zarif parçalarındandır."}</p> {/* Açıklama eklendi */}
               <div className="size-select">
                 <p>Beden Seç:</p>
                 {["S", "M", "L", "XL"].map((size) => (
@@ -271,14 +695,11 @@ export default function App() {
                   </button>
                 ))}
               </div>
-              <button onClick={() => {
-                if (selectedSize) {
-                  setCartItems([...cartItems, { ...selectedProduct, size: selectedSize }]);
-                  setSelectedProduct(null);
-                } else {
-                  alert("Lütfen beden seçin.");
-                }
-              }}>
+              <button
+                className="add-to-cart-btn"
+                onClick={handleAddToCart} // Fonksiyon çağrısı basitleştirildi
+                disabled={!selectedSize} // Beden seçilmeden sepete eklenemez
+              >
                 Sepete Ekle
               </button>
             </div>
