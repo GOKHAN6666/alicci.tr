@@ -1,168 +1,53 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
-}
+/* Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap');
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
-}
-
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
-}
-
-.card {
-  padding: 2em;
-}
-
-.read-the-docs {
-  color: #888;
-}
-.App {
-  font-family: 'Helvetica Neue', sans-serif;
-  padding: 40px;
-  background-color: #fafafa;
-}
-
-.site-title {
-  text-align: center;
-  font-size: 28px;
-  margin-bottom: 40px;
+/* Genel font yapısı */
+body {
+  font-family: 'Inter', sans-serif;
+  font-weight: 400;
+  line-height: 1.6;
   color: #111;
+  background-color: #fdfdfd;
+  margin: 0;
+  padding: 0;
 }
 
-.product-list {
-  display: flex;
-  justify-content: center;
-  gap: 40px;
-  flex-wrap: wrap;
+/* Başlıklar */
+h1 {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 600;
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
 }
 
-.product-card {
-  background: white;
-  border: 1px solid #e0e0e0;
-  padding: 20px;
-  width: 220px;
-  text-align: center;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: box-shadow 0.2s ease;
+h2 {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 500;
+  font-size: 2rem;
+  margin-bottom: 0.8rem;
 }
 
-.product-card:hover {
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+h3 {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 500;
+  font-size: 1.6rem;
+  margin-bottom: 0.6rem;
 }
 
-.product-card img {
-  width: 100%;
-  height: auto;
-  border-radius: 6px;
-  margin-bottom: 12px;
+/* Alt başlıklar */
+h4, h5, h6 {
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+  font-size: 1.1rem;
+  margin-bottom: 0.5rem;
+  color: #333;
 }
 
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.3);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.product-modal {
-  display: flex;
-  flex-direction: row;
-  background: #f8f8f8;
-  padding: 24px;
-  border-radius: 6px;
-  max-width: 700px;
-  width: 90%;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
-  gap: 24px;
-}
-
-.product-image img {
-  width: 300px;
-  height: auto;
-  border-radius: 6px;
-}
-
-.product-info {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-}
-
-.product-info h2 {
-  font-size: 22px;
-  margin-bottom: 8px;
-  color: #222;
-}
-
-.product-info .desc {
-  font-size: 15px;
-  color: #555;
-  margin-bottom: 16px;
-}
-
-.size-select {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 20px;
-}
-
-.size-select button {
-  background: #e0e0e0;
-  border: none;
-  padding: 10px 14px;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.size-select button.selected,
-.size-select button:hover {
-  background: #111;
-  color: white;
-}
-
-.add-to-cart-btn {
-  background-color: #111;
-  color: white;
-  border: none;
-  padding: 12px;
-  border-radius: 6px;
-  font-size: 16px;
-  cursor: pointer;
-  transition: background 0.3s ease;
-}
-
-.add-to-cart-btn:hover {
-  background-color: #333;
+/* Paragraflar */
+p {
+  font-family: 'Inter', sans-serif;
+  font-weight: 400;
+  font-size: 1rem;
+  margin-bottom: 1rem;
+  color: #444;
 }

@@ -11,9 +11,8 @@ export default function App() {
   const [orderModalOpen, setOrderModalOpen] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [showReturnForm, setShowReturnForm] = useState(false);
-  const [hasOrdered, setHasOrdered] = useState(() => {
-    return localStorage.getItem("hasOrdered") === "true";
-  });
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [hasOrdered, setHasOrdered] = useState(() => localStorage.getItem("hasOrdered") === "true");
 
   const aboutRef = useRef(null);
   const contactRef = useRef(null);
@@ -30,10 +29,31 @@ export default function App() {
 
   useEffect(() => {
     document.body.style.overflow =
-      selectedProduct || orderModalOpen || showPaymentModal || showReturnForm
+      selectedProduct || orderModalOpen || showPaymentModal || showReturnForm || showSuccessModal
         ? "hidden"
         : "";
-  }, [selectedProduct, orderModalOpen, showPaymentModal, showReturnForm]);
+  }, [selectedProduct, orderModalOpen, showPaymentModal, showReturnForm, showSuccessModal]);
+
+  useEffect(() => {
+    const query = new URLSearchParams(window.location.search);
+    const isSuccess = query.get("odeme") === "basarili";
+    const emailSent = localStorage.getItem("emailSent");
+
+    if (isSuccess && emailSent !== "true") {
+      const orderInfo = JSON.parse(localStorage.getItem("orderInfo"));
+      if (orderInfo) {
+        emailjs
+          .send("service_iyppib9", "template_ftuypl8", orderInfo, "5dI_FI0HT2oHrlQj5")
+          .then(() => {
+            localStorage.setItem("emailSent", "true");
+            setShowSuccessModal(true);
+          })
+          .catch((error) => {
+            console.error("Email gönderilemedi:", error);
+          });
+      }
+    }
+  }, []);
 
   const productsData = [
     { id: 1, name: "Ürün 1", price: 4950 },
@@ -49,25 +69,20 @@ export default function App() {
       return;
     }
 
-    const templateParams = {
+    const orderInfo = {
       name: nameRef.current.value,
       email: emailRef.current.value,
       items: cartItems.map((item) => `${item.name} (${item.size})`).join(", "),
       total: totalPrice,
     };
 
-    emailjs
-      .send("service_iyppib9", "template_ftuypl8", templateParams, "5dI_FI0HT2oHrlQj5")
-      .then(() => {
-        setCartItems([]);
-        setIsCartOpen(false);
-        setShowPaymentModal(true);
-        setHasOrdered(true);
-        localStorage.setItem("hasOrdered", "true"); // 🔐 Kalıcı olarak işaretle
-      })
-      .catch((error) => {
-        console.error("Email gönderilemedi:", error);
-      });
+    localStorage.setItem("orderInfo", JSON.stringify(orderInfo));
+    localStorage.setItem("hasOrdered", "true");
+    localStorage.setItem("emailSent", "false");
+    setCartItems([]);
+    setIsCartOpen(false);
+    setHasOrdered(true);
+    setShowPaymentModal(true);
   };
 
   const handleReturnSubmit = (e) => {
@@ -98,8 +113,7 @@ export default function App() {
         <nav>
           <h1>ALICCI</h1>
           <div className="hamburger" onClick={() => setMenuOpen(!menuOpen)}>
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none"
-              stroke="#111" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#111" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <line x1="3" y1="6" x2="21" y2="6" />
               <line x1="3" y1="12" x2="21" y2="12" />
               <line x1="3" y1="18" x2="21" y2="18" />
@@ -109,9 +123,7 @@ export default function App() {
             <li onClick={() => scrollToSection(productsRef)}>Koleksiyon</li>
             <li onClick={() => scrollToSection(aboutRef)}>Hakkımızda</li>
             <li onClick={() => scrollToSection(contactRef)}>İletişim</li>
-            {hasOrdered && (
-              <li onClick={() => setShowReturnForm(true)}>İade Talebi</li>
-            )}
+            {hasOrdered && <li onClick={() => setShowReturnForm(true)}>İade Talebi</li>}
             <div className="cart-button" onClick={() => setIsCartOpen(true)}>
               <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" stroke="#111" strokeWidth="1.5" fill="none">
                 <path d="M3 3h2l.4 2M7 13h13l-1.5 7H6L5 6H3" />
@@ -218,6 +230,16 @@ export default function App() {
         </div>
       )}
 
+      {showSuccessModal && (
+        <div className="modal-backdrop" onClick={() => setShowSuccessModal(false)}>
+          <div className="order-confirmation" onClick={(e) => e.stopPropagation()}>
+            <h2>Teşekkürler!</h2>
+            <p>Siparişiniz başarıyla alındı ve e-posta adresinize gönderildi.</p>
+            <button onClick={() => setShowSuccessModal(false)}>Kapat</button>
+          </div>
+        </div>
+      )}
+
       {showReturnForm && (
         <div className="modal-backdrop" onClick={() => setShowReturnForm(false)}>
           <div className="order-confirmation" onClick={(e) => e.stopPropagation()}>
@@ -244,25 +266,19 @@ export default function App() {
               <div className="size-select">
                 <p>Beden Seç:</p>
                 {["S", "M", "L", "XL"].map((size) => (
-                  <button
-                    key={size}
-                    className={selectedSize === size ? "selected" : ""}
-                    onClick={() => setSelectedSize(size)}
-                  >
+                  <button key={size} className={selectedSize === size ? "selected" : ""} onClick={() => setSelectedSize(size)}>
                     {size}
                   </button>
                 ))}
               </div>
-              <button
-                onClick={() => {
-                  if (selectedSize) {
-                    setCartItems([...cartItems, { ...selectedProduct, size: selectedSize }]);
-                    setSelectedProduct(null);
-                  } else {
-                    alert("Lütfen beden seçin.");
-                  }
-                }}
-              >
+              <button onClick={() => {
+                if (selectedSize) {
+                  setCartItems([...cartItems, { ...selectedProduct, size: selectedSize }]);
+                  setSelectedProduct(null);
+                } else {
+                  alert("Lütfen beden seçin.");
+                }
+              }}>
                 Sepete Ekle
               </button>
             </div>
