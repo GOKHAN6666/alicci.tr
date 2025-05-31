@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import emailjs from "emailjs-com";
+import emailjs from "emailjs-com"; // EmailJS'i dahil ettiğinizden emin olun
 import "./index.css"; // Ana stil dosyanızın yolu
 import AdminPanel from "./AdminPanel"; // AdminPanel bileşenini import et
 import { supabase } from "./supabaseClient"; // Supabase client'ı import et
@@ -11,7 +11,7 @@ export default function App() {
   const [selectedSize, setSelectedSize] = useState(null);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [showReturnForm, setShowReturnForm] = useState(false);
-  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false); // Sipariş sonrası başarı modalı
   // Sipariş geçmişini kontrol etmek için yerel depolamayı kullan (opsiyonel)
   const [hasOrdered, setHasOrdered] = useState(() => localStorage.getItem("hasOrdered") === "true");
 
@@ -44,7 +44,7 @@ export default function App() {
 
   // Admin şifresi (gerçek bir projede .env'den gelmeli veya daha güvenli yönetilmeli)
   // .env dosyanızda VITE_ADMIN_PASSWORD="sizin_admin_sifreniz" şeklinde tanımlı olmalı
-  const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD || "varsayilan_sifre";
+  const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD || "alicci123"; // Varsayılanı daha güvenli yapın veya .env kullanın
 
   // Sepet öğelerini localStorage'dan yükle (uygulama ilk yüklendiğinde)
   const [cartItems, setCartItems] = useState(() => {
@@ -405,23 +405,26 @@ export default function App() {
         </button>
       )}
 
-      {/* Navbar sadece modal veya sepet açık olmadığında görünsün. */}
-      {!(selectedProduct || isCartOpen || showPaymentModal || showReturnForm || showSuccessModal || showTrackingModal || showAdminLogin) && (
-        <nav>
-          <h1>ALICCI</h1>
-          <div className="hamburger" onClick={() => setMenuOpen(!menuOpen)}>
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#111" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="3" y1="6" x2="21" y2="6" />
-              <line x1="3" y1="12" x2="21" y2="12" />
-              <line x1="3" y1="18" x2="21" y2="18" />
-            </svg>
-          </div>
-          <ul className={menuOpen ? 'open' : ''}>
-            <li onClick={() => scrollToSection(productsRef)}>Koleksiyon</li>
-            <li onClick={() => scrollToSection(aboutRef)}>Hakkımızda</li>
-            <li onClick={() => scrollToSection(contactRef)}>İletişim</li>
-            {hasOrdered && <li onClick={() => setShowReturnForm(true)}>İade Talebi</li>}
-            <div className="cart-button" onClick={() => setIsCartOpen(true)}>
+      {/* Navbar */}
+      <nav>
+        <h1>ALICCI</h1>
+        <div className="hamburger" onClick={() => setMenuOpen(!menuOpen)}>
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#111" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="3" y1="6" x2="21" y2="6" />
+            <line x1="3" y1="12" x2="21" y2="12" />
+            <line x1="3" y1="18" x2="21" y2="18" />
+          </svg>
+        </div>
+        <ul className={menuOpen ? 'open' : ''}>
+          <li onClick={() => scrollToSection(productsRef)}>Koleksiyon</li>
+          <li onClick={() => scrollToSection(aboutRef)}>Hakkımızda</li>
+          <li onClick={() => scrollToSection(contactRef)}>İletişim</li>
+          {hasOrdered && <li onClick={() => { setShowReturnForm(true); setMenuOpen(false); }}>İade Talebi</li>}
+          <li onClick={() => { setShowTrackingModal(true); setMenuOpen(false); }}>Kargo Takibi</li>
+        </ul>
+        {/* Sepet işareti artık menü dışında, h1 ile birlikte sağa hizalı duracak */}
+        <div className="cart-button-wrapper">
+            <div className="cart-button" onClick={() => { setIsCartOpen(true); setMenuOpen(false); }}>
               <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" stroke="#111" strokeWidth="1.5" fill="none">
                 <path d="M3 3h2l.4 2M7 13h13l-1.5 7H6L5 6H3" />
                 <circle cx="9" cy="21" r="1" />
@@ -429,17 +432,8 @@ export default function App() {
               </svg>
               {cartItems.length > 0 && <div className="cart-count">{cartItems.length}</div>}
             </div>
-            <li>
-              <button
-                className="px-3 py-1 border border-black text-black bg-white hover:bg-black hover:text-white transition"
-                onClick={() => setShowTrackingModal(true)}
-              >
-                Kargo Takibi
-              </button>
-            </li>
-          </ul>
-        </nav>
-      )}
+        </div>
+      </nav>
 
       {/* Admin Giriş Modalı */}
       {showAdminLogin && (
@@ -534,10 +528,9 @@ export default function App() {
 
       {/* Sepet Paneli (Modal) */}
       {isCartOpen && (
-        <>
-          <div className="cart-overlay" onClick={() => setIsCartOpen(false)}></div>
-          <div className="cart-panel open">
-            <button className="close-modal" onClick={() => setIsCartOpen(false)}>×</button>
+        <div className="modal-backdrop" onClick={() => setIsCartOpen(false)}> {/* Sepet modalı için backdrop */}
+          <div className={`cart-panel ${isCartOpen ? 'open' : ''}`} onClick={(e) => e.stopPropagation()}>
+            <button className="close-modal" onClick={() => setIsCartOpen(false)}>×</button> {/* Sepet modalı için 'x' işareti */}
             <h3>Sepetiniz</h3>
             {cartItems.length === 0 ? (
               <p>Sepetiniz boş.</p>
@@ -545,15 +538,13 @@ export default function App() {
               <>
                 <ul>
                   {cartItems.map((item, index) => (
-                    <li key={`${item.id}-${item.size}-${index}`}> {/* Benzersiz anahtar için index eklendi */}
-                      {item.name} – ₺{item.price} ({item.size}) - Adet: {item.quantity}
-                      <div className="quantity-control">
-                        <button onClick={() => handleUpdateQuantity(item, item.quantity - 1)}>-</button>
-                        <span>{item.quantity}</span>
-                        <button onClick={() => handleUpdateQuantity(item, item.quantity + 1)}>+</button>
-                      </div>
-                      <button onClick={() => handleRemoveFromCart(item)}>Sil</button>
-                    </li>
+                    <li key={`${item.id}-${item.size}-${index}`}>
+                      <div className="item-details">
+                        <span>{item.name} – ₺{item.price.toFixed(2)} ({item.size})</span>
+                        <span className="item-quantity">Adet: {item.quantity}</span>
+                      </div>
+                      <button className="remove-item-button" onClick={() => handleRemoveFromCart(item)}>Sil</button>
+                    </li>
                   ))}
                 </ul>
                 <p className="total">Toplam: ₺{calculateTotal()}</p>
@@ -568,7 +559,7 @@ export default function App() {
               </>
             )}
           </div>
-        </>
+        </div>
       )}
 
       {/* Kargo Takip Modal */}
@@ -578,7 +569,7 @@ export default function App() {
             className="modal-content-base tracking-modal-content"
             onClick={(e) => e.stopPropagation()}
           >
-            <button className="close-modal" onClick={() => { setShowTrackingModal(false); setTrackingResult(null); setTrackingEmail(""); setTrackingOrderId(""); setTrackingError(""); }}>×</button>
+            <button className="close-modal" onClick={() => { setShowTrackingModal(false); setTrackingResult(null); setTrackingEmail(""); setTrackingOrderId(""); setTrackingError(""); }}>×</button> {/* Kargo takip modalı için 'x' işareti */}
             <h2 className="text-xl mb-4 font-semibold">Kargo Takibi</h2>
             {!trackingResult ? (
               <>
@@ -665,7 +656,7 @@ export default function App() {
       {showReturnForm && (
         <div className="modal-backdrop" onClick={() => setShowReturnForm(false)}>
           <div className="modal-content-base order-confirmation" onClick={(e) => e.stopPropagation()}>
-            <button className="close-modal" onClick={() => setShowReturnForm(false)}>×</button>
+            <button className="close-modal" onClick={() => setShowReturnForm(false)}>×</button> {/* İade formu modalı için 'x' işareti */}
             <h2>İade Talebi</h2>
             <form onSubmit={sendReturnEmail}>
               <input type="text" name="name" placeholder="Ad Soyad" required />
@@ -682,14 +673,18 @@ export default function App() {
       {selectedProduct && (
         <div className="modal-backdrop" onClick={() => setSelectedProduct(null)}>
           <div className="modal-content-base product-modal" onClick={(e) => e.stopPropagation()}>
-            <button className="close-modal" onClick={() => setSelectedProduct(null)}>×</button>
+            <button className="close-modal" onClick={() => setSelectedProduct(null)}>×</button> {/* Ürün detay modalı için 'x' işareti */}
             <img src={selectedProduct.image} alt={selectedProduct.name} className="product-modal-image" />
             <div className="product-info">
               <h2>{selectedProduct.name}</h2>
               <p className="desc">{selectedProduct.description || "Bu ürün ALICCI koleksiyonunun zarif parçalarındandır."}</p> {/* Açıklama eklendi */}
               <div className="size-select">
                 <p>Beden Seç:</p>
-                {["S", "M", "L", "XL"].map((size) => (
+                {/* Supabase'den gelen bedenler varsa onları kullan, yoksa varsayılanları */}
+                {(selectedProduct.sizes && selectedProduct.sizes.length > 0
+                  ? selectedProduct.sizes
+                  : ["S", "M", "L", "XL"]
+                ).map((size) => (
                   <button key={size} className={selectedSize === size ? "selected" : ""} onClick={() => setSelectedSize(size)}>
                     {size}
                   </button>

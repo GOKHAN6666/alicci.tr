@@ -1,4 +1,4 @@
-/* src/pages/Cart.css */
+/* src/pages/Cart.css - Sepet (Cart) Bileşenine Özgü Stiller */
 
 .cart-container {
     max-width: 800px;
@@ -41,6 +41,7 @@
     color: #666;
 }
 
+/* Error mesajı için genel style */
 .error-message {
     color: #e74c3c;
     font-weight: 500;

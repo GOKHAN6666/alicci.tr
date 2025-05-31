@@ -1,989 +1,1172 @@
+/* src/index.css - Uygulamanın Tüm Stillerini İçeren Birleşik CSS */
+
 /* Google Fonts */
 @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Inter:wght@300;400;500&display=swap');
 
 /* Reset ve Temel Ayarlar */
 * {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  /* user-select ve cursor default değerleri kullanıcı deneyimini olumsuz etkileyebilir.
-     Genellikle metin seçimine izin verilir ve imleç değişimi beklenir.
-     Eğer özel bir durum yoksa bu satırları kaldırabilirsiniz.
-  user-select: none;
-  cursor: default;
-  */
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
 
 body {
-  font-family: 'Inter', sans-serif;
-  font-weight: 400;
-  line-height: 1.6;
-  color: #111;
-  background-color: #fdfdfd;
-  overflow-x: hidden; /* Yatay kaydırmayı engeller */
+    font-family: 'Inter', sans-serif;
+    font-weight: 400;
+    line-height: 1.6;
+    color: #111;
+    background-color: #fdfdfd;
+    overflow-x: hidden; /* Yatay kaydırmayı engelle */
 }
 
-a {
-  color: inherit;
-  text-decoration: none;
-}
-
-/* Tipografi - Başlıklar */
+/* Ana başlıklar */
 h1 {
-  font-family: 'Cormorant Garamond', serif;
-  font-weight: 700;
-  font-size: 2.5rem;
-  margin-bottom: 1rem;
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 700;
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    text-align: center;
+    letter-spacing: 1px;
 }
 
 h2 {
-  font-family: 'Cormorant Garamond', serif;
-  font-weight: 600;
-  font-size: 2rem;
-  margin-bottom: 0.8rem;
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 600;
+    font-size: 2rem;
+    margin-bottom: 0.8rem;
 }
 
 h3 {
-  font-family: 'Cormorant Garamond', serif;
-  font-weight: 600;
-  font-size: 1.6rem;
-  margin-bottom: 0.6rem;
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 600;
+    font-size: 1.6rem;
+    margin-bottom: 0.6rem;
 }
 
+/* Alt başlıklar ve etiketler */
 h4, h5, h6 {
-  font-family: 'Inter', sans-serif;
-  font-weight: 500;
-  font-size: 1.1rem;
-  margin-bottom: 0.5rem;
-  color: #333;
-}
-
-/* Paragraflar ve Diğer Metin Öğeleri */
-p, span, label, small, li {
-  font-family: 'Inter', sans-serif;
-  font-weight: 400;
-  font-size: 1rem;
-  color: #444;
-}
-
-/* --- */
-
-/* Navbar */
-nav {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 20px 30px;
-  background-color: #fff;
-  border-bottom: 1px solid #eee;
-  position: sticky;
-  top: 0;
-  z-index: 20;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05); /* Hafif bir gölge eklendi */
-}
-
-nav h1 {
-  font-size: 28px;
-  font-weight: 600;
-  letter-spacing: 2px;
-}
-
-nav ul {
-  list-style: none;
-  display: flex;
-  align-items: center;
-  gap: 30px;
-}
-
-nav ul.open {
-  /* Hamburger menü açıldığında mobil için stil */
-  display: flex;
-  flex-direction: column; /* Mobil için dikey sıralama */
-  position: absolute;
-  top: 60px; /* Navbar yüksekliğine göre ayarla */
-  right: 0;
-  width: 100%;
-  background-color: #fff;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-  padding: 20px 0;
-  gap: 15px;
-}
-
-nav li {
-  font-size: 16px;
-  cursor: pointer;
-  transition: opacity 0.3s ease;
-}
-
-nav li:hover {
-  opacity: 0.7;
-}
-
-.hamburger {
-  display: none; /* Varsayılan olarak gizli */
-  cursor: pointer;
-}
-
-.cart-button {
-  position: relative;
-  cursor: pointer;
-}
-
-.cart-count {
-  position: absolute;
-  top: -6px;
-  right: -10px;
-  background-color: #111;
-  color: #fff;
-  font-size: 12px;
-  padding: 2px 6px;
-  border-radius: 50%;
-  min-width: 18px; /* Sayı tek basamaklıyken de daire kalması için */
-  text-align: center;
-}
-
-/* --- */
-
-/* Hero Section */
-.hero {
-  text-align: center;
-  padding: 100px 20px; /* Daha fazla padding */
-  background-color: #f1f1f1;
-  /* Örnek Arka Plan Görseli - Kendi görsel yolunuzu kullanın */
-  /* background-image: url('/images/hero-bg.jpg'); */
-  /* background-size: cover; */
-  /* background-position: center; */
-  /* background-repeat: no-repeat; */
-  /* color: #fff; */ /* Eğer arka plan koyu ise metin rengini beyaz yapın */
-}
-
-.hero h2 {
-  font-size: 38px; /* Daha büyük başlık */
-  margin-bottom: 15px;
-  font-weight: 700;
-}
-
-.hero p {
-  font-size: 19px;
-  margin-bottom: 30px;
-  max-width: 700px;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-.hero button {
-  padding: 12px 28px; /* Daha büyük buton */
-  background-color: #111;
-  color: #fff;
-  border: none;
-  font-size: 16px;
-  cursor: pointer;
-  transition: background-color 0.3s ease, transform 0.2s ease;
-  border-radius: 4px;
-}
-
-.hero button:hover {
-  background-color: #333;
-  transform: translateY(-2px);
-}
-
-/* --- */
-
-/* Products Section */
-.products {
-  padding: 80px 20px; /* Daha fazla padding */
-  text-align: center;
-}
-
-.products h3 {
-  font-size: 28px;
-  margin-bottom: 40px; /* Daha fazla boşluk */
-  font-weight: 600;
-}
-
-.products-grid {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 30px; /* Daha fazla boşluk */
-}
-
-.product-card {
-  width: 280px; /* Sabit genişlik */
-  background: #fff;
-  border: 1px solid #eee;
-  padding: 15px; /* İç boşluk arttırıldı */
-  cursor: pointer;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  border-radius: 8px; /* Hafif yuvarlak köşeler */
-  box-shadow: 0 4px 12px rgba(0,0,0,0.05); /* Hafif gölge */
-  display: flex; /* İçeriği dikey ortalamak için */
-  flex-direction: column;
-  justify-content: space-between;
-}
-
-.product-card:hover {
-  transform: translateY(-8px); /* Daha belirgin hover efekti */
-  box-shadow: 0 8px 20px rgba(0,0,0,0.1);
-}
-
-/* `App.jsx`'teki `<img>` etiketine uygun stil */
-.product-card-image {
-  width: 100%;
-  height: 250px; /* Kart içindeki resim yüksekliği */
-  object-fit: cover; /* Resmin kutuya sığmasını sağlar */
-  border-radius: 6px; /* Kartın köşelerinden biraz daha az yuvarlak */
-  margin-bottom: 15px;
-}
-
-.product-card .info h4 {
-  font-size: 18px; /* Daha büyük yazı */
-  font-weight: 500;
-  margin-bottom: 5px;
-  color: #111;
-}
-
-.product-card .info p {
-  font-size: 16px;
-  color: #666;
-}
-
-/* --- */
-
-/* About Section */
-.about {
-  padding: 80px 20px;
-  text-align: center;
-  background-color: #f9f9f9;
-}
-
-.about h3 {
-  font-size: 28px;
-  margin-bottom: 25px;
-  font-weight: 600;
-}
-
-.about p {
-  max-width: 700px;
-  margin: 0 auto 20px;
-  font-size: 17px;
-  color: #333;
-}
-
-/* --- */
-
-/* Contact Section */
-.contact {
-  padding: 80px 20px;
-  background-color: #f1f1f1;
-  text-align: center;
-}
-
-.contact h3 {
-  font-size: 28px;
-  margin-bottom: 30px;
-  font-weight: 600;
-}
-
-.contact form {
-  max-width: 550px;
-  margin: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 18px; /* Daha fazla boşluk */
-}
-
-.contact input,
-.contact textarea {
-  padding: 14px; /* Daha fazla padding */
-  border: 1px solid #ccc;
-  font-family: inherit;
-  font-size: 16px;
-  resize: vertical; /* Sadece dikeyde boyutlandırma */
-  border-radius: 4px;
-}
-
-.contact textarea {
-  min-height: 120px; /* Minimum yükseklik */
-}
-
-.contact button {
-  padding: 14px;
-  background-color: #111;
-  color: white;
-  border: none;
-  cursor: pointer;
-  font-size: 17px;
-  transition: background-color 0.3s ease;
-  border-radius: 4px;
-}
-
-.contact button:hover {
-  background-color: #333;
-}
-
-/* --- */
-
-/* Footer */
-footer {
-  text-align: center;
-  padding: 40px 10px; /* Daha fazla padding */
-  background-color: #fff;
-  font-size: 14px;
-  color: #888;
-  border-top: 1px solid #eee;
-}
-
-footer .instagram {
-  margin-top: 15px;
-}
-
-footer .instagram a {
-  transition: color 0.3s ease;
-}
-
-footer .instagram a:hover {
-  color: #333;
-}
-
-/* --- */
-
-/* Ortak Modal Stillleri (Tüm modallar için temel) */
-.modal-backdrop {
-  position: fixed;
-  inset: 0; /* top, right, bottom, left: 0 */
-  background-color: rgba(0, 0, 0, 0.5); /* Yarı şeffaf koyu arka plan */
-  backdrop-filter: blur(6px); /* Arka planı bulanıklaştırma */
-  z-index: 1000; /* En üstte görünmesini sağlar */
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  animation: fadeIn 0.3s ease-out forwards;
-}
-
-.modal-content-base {
-  background: white;
-  padding: 32px;
-  border-radius: 8px; /* Hafif yuvarlak köşeler */
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2); /* Daha belirgin gölge */
-  position: relative;
-  max-height: 90vh; /* Ekran yüksekliğine sığması için */
-  overflow-y: auto; /* İçerik taşarsa kaydırma çubuğu */
-  animation: scaleIn 0.3s ease-out forwards;
-}
-
-.close-modal {
-  position: absolute;
-  top: 15px;
-  right: 15px;
-  background: none;
-  border: none;
-  font-size: 28px;
-  color: #555;
-  cursor: pointer;
-  line-height: 1; /* Tek satırda kalması için */
-  padding: 5px; /* Tıklama alanı büyütüldü */
-  transition: color 0.3s ease;
-}
-
-.close-modal:hover {
-  color: #111;
-}
-
-/* --- */
-
-/* Ürün Detay Modalı */
-.product-modal {
-  display: flex;
-  flex-direction: column; /* Mobil için dikey sıralama */
-  width: 90%;
-  max-width: 450px; /* Tek sütun modunda maksimum genişlik */
-}
-
-/* Ürün Detay Modalı - Resim */
-.product-modal-image {
-  width: 100%;
-  height: 320px;
-  object-fit: cover;
-  border-radius: 6px;
-  margin-bottom: 20px;
-}
-
-.product-info h2 {
-  font-size: 24px;
-  margin-bottom: 10px;
-  color: #111;
-  text-align: center; /* Ortalandı */
-}
-
-.product-info .desc {
-  font-size: 15px;
-  color: #555;
-  margin-bottom: 20px;
-  line-height: 1.6;
-  text-align: center; /* Ortalandı */
-}
-
-.size-select {
-  display: flex;
-  flex-wrap: wrap; /* Küçük ekranlarda sığmazsa alt satıra geçsin */
-  gap: 10px;
-  margin-bottom: 25px;
-  justify-content: center; /* Ortalandı */
-}
-
-.size-select p {
-  width: 100%; /* Metni butondan ayır */
-  margin-bottom: 8px;
-  font-size: 15px;
-  color: #333;
-  text-align: center; /* Ortalandı */
-}
-
-.size-select button {
-  background: #f0f0f0;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  padding: 10px 18px;
-  font-size: 15px;
-  color: #111;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.size-select button.selected {
-  background: #111;
-  color: #fff;
-  border-color: #111;
-}
-
-.size-select button:hover {
-  background: #e0e0e0;
-}
-
-.add-to-cart-btn {
-  background-color: #111;
-  color: white;
-  border: none;
-  padding: 14px;
-  border-radius: 6px;
-  font-size: 17px;
-  cursor: pointer;
-  transition: background 0.3s ease;
-  width: 100%; /* Tam genişlik */
-}
-
-.add-to-cart-btn:hover {
-  background-color: #333;
-}
-
-/* --- */
-
-/* Sepet Paneli */
-.cart-overlay {
-  position: fixed;
-  inset: 0;
-  background-color: rgba(0, 0, 0, 0.4);
-  backdrop-filter: blur(4px);
-  z-index: 999; /* Modallardan bir tık altta */
-  animation: fadeIn 0.3s ease-out forwards;
-}
-
-.cart-panel {
-  position: fixed;
-  top: 0;
-  right: -380px; /* Başlangıçta ekran dışında */
-  width: 360px; /* Sepet genişliği */
-  height: 100%;
-  background: #fff;
-  padding: 25px;
-  z-index: 1000;
-  box-shadow: -6px 0 20px rgba(0,0,0,0.15);
-  transition: right 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94); /* Daha akıcı animasyon */
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-}
-
-.cart-panel.open {
-  right: 0; /* Açıldığında ekrana gelsin */
-}
-
-.cart-panel h3 {
-  font-size: 22px;
-  margin-bottom: 20px;
-  text-align: center;
-}
-
-.cart-panel ul {
-  list-style: none;
-  padding: 0;
-  flex-grow: 1; /* Listeyi uzatır, butonları alta iter */
-}
-
-.cart-panel li {
-  background: #f8f8f8;
-  border-radius: 6px;
-  padding: 14px;
-  margin-bottom: 12px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 15px;
-  color: #333;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.03);
-}
-
-.cart-panel li button {
-  background: none;
-  border: none;
-  color: #999;
-  cursor: pointer;
-  font-size: 18px; /* Silme butonu daha büyük */
-  transition: color 0.2s ease;
-  padding: 5px;
-}
-
-.cart-panel li button:hover {
-  color: #d00;
-}
-
-.total {
-  font-weight: 600;
-  margin-top: 25px;
-  font-size: 18px;
-  text-align: right;
-  color: #111;
-}
-
-.cart-panel input {
-  width: 100%;
-  margin-top: 15px;
-  padding: 12px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  background: #fdfdfd;
-  font-size: 15px;
-}
-
-.cart-panel button {
-  background: #111;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  padding: 14px;
-  font-size: 16px;
-  cursor: pointer;
-  transition: background 0.3s ease;
-  width: 100%;
-  margin-top: 15px;
-}
-
-.cart-panel button:hover {
-  background: #333;
-}
-
-/* --- */
-
-/* Kargo Takip, Ödeme ve İade Modalları (Ortak Modal Stili Üzerine) */
-.tracking-modal-content {
-  width: 90%;
-  max-width: 400px;
-  text-align: center;
-}
-
-.tracking-modal-content h2 {
-  font-size: 22px;
-  margin-bottom: 20px;
-  color: #111;
-}
-
-.tracking-modal-content input {
-  width: 100%;
-  padding: 12px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  margin-bottom: 15px;
-  font-size: 15px;
-  background: #fdfdfd;
-}
-
-.tracking-modal-content button {
-  background: #111;
-  color: white;
-  border: none;
-  padding: 12px;
-  border-radius: 6px;
-  font-size: 16px;
-  cursor: pointer;
-  transition: background 0.3s ease;
-  width: 100%;
-  margin-top: 10px;
-}
-
-.tracking-modal-content button:hover {
-  background: #333;
-}
-
-.tracking-modal-content p {
-  margin-top: 10px;
-  font-size: 15px;
-  color: #333;
-}
-
-.tracking-modal-content .text-red-500 { /* Hata mesajı için */
-  color: #dc2626;
-  font-size: 14px;
-  margin-top: 10px;
-}
-
-.tracking-modal-content .text-blue-600 { /* Link rengi */
-  color: #2563eb;
-  transition: color 0.3s ease;
-}
-
-.tracking-modal-content .text-blue-600:hover {
-  color: #1d4ed8;
-}
-
-.order-confirmation {
-  width: 90%;
-  max-width: 450px;
-  text-align: center;
-}
-
-.order-confirmation h2 {
-  font-size: 24px;
-  margin-bottom: 20px;
-  color: #111;
-}
-
-.order-confirmation p {
-  font-size: 16px;
-  margin-bottom: 25px;
-  color: #555;
-}
-
-.order-confirmation button {
-  background: #111;
-  color: white;
-  border: none;
-  padding: 14px;
-  border-radius: 6px;
-  font-size: 17px;
-  cursor: pointer;
-  transition: background 0.3s ease;
-  width: 100%;
-  margin-top: 10px;
-}
-
-.order-confirmation button:hover {
-  background: #333;
-}
-
-.order-confirmation form {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-}
-
-.order-confirmation input,
-.order-confirmation textarea {
-  padding: 12px;
-  border: 1px solid #ccc;
-  background: #fdfdfd;
-  font-size: 15px;
-  font-family: inherit;
-  border-radius: 6px;
-  resize: vertical;
-  min-height: 60px;
-}
-
-/* --- */
-
-/* Animasyonlar (Tekrar eden animasyon tanımları temizlendi) */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes scaleIn {
-  from {
-    transform: scale(0.95);
-    opacity: 0;
-  }
-  to {
-    transform: scale(1);
-    opacity: 1;
-  }
-}
-
-/* --- */
-
-/* Responsive Tasarım */
-@media (max-width: 768px) {
-  nav {
-    padding: 15px 20px;
-  }
-
-  nav ul {
-    display: none; /* Mobil cihazlarda menü gizli */
-    flex-direction: column;
-    position: absolute;
-    top: 60px;
-    left: 0;
-    width: 100%;
-    background-color: #fff;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    padding: 20px 0;
-    gap: 15px;
-    align-items: center;
-  }
-
-  nav ul.open {
-    display: flex; /* Hamburger menü açıkken göster */
-  }
-
-  .hamburger {
-    display: block; /* Hamburger ikonu gösterilir */
-  }
-
-  .hero {
-    padding: 60px 15px;
-  }
-
-  .hero h2 {
-    font-size: 32px;
-  }
-
-  .hero p {
-    font-size: 17px;
-  }
-
-  .products {
-    padding: 50px 15px;
-  }
-
-  .products h3 {
-    font-size: 24px;
-  }
-
-  .product-card {
-    width: 100%; /* Mobil cihazlarda tam genişlik */
-    max-width: 300px; /* Daha küçük ekranlarda daha uygun */
-  }
-
-  .product-card-image {
-    height: 220px; /* Resim yüksekliği mobil için */
-  }
-
-  .about, .contact {
-    padding: 50px 15px;
-  }
-
-  .contact form {
-    padding: 0 10px;
-  }
-
-  .product-modal {
-    flex-direction: column; /* Mobil için dikey */
-    max-width: 350px;
-    padding: 20px;
-    gap: 15px;
-  }
-
-  .product-modal-image {
-    height: 250px;
-    margin-bottom: 15px;
-  }
-
-  .cart-panel {
-    width: 100%; /* Mobil cihazlarda tam genişlik */
-    right: -100%; /* Başlangıçta ekran dışında */
-  }
-
-  .cart-panel.open {
-    right: 0;
-  }
-}
-
-@media (min-width: 769px) {
-  /* Ürün modalı geniş ekranlar için iki sütunlu yapı */
-  .product-modal {
-    flex-direction: row; /* Geniş ekranlarda yatay sıralama */
-    max-width: 750px; /* Geniş ekranlarda maksimum genişlik */
-    padding: 30px;
-  }
-
-  .product-modal-image {
-    flex: 1; /* Resim alanı esnek */
-    height: 380px; /* Resim yüksekliği arttırıldı */
-    margin-bottom: 0; /* Eğer flex direction row ise alttan boşluk kaldırılır */
-    margin-right: 30px; /* Resmin sağından boşluk */
-  }
-
-  .product-info {
-    flex: 1; /* Bilgi alanı esnek */
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between; /* Butonları alta itmek için */
-  }
-
-  .product-info h2, .product-info .desc, .size-select p {
-    text-align: left; /* Geniş ekranlarda sola hizala */
-  }
-
-  .size-select {
-    justify-content: flex-start; /* Sola hizala */
-  }
-}
-/* Admin Panel Styeles */
-.admin-panel-container {
-    padding: 40px 20px;
-    max-width: 1200px;
-    margin: 0 auto;
-    font-family: 'Arial', sans-serif;
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
     color: #333;
 }
 
-.admin-panel-title {
-    text-align: center;
-    margin-bottom: 40px;
-    font-size: 2.5em;
+/* Paragraflar ve açıklamalar */
+p, span, label, small, li {
+    font-family: 'Inter', sans-serif;
+    font-weight: 400;
+    font-size: 1rem;
+    color: #444;
+}
+
+a {
+    color: inherit;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+button {
+    cursor: pointer;
+}
+
+ul {
+    list-style: none;
+}
+
+/* App.css'ten gelen genel stil */
+.app {
+    padding: 40px;
+    background-color: #f8f8f8;
     color: #111;
 }
 
-.admin-section {
-    background-color: #f9f9f9;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    padding: 25px;
+/* Navbar */
+nav {
+    display: flex;
+    justify-content: space-between; /* ALICCI ve sepet ikonunu kenarlara it, menü ortaya gelsin */
+    align-items: center;
+    padding: 20px 30px;
+    background-color: #fff;
+    border-bottom: 1px solid #eee;
+    position: sticky;
+    top: 0;
+    z-index: 20;
+}
+
+nav h1 {
+    font-size: 28px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-align: left;
+    margin-bottom: 0;
+}
+
+nav ul {
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 30px;
+    justify-content: center; /* Navbar yazıları ortala */
+    flex-grow: 1; /* Navbar'ın ortasında yer kaplaması için */
+    padding: 0;
+    margin: 0;
+}
+
+nav ul.open {
+    display: flex;
+}
+
+nav li {
+    font-size: 16px;
+    cursor: pointer;
+}
+
+nav li:hover {
+    opacity: 0.6;
+}
+
+.hamburger {
+    display: none;
+    cursor: pointer;
+}
+
+.cart-button-wrapper {
+    /* Navbar'daki flexbox sayesinde otomatik sağda olacaktır, ek margin gerekmez */
+}
+
+.cart-button {
+    position: relative;
+    cursor: pointer;
+}
+
+.cart-count {
+    position: absolute;
+    top: -6px;
+    right: -10px;
+    background-color: #111;
+    color: #fff;
+    font-size: 12px;
+    padding: 2px 6px;
+    border-radius: 50%;
+}
+
+/* Hero */
+.hero {
+    text-align: center;
+    padding: 80px 20px;
+    background-color: #f1f1f1;
+}
+
+.hero h2 {
+    font-size: 32px;
+    margin-bottom: 10px;
+}
+
+.hero p {
+    font-size: 18px;
+    margin-bottom: 20px;
+}
+
+.hero button {
+    padding: 10px 24px;
+    background-color: #111;
+    color: #fff;
+    border: none;
+    font-size: 15px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.hero button:hover {
+    background-color: #333;
+}
+
+/* Ürünler */
+.products {
+    padding: 60px 20px;
+    text-align: center;
+}
+
+.products h3 {
+    font-size: 24px;
     margin-bottom: 30px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+}
+
+.products-grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 24px;
+    padding: 20px 0;
+}
+
+.product-card {
+    width: 280px;
+    height: 280px;
+    background: #f6f6f6;
+    border: none;
+    border-radius: 0;
+    padding: 10px;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
+}
+
+.product-card:hover {
+    transform: scale(1.02);
+    transition: 0.3s ease;
+}
+
+.product-card .image {
+    width: 100%;
+    height: 70%;
+    background-color: #ddd;
+    margin-bottom: 10px;
+    border-radius: 0;
+}
+
+.product-card img {
+    width: 100%;
+    border-radius: 12px;
+    margin-bottom: 12px;
+}
+
+.product-card .info h4 {
+    font-size: 16px;
+    font-weight: 500;
+}
+
+.product-card .info p {
+    font-size: 15px;
+    color: #666;
+}
+
+/* Genel Modal Stilleri */
+.modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(5px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-content-base {
+    background: white;
+    padding: 30px;
+    border-radius: 8px; /* Genel modal içeriğinin köşeleri yuvarlak kalabilir */
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    position: relative;
+    max-width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    text-align: center;
+    animation: fadeInScale 0.3s ease-out;
+}
+
+/* Modalların Açılış Animasyonu */
+@keyframes fadeInScale {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* Kapatma Butonu (Genel - X işareti, tüm modallar için sade, şık, kare, köşesiz) */
+.close-modal {
+    position: absolute;
+    top: 15px;
+    right: 15px; /* Sağ üste taşıdık */
+    background: none;
+    border: none; /* Kenarlık yok */
+    font-size: 1.5rem; /* Boyutu ayarlayın */
+    width: 30px; /* Sabit genişlik */
+    height: 30px; /* Sabit yükseklik */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    color: #333; /* Koyu gri renk */
+    transition: color 0.2s ease; /* Sadece renk geçişi */
+    font-weight: normal; /* "X" karakterinin kalınlığını kontrol eder, normal bırakalım */
+    line-height: 1; /* Dikey hizalama */
+    padding: 0; /* İç dolgu yok */
+}
+
+.close-modal:hover {
+    color: #000; /* Hover'da daha koyu */
+}
+
+
+/* Ürün Detay Modalı Özel Stilleri */
+.product-modal {
+    background: #f8f8f8;
+    padding: 24px;
+    width: 90%;
+    max-width: 700px;
+    text-align: left;
+    border-radius: 6px;
+    animation: scaleIn 0.3s ease;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+    display: flex;
+    flex-direction: row;
+    gap: 24px;
+}
+
+.product-modal .product-image {
+    height: 300px;
+    background: #ccc;
+    flex: 1;
+    border-radius: 6px;
+    margin-bottom: 0;
+}
+
+.product-modal .product-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.product-modal .product-info h2 {
+    font-size: 22px;
+    margin-bottom: 8px;
+    color: #222;
+}
+
+.product-modal .product-info .desc {
+    font-size: 14px;
+    color: #555;
+    margin-bottom: 16px;
+    line-height: 1.6;
+}
+
+.product-modal .size-select {
+    margin-bottom: 20px;
+    display: flex;
+    gap: 8px;
+}
+
+.product-modal .size-select p {
+    font-weight: bold;
+    margin-bottom: 10px;
+    color: #333;
+}
+
+.product-modal .size-select button {
+    background: #e0e0e0;
+    border: none;
+    padding: 10px 14px;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    font-size: 0.95rem;
+    margin: 0;
+}
+
+.product-modal .size-select button.selected,
+.product-modal .size-select button:hover {
+    background: #ccc;
+    color: #000;
+}
+
+.product-modal .size-select button.selected {
+    background-color: #000;
+    color: white;
+    border-color: #000;
+}
+
+.product-modal .add-to-cart-btn {
+    background: #111;
+    color: white;
+    padding: 12px;
+    font-size: 1.1rem;
+    width: 100%;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+    margin-top: 25px;
+}
+
+.product-modal .add-to-cart-btn:hover:not(:disabled) {
+    background-color: #333;
+}
+
+.product-modal .add-to-cart-btn:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+/* Animasyonlar */
+@keyframes scaleIn {
+    from {
+        transform: scale(0.92);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* --- SEPET PANELİ (CART) STİLLERİ BAŞLANGICI --- */
+
+.cart-panel {
+    position: fixed;
+    top: 0;
+    right: -340px; /* Başlangıçta gizli ve sağdan dışarıda */
+    width: 340px; /* Panel genişliği */
+    height: 100%;
+    background: #f4f4f4;
+    padding: 24px;
+    box-shadow: -4px 0 12px rgba(0, 0, 0, 0.1);
+    overflow-y: auto;
+    z-index: 999;
+    display: flex;
+    flex-direction: column;
+    border-radius: 0;
+    transition: right 0.3s ease-out; /* Animasyon geçişi */
+}
+
+.cart-panel.open {
+    right: 0; /* Sepet açıldığında sağdan içeri kaydır */
+}
+
+.cart-panel .close-modal { /* Sepet içindeki kapatma X'i için konumlandırma */
+    top: 15px;
+    right: 15px; /* Sağ üstte olsun */
+}
+
+.cart-panel h3 {
+    font-size: 20px;
+    margin-bottom: 20px;
+    margin-top: 50px; /* X butonunun altına gelmesi için */
+}
+
+.cart-panel ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.cart-panel li {
+    background: #e6e6e6;
+    border-radius: 0;
+    padding: 12px;
+    margin-bottom: 10px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between; /* İçerik ve sil butonu arasında boşluk */
+    align-items: center;
+    font-size: 14px;
+    color: #333;
+}
+
+/* Sepet Panelindeki ürün bilgisi */
+.cart-panel li .item-info {
+    display: flex;
+    flex-direction: column; /* Ürün adı ve adet/fiyat alt alta */
+    flex-grow: 1; /* Boş alanı doldurması için */
+}
+
+.cart-panel li .item-info span {
+    font-size: 14px;
+    color: #333;
+}
+
+.cart-panel li .item-info small {
+    font-size: 12px;
+    color: #666;
+}
+
+/* Sepet Panelindeki Sil Butonu (eski '+' '-' ve 'x' yerine) */
+.cart-panel li button.remove-item-btn { /* Sadece bu butonu hedefle */
+    background: none;
+    border: none;
+    color: #666; /* Gri renk */
+    cursor: pointer;
+    font-size: 14px; /* Yazı boyutu */
+    font-weight: 500; /* Biraz kalın */
+    padding: 5px 10px; /* İç dolgu */
+    margin-left: 10px;
+    transition: color 0.2s ease;
+}
+
+.cart-panel li button.remove-item-btn:hover {
+    color: #ff0000; /* Hover'da kırmızıya dönsün */
+}
+
+.cart-panel .total {
+    font-weight: bold;
+    margin: 20px 0 16px;
+    font-size: 16px;
+    text-align: right;
+    color: #111;
+}
+
+.cart-panel input {
+    width: 100%;
+    margin-bottom: 12px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 0;
+    background: #fdfdfd;
+    font-size: 14px;
+}
+
+.cart-panel button {
+    background: #111;
+    color: white;
+    border: none;
+    border-radius: 0;
+    padding: 12px;
+    font-size: 15px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.cart-panel button:hover {
+    background: #333;
+}
+
+/* --- ADMIN PANEL STİLLERİ BAŞLIYOR (Değişiklik yok) --- */
+.admin-panel-container {
+    max-width: 1000px;
+    margin: 50px auto;
+    padding: 30px;
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.admin-panel-container h1 {
+    text-align: center;
+    color: #2c3e50;
+    margin-bottom: 40px;
+    font-size: 2.5em;
+    font-weight: 700;
+    border-bottom: 2px solid #eee;
+    padding-bottom: 20px;
+}
+
+.admin-section {
+    margin-bottom: 40px;
+    padding: 25px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    background-color: #fcfcfc;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
 .admin-section h2 {
+    color: #34495e;
+    margin-bottom: 25px;
     font-size: 1.8em;
-    margin-bottom: 20px;
-    color: #333;
-    border-bottom: 2px solid #eee;
+    border-bottom: 1px solid #f0f0f0;
     padding-bottom: 10px;
 }
 
-.admin-section h3 {
-    font-size: 1.4em;
-    margin-top: 30px;
+/* Form Elemanları Ortak Stilleri */
+.add-product-form input,
+.add-cargo-form input,
+.order-item select {
+    width: calc(100% - 20px);
+    padding: 12px;
     margin-bottom: 15px;
-    color: #555;
-}
-
-.add-product-form,
-.add-cargo-form {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 15px;
-    margin-bottom: 25px;
-}
-
-.admin-section input[type="text"],
-.admin-section input[type="number"],
-.admin-section input[type="email"],
-.admin-section select {
-    padding: 10px 15px;
     border: 1px solid #ccc;
     border-radius: 5px;
     font-size: 1em;
-    width: 100%; /* Ensure inputs take full width of their grid column */
-    box-sizing: border-box; /* Include padding in element's total width */
+    transition: border-color 0.3s ease;
+}
+
+.add-product-form input:focus,
+.add-cargo-form input:focus,
+.order-item select:focus {
+    border-color: #3498db;
+    outline: none;
 }
 
 .admin-section button {
-    background-color: #007bff;
+    background-color: #3498db;
     color: white;
-    padding: 10px 20px;
+    padding: 12px 25px;
     border: none;
     border-radius: 5px;
     cursor: pointer;
-    font-size: 1em;
+    font-size: 1.1em;
     transition: background-color 0.3s ease;
 }
 
 .admin-section button:hover {
-    background-color: #0056b3;
+    background-color: #2980b9;
 }
 
-.product-list,
-.order-list,
-.cargo-list {
+/* Ürün Listesi */
+.product-list {
     list-style: none;
     padding: 0;
+    margin-top: 20px;
 }
 
-.product-item,
-.order-item,
-.cargo-item {
-    background-color: #fff;
-    border: 1px solid #eee;
-    border-radius: 6px;
-    padding: 15px;
-    margin-bottom: 10px;
+.product-item {
     display: flex;
     align-items: center;
+    padding: 15px;
+    border-bottom: 1px solid #eee;
     justify-content: space-between;
-    flex-wrap: wrap; /* Allows items to wrap on smaller screens */
 }
 
-.product-item span,
-.product-item button {
-    margin-left: 15px;
+.product-item:last-child {
+    border-bottom: none;
 }
 
-.product-thumb {
+.product-item img.product-thumb {
     width: 60px;
     height: 60px;
     object-fit: cover;
-    border-radius: 4px;
+    border-radius: 5px;
     margin-right: 15px;
+    border: 1px solid #ddd;
 }
 
-.order-item .order-details,
-.cargo-item {
+.product-item span {
     flex-grow: 1;
-    margin-right: 15px;
+    font-size: 1.1em;
+    color: #555;
+    font-weight: 500;
 }
 
-.order-item ul {
-    list-style: disc;
-    margin-left: 20px;
-    margin-top: 5px;
+.product-item button {
+    background-color: #e74c3c;
+    margin-left: 10px;
+    padding: 8px 15px;
     font-size: 0.9em;
 }
 
+.product-item button:hover {
+    background-color: #c0392b;
+}
+
+/* Sipariş Listesi */
+.order-list {
+    list-style: none;
+    padding: 0;
+    margin-top: 20px;
+}
+
+.order-item {
+    background-color: #ffffff;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    box-shadow: 0 1px 5px rgba(0, 0, 0, 0.02);
+}
+
+.order-details {
+    flex-grow: 1;
+    margin-right: 20px;
+}
+
+.order-details strong {
+    color: #2c3e50;
+    font-weight: 600;
+}
+
+.order-details ul {
+    margin-top: 10px;
+    margin-left: 20px;
+    font-size: 0.95em;
+    color: #666;
+    list-style: disc;
+}
+
+.order-details ul li {
+    margin-bottom: 5px;
+}
+
 .order-item select {
-    padding: 5px 8px;
-    margin-left: 10px;
+    width: auto;
+    padding: 8px;
+    font-size: 0.95em;
+    background-color: #f5f5f5;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.order-item button {
+    background-color: #e74c3c;
+    padding: 10px 18px;
+    font-size: 0.95em;
+    align-self: center;
+}
+
+/* Kargo Listesi */
+.cargo-list {
+    list-style: none;
+    padding: 0;
+    margin-top: 20px;
+}
+
+.cargo-item {
+    background-color: #ffffff;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 1px 5px rgba(0, 0, 0, 0.02);
+    flex-wrap: wrap;
+}
+
+.cargo-item strong {
+    color: #2c3e50;
+    font-weight: 600;
+    display: block;
+    margin-bottom: 5px;
+}
+
+.cargo-item span {
+    font-size: 0.95em;
+    color: #666;
+    margin-right: 15px;
+    display: inline-block;
+}
+
+.cargo-item button {
+    background-color: #e74c3c;
+    padding: 8px 15px;
+    font-size: 0.9em;
+    align-self: flex-end;
+}
+
+/* İletişim */
+.contact {
+    padding: 60px 20px;
+    background-color: #f1f1f1;
+    text-align: center;
+}
+
+.contact h3 {
+    font-size: 24px;
+    margin-bottom: 20px;
+}
+
+.contact form {
+    max-width: 500px;
+    margin: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.contact input,
+.contact textarea {
+    padding: 10px;
+    border: 1px solid #ccc;
+    font-family: inherit;
+    font-size: 15px;
+    resize: none;
+}
+
+.contact button {
+    padding: 10px;
+    background-color: #111;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+/* Hakkımızda */
+.about {
+    padding: 60px 20px;
+    text-align: center;
+}
+
+.about h3 {
+    font-size: 24px;
+    margin-bottom: 20px;
+}
+
+.about p {
+    max-width: 600px;
+    margin: 0 auto 15px;
+    font-size: 16px;
+    color: #333;
+}
+
+/* Footer */
+footer {
+    text-align: center;
+    padding: 30px 10px;
+    background-color: #fff;
+    font-size: 14px;
+    color: #888;
+}
+
+footer .instagram {
+    margin-top: 10px;
+}
+
+/* Order Confirmation Form ve İade Formu (Ortak) */
+.order-confirmation form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.order-confirmation input,
+.order-confirmation textarea {
+    padding: 12px;
+    border: 1px solid #ccc;
+    background: #fff;
+    font-size: 1rem;
+    font-family: inherit;
+    border-radius: 4px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.order-confirmation textarea {
+    min-height: 100px;
+    resize: vertical;
+}
+
+.order-confirmation button[type="submit"] {
+    background: #000;
+    color: white;
+    padding: 12px 20px;
+    font-size: 1rem;
+    border: none;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+}
+
+.order-confirmation button[type="submit"]:hover {
+    background: #333;
+}
+
+/* Sipariş Onayı Mesajı Stili */
+.order-confirmation-message {
+    background-color: #e8f5e9;
+    border: 1px solid #a5d6a7;
+    border-radius: 8px;
+    padding: 20px;
+    margin-top: 20px;
+    text-align: center;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+}
+
+.order-confirmation-message h4 {
+    color: #2e7d32;
+    font-size: 1.5em;
+    margin-bottom: 10px;
+}
+
+.order-confirmation-message p {
+    font-size: 1.1em;
+    color: #424242;
+    margin-bottom: 5px;
+}
+
+.order-confirmation-message strong {
+    color: #1b5e20;
+    font-size: 1.2em;
+}
+
+/* Ödeme durumu mesajları için */
+.payment-status-message {
+    padding: 10px;
+    margin-top: 10px;
+    border-radius: 5px;
+    font-weight: bold;
+    text-align: center;
+}
+
+.payment-status-message.processing {
+    background-color: #e0f2f7;
+    color: #0277bd;
+    border: 1px solid #81d4fa;
+}
+
+.payment-status-message.success {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+    border: 1px solid #a5d6a7;
+}
+
+.payment-status-message.fail {
+    background-color: #ffebee;
+    color: #c62828;
+    border: 1px solid #ef9a9a;
+}
+
+/* Kargo Takibi Modalı Özel Stilleri */
+.tracking-modal-content {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    width: 400px;
+    max-width: 90%;
+    box-sizing: border-box;
+    position: relative; /* Kapatma butonu için */
+}
+
+.tracking-modal-content h2 {
+    font-size: 1.6rem;
+    margin-bottom: 10px;
+    color: #333;
+}
+
+.tracking-modal-content input[type="email"],
+.tracking-modal-content input[type="text"] {
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 1rem;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.tracking-modal-content button {
+    padding: 12px 20px;
+    border: none;
+    border-radius: 4px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.tracking-modal-content button.bg-black {
+    background-color: #000;
+    color: white;
+}
+
+.tracking-modal-content button.bg-black:hover:not(:disabled) {
+    background-color: #333;
+}
+
+.tracking-modal-content button.bg-gray-200 {
+    background-color: #e0e0e0;
+    color: #333;
+}
+
+.tracking-modal-content button.bg-gray-200:hover {
+    background-color: #d0d0d0;
+}
+
+.tracking-modal-content .text-red-500 {
+    color: #ef4444;
+    font-size: 0.9rem;
+}
+
+.tracking-modal-content .text-left {
+    text-align: left;
+}
+
+.tracking-modal-content .text-blue-600 {
+    color: #2563eb;
+}
+
+/* Kargo Takibi modalı içindeki kapatma butonu */
+.tracking-modal-content .close-modal {
+    position: absolute;
+    top: 15px;
+    right: 15px; /* Sağ üstte konumlandır */
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    color: #333;
+    transition: color 0.2s ease;
+    font-weight: normal;
+    line-height: 1;
+    padding: 0;
+}
+
+.tracking-modal-content .close-modal:hover {
+    color: #000;
+}
+
+
+/* İade Talebi Modalı Özel Stilleri */
+.return-form-modal-content {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    width: 400px;
+    max-width: 90%;
+    box-sizing: border-box;
+    position: relative; /* Kapatma butonu için */
+}
+
+.return-form-modal-content h2 {
+    font-size: 1.6rem;
+    margin-bottom: 10px;
+    color: #333;
+}
+
+.return-form-modal-content input,
+.return-form-modal-content textarea {
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 1rem;
+    width: 100%;
+    box-sizing: border-box;
+    font-family: inherit; /* Fontun düzgün gözükmesi için */
+}
+
+.return-form-modal-content textarea {
+    min-height: 100px;
+    resize: vertical;
+}
+
+.return-form-modal-content button[type="submit"] {
+    background: #000;
+    color: white;
+    padding: 12px 20px;
+    font-size: 1rem;
+    border: none;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.return-form-modal-content button[type="submit"]:hover {
+    background: #333;
+}
+
+
+/* Kargo Takibi li öğesi için stil (varsa) */
+nav ul li button.px-3.py-1 {
+    padding: 8px 12px;
+    border: 1px solid black;
+    color: black;
+    background-color: white;
+    transition: background-color 0.2s, color 0.2s;
     border-radius: 4px;
 }
 
-.order-item button,
-.cargo-item button {
-    background-color: #dc3545;
-    margin-left: 10px;
-    padding: 8px 15px;
+nav ul li button.px-3.py-1:hover {
+    background-color: black;
+    color: white;
 }
 
-.order-item button:hover,
-.cargo-item button:hover {
-    background-color: #c82333;
+/* Responsive Düzenlemeler */
+@media (max-width: 768px) {
+    nav ul {
+        flex-direction: column;
+        align-items: flex-start;
+        position: absolute;
+        top: 68px; /* Navbar yüksekliğine göre ayarlandı */
+        left: 0;
+        width: 100%;
+        background-color: #fff;
+        border-top: 1px solid #eee;
+        padding: 20px 0;
+        transform: translateX(-100%);
+        transition: transform 0.3s ease-out;
+    }
+
+    nav ul.open {
+        transform: translateX(0);
+    }
+
+    nav ul li {
+        width: 100%;
+        padding: 10px 30px; /* Navbar padding'i ile uyumlu */
+        box-sizing: border-box;
+        text-align: left;
+    }
+
+    nav ul li button {
+        width: 100%;
+    }
+
+    .hamburger {
+        display: block;
+    }
+
+    nav .cart-button-wrapper {
+        margin-left: auto; /* Sepet ikonunu en sağa iter */
+    }
+
+    .cart-panel {
+        width: 100%; /* Mobil görünümde tam ekran */
+        right: -100%; /* Mobil görünümde de sağdan kayarak gelsin */
+        transition: right 0.3s ease-out; /* Animasyon geçişi */
+    }
+
+    .cart-panel.open {
+        right: 0;
+    }
+
+    /* Modallar mobil cihazlarda daha geniş olabilir */
+    .modal-content-base {
+        max-width: 95%;
+        padding: 1rem;
+    }
+}
+/* index.css */
+
+body {
+  -webkit-user-select: none; /* Chrome, Safari, Edge */
+  -moz-user-select: none;    /* Firefox */
+  -ms-user-select: none;     /* Internet Explorer/Edge Legacy */
+  user-select: none;         /* Standart sözdizimi */
 }
 
-.error-message {
-    color: #dc3545;
-    text-align: center;
-    margin-top: 20px;
-    font-weight: bold;
+/* Eğer belirli input veya textarea'ların hala seçilebilir olmasını isterseniz,
+   onlara bu özelliği override edebilirsiniz: */
+input, textarea {
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+  user-select: text;
 }

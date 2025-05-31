@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from './supabaseClient'; // Supabase client'ı import et
-import './AdminPanel.css'; // AdminPanel için stil dosyanızı import edin
 
 const AdminPanel = () => {
     // Ürün Yönetimi State'leri
@@ -29,6 +28,7 @@ const AdminPanel = () => {
 
     // Veri çekme fonksiyonları
     const fetchProducts = async () => {
+        console.log("LOG: fetchProducts fonksiyonu çağrıldı!"); // Bu log burada kalacak
         setLoading(true);
         const { data, error } = await supabase.from('products').select('*');
         if (error) {
@@ -38,6 +38,7 @@ const AdminPanel = () => {
             setProducts(data);
         }
         setLoading(false);
+        console.log("LOG: fetchProducts fonksiyonu tamamlandı!"); // Bu log burada kalacak
     };
 
     const fetchOrders = async () => {
@@ -73,6 +74,8 @@ const AdminPanel = () => {
 
     // Ürün Yönetimi Fonksiyonları
     const handleAddProduct = async () => {
+        console.log("LOG: handleAddProduct fonksiyonu tetiklendi!");
+
         if (!newProductName || !newProductPrice || !newProductImage) {
             alert('Lütfen ürün adı, fiyatı ve resim URL\'si girin.');
             return;
@@ -90,24 +93,41 @@ const AdminPanel = () => {
             console.error('Ürün eklenirken hata oluştu:', error);
             alert('Ürün eklenirken bir hata oluştu: ' + (error.message || 'Bilinmeyen Hata'));
         } else {
-            setProducts([...products, data[0]]); // Yeni ürünü state'e ekle
+            // setProducts([...products, data[0]]); // Bu satırı kaldırdık, fetchProducts güncelleyecektir.
+            alert('Ürün başarıyla eklendi!');
             setNewProductName('');
             setNewProductPrice('');
             setNewProductDescription('');
             setNewProductImage('');
-            alert('Ürün başarıyla eklendi!');
+            fetchProducts(); // Ürün eklendikten sonra listeyi güncelleyelim
+            const fetchProducts = async () => {
+    console.log("LOG: fetchProducts fonksiyonu çağrıldı!");
+    setLoading(true);
+    const { data, error } = await supabase.from('products').select('*');
+    if (error) {
+        console.error('Ürünler çekilirken hata oluştu:', error);
+        setError('Ürünler yüklenemedi.');
+    } else {
+        console.log("LOG: Supabase'den çekilen ürün verisi:", data); // YENİ EKLENECEK SATIR
+        setProducts(data);
+    }
+    setLoading(false);
+    console.log("LOG: fetchProducts fonksiyonu tamamlandı!");
+};
         }
     };
 
     const handleDeleteProduct = async (id) => {
+        console.log("LOG: Silme fonksiyonu tetiklendi! Silinecek ürün ID:", id);
         if (window.confirm('Bu ürünü silmek istediğinizden emin misiniz?')) {
-            const { error } = await supabase.from('products').delete().eq('id', id); // 'id' kullanılmalı
+            const { error } = await supabase.from('products').delete().eq('id', id);
             if (error) {
                 console.error('Ürün silinirken hata oluştu:', error);
                 alert('Ürün silinirken bir hata oluştu: ' + error.message);
             } else {
-                setProducts(products.filter(product => product.id !== id));
+                // setProducts(products.filter(product => product.id !== id)); // Bu satırı yorum satırı yapın veya kaldırın.
                 alert('Ürün başarıyla silindi!');
+                fetchProducts(); // <-- Buraya bu satırı ekleyin!
             }
         }
     };
@@ -119,10 +139,11 @@ const AdminPanel = () => {
             console.error('Sipariş durumu güncellenirken hata oluştu:', error);
             alert('Sipariş durumu güncellenirken bir hata oluştu: ' + error.message);
         } else {
-            setOrders(orders.map(order =>
-                order.id === orderId ? { ...order, order_status: newStatus } : order
-            ));
+            // setOrders(orders.map(order =>
+            //     order.id === orderId ? { ...order, order_status: newStatus } : order
+            // )); // Bu satırı kaldırın
             alert('Sipariş durumu başarıyla güncellendi!');
+            fetchOrders(); // Sipariş durumu güncellendikten sonra listeyi güncelleyelim
         }
     };
 
@@ -133,8 +154,9 @@ const AdminPanel = () => {
                 console.error('Sipariş silinirken hata oluştu:', error);
                 alert('Sipariş silinirken bir hata oluştu: ' + error.message);
             } else {
-                setOrders(orders.filter(order => order.id !== orderId));
+                // setOrders(orders.filter(order => order.id !== orderId)); // Bu satırı kaldırın
                 alert('Sipariş başarıyla silindi!');
+                fetchOrders(); // Sipariş silindikten sonra listeyi güncelleyelim
             }
         }
     };
@@ -159,13 +181,14 @@ const AdminPanel = () => {
             console.error('Kargo bilgisi eklenirken hata oluştu:', error);
             alert('Kargo bilgisi eklenirken bir hata oluştu: ' + (error.message || 'Bilinmeyen Hata'));
         } else {
-            setCargoEntries([...cargoEntries, data[0]]);
+            // setCargoEntries([...cargoEntries, data[0]]); // Bu satırı kaldırın
+            alert('Kargo bilgisi başarıyla eklendi!');
             setNewCargoOrderId('');
             setNewCargoEmail('');
             setNewCargoCompany('');
             setNewTrackingCode('');
             setNewCargoStatus('');
-            alert('Kargo bilgisi başarıyla eklendi!');
+            fetchCargoEntries(); // Kargo bilgisi eklendikten sonra listeyi güncelleyelim
         }
     };
 
@@ -176,8 +199,9 @@ const AdminPanel = () => {
                 console.error('Kargo bilgisi silinirken hata oluştu:', error);
                 alert('Kargo bilgisi silinirken bir hata oluştu: ' + error.message);
             } else {
-                setCargoEntries(cargoEntries.filter(entry => entry.id !== id));
+                // setCargoEntries(cargoEntries.filter(entry => entry.id !== id)); // Bu satırı kaldırın
                 alert('Kargo bilgisi başarıyla silindi!');
+                fetchCargoEntries(); // Kargo bilgisi silindikten sonra listeyi güncelleyelim
             }
         }
     };
