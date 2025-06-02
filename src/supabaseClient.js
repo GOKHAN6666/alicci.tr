@@ -5,7 +5,7 @@ import { createClient } from '@supabase/supabase-js';
 // Supabase URL'si ve Anon Key'i ortam değişkenlerinden al.
 // Vercel'de bu değişkenlerin VITE_SUPABASE_URL
 // ve VITE_APP_SUPABASE_ANON_KEY olarak ayarlandığından emin olun.
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL; // <-- BURASI DÜZELTİLDİ!
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_APP_SUPABASE_ANON_KEY;
 
 // Hata ayıklama için bu console.log satırlarını ekliyoruz.
