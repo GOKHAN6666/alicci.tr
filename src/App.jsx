@@ -220,21 +220,58 @@ export default function App() {
   };
 
   // Sipariş verme işlemi (Supabase'e kaydedecek)
-  const handlePlaceOrder = async () => {
-    // Ref'lerden müşteri bilgilerini al
-    const customerName = customerNameRef.current.value;
-    const customerEmail = customerEmailRef.current.value;
-    const customerAddress = customerAddressRef.current.value;
-    const customerPhone = customerPhoneRef.current.value;
+const handlePlaceOrder = async () => {
+  // Ref'lerden müşteri bilgilerini al
+  const customerName = customerNameRef.current.value;
+  const customerEmail = customerEmailRef.current.value;
+  const customerAddress = customerAddressRef.current.value;
+  const customerPhone = customerPhoneRef.current.value;
 
-    if (cartItems.length === 0) {
-      alert('Sepetiniz boş. Lütfen ürün ekleyin.');
+  if (cartItems.length === 0) {
+    alert('Sepetiniz boş. Lütfen ürün ekleyin.');
+    return;
+  }
+  if (!customerName || !customerEmail || !customerAddress || !customerPhone) {
+    alert('Lütfen tüm müşteri bilgilerini doldurun.');
+    return;
+  }
+
+  const orderId = generateUniqueOrderId(); // Benzersiz sipariş ID'si oluştur
+
+  try {
+    const { data: orderData, error: orderError } = await supabase
+      .from('order')
+      .insert([
+        {
+          order_id: orderId, // Kendi oluşturduğumuz sipariş ID'si
+          customer_name: customerName,
+          customer_email: customerEmail,
+          customer_address: customerAddress,
+          customer_phone: customerPhone,
+          order_items: cartItems, // Sepet içeriğini JSON olarak sakla
+          total_price: parseFloat(calculateTotal()), // calculateTotal() string döndürüyor, number'a çeviriyoruz
+          order_status: 'pending' // Varsayılan durum (küçük harfle 'pending' kullanmak daha yaygındır)
+        }
+      ])
+      .select('*'); // <-- BURAYI EKLEDİK! Eklenen veriyi geri döndürmesini sağlarız.
+
+    if (orderError) {
+      console.error('Sipariş verilirken hata oluştu:', orderError.message);
+      alert('Sipariş verilirken hata oluştu: ' + orderError.message);
       return;
     }
-    if (!customerName || !customerEmail || !customerAddress || !customerPhone) {
-      alert('Lütfen tüm müşteri bilgilerini doldurun.');
-      return;
-    }
+
+    console.log('Sipariş başarıyla verildi:', orderData);
+    alert('Siparişiniz başarıyla alındı!');
+    // Sipariş başarıyla verildikten sonra yapılacak işlemler:
+    clearCart(); // Sepeti temizle
+    // İsterseniz başka bir sayfaya yönlendirebilirsiniz
+    // navigate('/order-success', { state: { orderId: orderId } });
+  } catch (err) {
+    console.error('Beklenmedik bir hata oluştu:', err);
+    alert('Beklenmedik bir hata oluştu: ' + err.message);
+  }
+};
 
     const orderId = generateUniqueOrderId(); // Benzersiz sipariş ID'si oluştur
 
@@ -298,33 +335,45 @@ export default function App() {
   };
 
   // İade formu gönderme (emailjs ile)
-  const sendReturnEmail = (e) => {
-    e.preventDefault();
+const sendReturnEmail = (e) => {
+  e.preventDefault();
 
-    // EmailJS servis, şablon ve kullanıcı ID'lerini kendi bilgilerinizle güncelleyin
-    // service_iyppib9 -> sizin servis ID'niz
-    // template_ftuypl8 -> sizin dönüş şablon ID'niz
-    // 5dI_FI0HT2oHrlQj5 -> sizin kullanıcı (public) ID'niz
-    emailjs
-      .sendForm(
-        "service_iyppib9", // EmailJS Service ID
-        "template_ftuypl8", // EmailJS Template ID (İade şablonunuz)
-        e.target,
-        "5dI_FI0HT2oHrlQj5" // EmailJS User ID (Public Key)
-      )
-      .then(
-        (result) => {
-          console.log(result.text);
-          alert("İade talebiniz başarıyla gönderildi!");
-          setShowReturnForm(false); // Formu kapat
-        },
-        (error) => {
-          console.error("İade talebi gönderilirken hata oluştu:", error);
-          alert("İade talebi gönderilirken bir hata oluştu.");
-        }
-      );
-  };
+  // EmailJS servis, şablon ve kullanıcı ID'lerini ortam değişkenlerinden al
+  const serviceId = import.meta.env.VITE_EMAILJS_SERVICE_ID;
+  const templateId = import.meta.env.VITE_EMAILJS_TEMPLATE_ID;
+  const publicKey = import.meta.env.VITE_EMAILJS_PUBLIC_KEY;
 
+  // Hata ayıklama için konsola yazdırın
+  console.log("EmailJS Service ID from env:", serviceId);
+  console.log("EmailJS Template ID from env:", templateId);
+  console.log("EmailJS Public Key from env:", publicKey);
+
+  // Eğer herhangi bir değişken eksikse hata fırlat.
+  if (!serviceId || !templateId || !publicKey) {
+    console.error("EmailJS environment variables are missing.");
+    alert("E-posta gönderme için gerekli bilgiler eksik. Lütfen daha sonra tekrar deneyin.");
+    return; // Fonksiyonu durdur
+  }
+
+  emailjs
+    .sendForm(
+      serviceId, // Ortam değişkeninden alındı
+      templateId, // Ortam değişkeninden alındı
+      e.target,
+      publicKey // Ortam değişkeninden alındı
+    )
+    .then(
+      (result) => {
+        console.log(result.text);
+        alert("İade talebiniz başarıyla gönderildi!");
+        setShowReturnForm(false); // Formu kapat
+      },
+      (error) => {
+        console.error("İade talebi gönderilirken hata oluştu:", error);
+        alert("İade talebi gönderilirken bir hata oluştu.");
+      }
+    );
+};
   // Modallar açıldığında body'nin kaymasını engelle
   useEffect(() => {
     const anyModalOpen =
