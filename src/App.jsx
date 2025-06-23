@@ -1,15 +1,10 @@
-// App.jsx (Güncellenmiş Kısımlar)
 import React, { useState, useRef, useEffect } from "react";
 import emailjs from "emailjs-com";
 import "./index.css"; // Ana stil dosyanızın yolu
 import { supabase } from "./supabaseClient"; // Supabase client'ı import et
 
-// WhatsApp ve Instagram kullanıcı adlarınızı buraya ekleyin
-const WHATSAPP_NUMBER = "905511903118"; // Kendi numaranızı girin (ülke kodu ile, başında + olmadan)
-const INSTAGRAM_USERNAME = "alicci.official"; // Kendi Instagram kullanıcı adınızı girin
-
 // ProductCard bileşeni: Ürün kartlarının üzerine gelindiğinde resim değiştirmeyi yönetir
-const ProductCard = ({ product, openProductModal, setIsCartOpen }) => { // openProductModal prop olarak eklendi
+const ProductCard = ({ product, setSelectedProduct }) => {
     // Üzerine gelindiğinde gösterilecek resmin indeksi
     const [hoveredImageIndex, setHoveredImageIndex] = useState(0);
 
@@ -43,16 +38,10 @@ const ProductCard = ({ product, openProductModal, setIsCartOpen }) => { // openP
         setHoveredImageIndex(0);
     };
 
-    const handleClick = () => {
-        setSelectedProduct(product); // Tıklanan ürünü seçili ürün olarak ayarla
-        openProductModal(); // Ürün detay modalını aç
-    };
-
-
     return (
         <div
             className="product-card"
-            onClick={handleClick}
+            onClick={() => setSelectedProduct(product)}
             onMouseMove={handleMouseMove}
             onMouseLeave={handleMouseLeave}
         >
@@ -63,7 +52,7 @@ const ProductCard = ({ product, openProductModal, setIsCartOpen }) => { // openP
             />
             <h3>{product.name}</h3>
             <p className="price">{product.price} TL</p>
-            {/* <button className="add-to-cart-button">Sepete Ekle</button> */} {/* Sepete Ekle butonunu buradan kaldırdık */}
+            {/* <button className="add-to-cart-button">Sepete Ekle</button> */}
         </div>
     );
 };
@@ -119,10 +108,12 @@ function App() {
 
 
     // Ürün detay modalını açma fonksiyonu
-    const openProductModal = () => {
-        setIsProductModalOpen(true);
-        setCurrentModalImageIndex(0); // Modalı açarken ilk resmi göster
-    };
+    useEffect(() => {
+        if (selectedProduct) {
+            setIsProductModalOpen(true);
+            setCurrentModalImageIndex(0); // Modalı açarken ilk resmi göster
+        }
+    }, [selectedProduct]);
 
     // Ürün detay modalını kapatma fonksiyonu
     const closeProductModal = () => {
@@ -271,9 +262,8 @@ function App() {
                     <li>
                         <a href="#contact" onClick={() => setIsMobileMenuOpen(false)}>İletişim</a>
                     </li>
-                    {/* Mobil menü içinde sadece görünen sepet öğesi - BU ARTIK MOBİL MENÜNÜN İÇİNDE */}
-                    <li className="mobile-only-cart-item">
-                        <div className="cart-button" onClick={() => setIsCartOpen(!isCartOpen)}>
+                    <li className="mobile-cart-item">
+                        <button className="cart-button" onClick={() => setIsCartOpen(!isCartOpen)}>
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
                                 width="24"
@@ -293,11 +283,10 @@ function App() {
                             {cartItems.length > 0 && (
                                 <span className="cart-count">{cartItems.length}</span>
                             )}
-                        </div>
+                        </button>
                     </li>
                 </ul>
 
-                {/* Hamburger İkonu ve Yanındaki Mobil Sepet Sayısı - Ekran görüntüsündeki fazla ikon buradan geliyorsa dikkat! */}
                 <div className="hamburger" onClick={toggleMobileMenu}>
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -315,17 +304,7 @@ function App() {
                         <line x1="3" y1="6" x2="21" y2="6"></line>
                         <line x1="3" y1="18" x2="21" y2="18"></line>
                     </svg>
-                    {/* SADECE SEPET SAYISI BURADA KALSIN, EKRAN GÖRÜNTÜSÜNDEKİ FAZLA SEPET İKONUNU KALDIRDIK. */}
-                    {cartItems.length > 0 && (
-                        <span className="cart-count mobile-hamburger-cart-count">
-                            {cartItems.length}
-                        </span>
-                    )}
-                </div>
-
-                {/* Masaüstü Sepet Butonu - Sadece masaüstünde görünecek */}
-                <div className="desktop-cart-button-wrapper">
-                    <div className="cart-button" onClick={() => setIsCartOpen(!isCartOpen)}>
+                    <button className="cart-button" onClick={() => setIsCartOpen(!isCartOpen)}>
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
                             width="24"
@@ -345,7 +324,7 @@ function App() {
                         {cartItems.length > 0 && (
                             <span className="cart-count">{cartItems.length}</span>
                         )}
-                    </div>
+                    </button>
                 </div>
             </nav>
 
@@ -364,8 +343,7 @@ function App() {
                         <ProductCard
                             key={product.id}
                             product={product}
-                            openProductModal={openProductModal}
-                            setIsCartOpen={setIsCartOpen} // Bu prop ProductCard içinde kullanılmıyor, kaldırılabilir.
+                            setSelectedProduct={setSelectedProduct}
                         />
                     ))}
                 </div>
@@ -375,22 +353,12 @@ function App() {
                 <h2>İletişim</h2>
                 <p>Bizimle iletişime geçmek veya sipariş vermek için aşağıdaki seçenekleri kullanabilirsiniz.</p>
                 <div className="contact-buttons-container">
-                    <a
-                        href={`https://wa.me/${WHATSAPP_NUMBER}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="themed-social-button whatsapp-contact"
-                    >
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" className="icon-whatsapp"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.6-3.873-1.6-6.065c0-6.19 5.029-11.218 11.219-11.218s11.219 5.029 11.219 11.218s-5.029 11.218-11.219 11.218c-1.996 0-3.929-.556-5.632-1.611l-6.163 1.687zm6.59-3.957l.423.242c1.488.855 3.208 1.311 4.975 1.311 5.393 0 9.771-4.378 9.771-9.77s-4.378-9.771-9.771-9.771s-9.771 4.378-9.771 9.771c0 1.767.456 3.479 1.311 4.975l.242.423-2.614.717.717-2.614zm5.029-1.378c-2.316 0-4.208-1.892-4.208-4.208c0-2.316 1.892-4.208 4.208-4.208c2.316 0 4.208 1.892 4.208 4.208c0 2.316-1.892 4.208-4.208 4.208zm0-6.906c-1.488 0-2.7 1.212-2.7 2.7c0 1.488 1.212 2.7 2.7 2.7c1.488 0 2.7-1.212 2.7-2.7c0-1.488-1.212-2.7-2.7-2.7z"/></svg>
+                    <a href="https://wa.me/90532xxxxxx" target="_blank" rel="noopener noreferrer" className="themed-social-button">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="WhatsApp" />
                         WhatsApp ile İletişime Geç
                     </a>
-                    <a
-                        href={`https://www.instagram.com/${INSTAGRAM_USERNAME}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="themed-social-button instagram-contact"
-                    >
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" className="icon-instagram"><path d="M12 2.163c3.204 0 3.584.012 4.85.07c3.252.148 4.654 1.55 4.803 4.802.058 1.266.07 1.646.07 4.85s-.012 3.584-.07 4.85c-.149 3.252-1.551 4.654-4.803 4.803-1.266.058-1.646.07-4.85.07s-3.584-.012-4.85-.07c-3.252-.149-4.654-1.551-4.803-4.803-.058-1.266-.07-1.646-.07-4.85s.012-3.584.07-4.85c.149-3.252 1.551-4.654 4.803-4.803 1.266-.058 1.646-.07 4.85-.07zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.622-6.98 6.98-.058 1.28-.072 1.688-.072 4.947s.014 3.667.072 4.947c.2 4.358 2.622 6.78 6.98 6.98 1.28.058 1.688.072 4.947.072s3.667-.014 4.947-.072c4.358-.2 6.78-2.622 6.98-6.98.058-1.28.072-1.688.072-4.947s-.014-3.667-.072-4.947c-.2-4.358-2.622-6.78-6.98-6.98z"/><path d="M12 6.865c-2.812 0-5.135 2.323-5.135 5.135s2.323 5.135 5.135 5.135s5.135-2.323 5.135-5.135s-2.323-5.135-5.135-5.135zm0 8.57c-1.996 0-3.435-1.439-3.435-3.435s1.439-3.435 3.435-3.435s3.435 1.439 3.435 3.435s-1.439 3.435-3.435 3.435zm5.338-8.599c-.838 0-1.52.682-1.52 1.52s.682 1.52 1.52 1.52s1.52-.682 1.52-1.52s-.682-1.52-1.52-1.52z"/></svg>
+                    <a href="https://instagram.com/alicci.tr" target="_blank" rel="noopener noreferrer" className="themed-social-button">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/a/a5/Instagram_icon.png" alt="Instagram" />
                         Instagram Destek
                     </a>
                 </div>
@@ -409,7 +377,7 @@ function App() {
             <footer className="footer">
                 <p>&copy; 2025 ALICCI. Tüm Hakları Saklıdır.</p>
                 <div className="social-links">
-                    <a href={`https://instagram.com/${INSTAGRAM_USERNAME}`} target="_blank" rel="noopener noreferrer">Instagram</a>
+                    <a href="https://instagram.com/alicci.tr" target="_blank" rel="noopener noreferrer">Instagram</a>
                     {/* Diğer sosyal medya linkleri */}
                 </div>
             </footer>
@@ -458,7 +426,7 @@ function App() {
             </div>
 
             {/* Ürün Detay Modalı */}
-            {selectedProduct && (
+            {isProductModalOpen && selectedProduct && (
                 <div className="modal-backdrop" onClick={closeProductModal}>
                     <div className="modal-content-base product-modal" onClick={(e) => e.stopPropagation()}>
                         <button className="close-modal" onClick={closeProductModal}>
@@ -475,7 +443,7 @@ function App() {
                                         );
                                     }}
                                 >
-                                    &#x2039; {/* Sol ok */}
+                                    &#x2039;
                                 </button>
                             )}
                             {selectedProduct.image && selectedProduct.image.length > 0 && (
@@ -489,13 +457,13 @@ function App() {
                                 <button
                                     className="image-arrow right-arrow"
                                     onClick={(e) => {
-                                        e.stopPropagation(); // Modalın kapanmasını engelle
+                                        e.stopPropagation();
                                         setCurrentModalImageIndex(prevIndex =>
                                             (prevIndex + 1) % selectedProduct.image.length
                                         );
                                     }}
                                 >
-                                    &#x203A; {/* Sağ ok */}
+                                    &#x203A;
                                 </button>
                             )}
                         </div>
@@ -556,22 +524,12 @@ function App() {
                         <div className="modal-divider">veya</div>
 
                         <div className="contact-dm-buttons">
-                            <a
-                                href={`https://wa.me/${WHATSAPP_NUMBER}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="themed-social-button whatsapp-contact"
-                            >
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" className="icon-whatsapp"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.6-3.873-1.6-6.065c0-6.19 5.029-11.218 11.219-11.218s11.219 5.029 11.219 11.218s-5.029 11.218-11.219 11.218c-1.996 0-3.929-.556-5.632-1.611l-6.163 1.687zm6.59-3.957l.423.242c1.488.855 3.208 1.311 4.975 1.311 5.393 0 9.771-4.378 9.771-9.77s-4.378-9.771-9.771-9.771s-9.771 4.378-9.771 9.771c0 1.767.456 3.479 1.311 4.975l.242.423-2.614.717.717-2.614zm5.029-1.378c-2.316 0-4.208-1.892-4.208-4.208c0-2.316 1.892-4.208 4.208-4.208c2.316 0 4.208 1.892 4.208 4.208c0 2.316-1.892 4.208-4.208 4.208zm0-6.906c-1.488 0-2.7 1.212-2.7 2.7c0 1.488 1.212 2.7 2.7 2.7c1.488 0 2.7-1.212 2.7-2.7c0-1.488-1.212-2.7-2.7-2.7z"/></svg>
+                            <a href="https://wa.me/90532xxxxxx" target="_blank" rel="noopener noreferrer" className="themed-social-button">
+                                <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="WhatsApp" />
                                 WhatsApp ile İletişime Geç
                             </a>
-                            <a
-                                href={`https://www.instagram.com/${INSTAGRAM_USERNAME}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="themed-social-button instagram-contact"
-                            >
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" className="icon-instagram"><path d="M12 2.163c3.204 0 3.584.012 4.85.07c3.252.148 4.654 1.55 4.803 4.802.058 1.266.07 1.646.07 4.85s-.012 3.584-.07 4.85c-.149 3.252-1.551 4.654-4.803 4.803-1.266.058-1.646.07-4.85.07s-3.584-.012-4.85-.07c-3.252-.149-4.654-1.551-4.803-4.803-.058-1.266-.07-1.646-.07-4.85s.012-3.584.07-4.85c.149-3.252 1.551-4.654 4.803-4.803 1.266-.058 1.646-.07 4.85-.07zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.622-6.98 6.98-.058 1.28-.072 1.688-.072 4.947s.014 3.667.072 4.947c.2 4.358 2.622 6.78 6.98 6.98 1.28.058 1.688.072 4.947.072s3.667-.014 4.947-.072c4.358-.2 6.78-2.622 6.98-6.98.058-1.28.072-1.688.072-4.947s-.014-3.667-.072-4.947c-.2-4.358-2.622-6.78-6.98-6.98z"/><path d="M12 6.865c-2.812 0-5.135 2.323-5.135 5.135s2.323 5.135 5.135 5.135s5.135-2.323 5.135-5.135s-2.323-5.135-5.135-5.135zm0 8.57c-1.996 0-3.435-1.439-3.435-3.435s1.439-3.435 3.435-3.435s3.435 1.439 3.435 3.435s-1.439 3.435-3.435 3.435zm5.338-8.599c-.838 0-1.52.682-1.52 1.52s.682 1.52 1.52 1.52s1.52-.682 1.52-1.52s-.682-1.52-1.52-1.52z"/></svg>
+                            <a href="https://instagram.com/alicci.tr" target="_blank" rel="noopener noreferrer" className="themed-social-button">
+                                <img src="https://upload.wikimedia.org/wikipedia/commons/a/a5/Instagram_icon.png" alt="Instagram" />
                                 Instagram Destek
                             </a>
                         </div>
