@@ -1,7 +1,12 @@
+// App.jsx (Güncellenmiş Kısımlar)
 import React, { useState, useRef, useEffect } from "react";
 import emailjs from "emailjs-com";
 import "./index.css"; // Ana stil dosyanızın yolu
 import { supabase } from "./supabaseClient"; // Supabase client'ı import et
+
+// WhatsApp ve Instagram kullanıcı adlarınızı buraya ekleyin
+const WHATSAPP_NUMBER = "905511903118"; // Kendi numaranızı girin (ülke kodu ile, başında + olmadan)
+const INSTAGRAM_USERNAME = "alicci.official"; // Kendi Instagram kullanıcı adınızı girin
 
 // ProductCard bileşeni: Ürün kartlarının üzerine gelindiğinde resim değiştirmeyi yönetir
 const ProductCard = ({ product, openProductModal, setIsCartOpen }) => { // openProductModal prop olarak eklendi
@@ -33,15 +38,16 @@ const ProductCard = ({ product, openProductModal, setIsCartOpen }) => { // openP
         }
     };
 
-    // Fare karttan ayrıldığında ilk resme dön
+    // Fare ürün kartından ayrıldığında ilk resmi göster
     const handleMouseLeave = () => {
         setHoveredImageIndex(0);
     };
 
     const handleClick = () => {
-        setIsCartOpen(false); // Ürüne tıklanınca sepeti kapat
-        openProductModal(product); // Ürün modalını açmak için App'den gelen fonksiyonu kullan
+        setSelectedProduct(product); // Tıklanan ürünü seçili ürün olarak ayarla
+        openProductModal(); // Ürün detay modalını aç
     };
+
 
     return (
         <div
@@ -55,56 +61,32 @@ const ProductCard = ({ product, openProductModal, setIsCartOpen }) => { // openP
                 alt={product.name}
                 className="product-card-image"
             />
-            <div className="info">
-                <h4>{product.name}</h4>
-                <p>{product.price} TL</p>
-            </div>
+            <h3>{product.name}</h3>
+            <p className="price">{product.price} TL</p>
+            {/* <button className="add-to-cart-button">Sepete Ekle</button> */} {/* Sepete Ekle butonunu buradan kaldırdık */}
         </div>
     );
 };
 
-// Ana Uygulama Bileşeni
 function App() {
-    // State Tanımlamaları
-    const [products, setProducts] = useState([]); // Ürünleri tutar
-    const [selectedProduct, setSelectedProduct] = useState(null); // Detayları gösterilecek ürünü tutar
-    const [selectedSize, setSelectedSize] = useState(""); // Seçilen bedeni tutar
-    const [cartItems, setCartItems] = useState([]); // Sepetteki ürünleri tutar
+    const [products, setProducts] = useState([]);
+    const [selectedProduct, setSelectedProduct] = useState(null); // Detayı gösterilecek ürün
+    const [isProductModalOpen, setIsProductModalOpen] = useState(false); // Ürün detayı modalının açık/kapalı durumu
+    const [currentModalImageIndex, setCurrentModalImageIndex] = useState(0); // Modal içindeki resmin indeksi
+
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false); // Mobil menü durumu
     const [isCartOpen, setIsCartOpen] = useState(false); // Sepet panelinin açık/kapalı durumu
-    const [currentModalImageIndex, setCurrentModalImageIndex] = useState(0); // Ürün detay modalındaki resim indeksi
-    const [showOrderOptionsModal, setShowOrderOptionsModal] = useState(false); // Sipariş seçenekleri modalı
-    const [showTrackingModal, setShowTrackingModal] = useState(false); // Kargo takip modalı
-    const [orderCode, setOrderCode] = useState(""); // Kargo takip kodu - Bu state artık kullanılmayacak ama kaldırmıyorum
-    const [trackingInfo, setTrackingInfo] = useState(null); // Kargo takip bilgisi - Bu state artık kullanılmayacak ama kaldırmıyorum
-    const [showConfirmationModal, setShowConfirmationModal] = useState(false); // Sipariş onay/başarı modalı
-    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false); // Mobil menü açık/kapalı durumu
-    const [currentSection, setCurrentSection] = useState("home"); // Aktif bölüm (navigasyon için)
 
-    const form = useRef(); // EmailJS için referans - İletişim formu için kullanılacak
+    const [cartItems, setCartItems] = useState([]); // Sepet öğeleri state'i
+    const [selectedSize, setSelectedSize] = useState(null); // Seçili beden state'i
 
-    // Sabit WhatsApp ve Instagram bilgileri
-    const WHATSAPP_NUMBER = "905511903118"; // WhatsApp numarası '90' ülke kodu ile
-    const INSTAGRAM_USERNAME = "alicci.official";
-    // Eğer Instagram Direct linki için kullanıcı ID'si gerekirse:
-    // const INSTAGRAM_USER_ID = "YOUR_INSTAGRAM_USER_ID"; // Bu alanı manuel olarak bulmanız gerekebilir
-    // const INSTAGRAM_DIRECT_LINK = `https://www.instagram.com/direct/t/${INSTAGRAM_USER_ID}`;
+    const [showContactModal, setShowContactModal] = useState(false); // İletişim modalı durumu
+    const [showConfirmationModal, setShowConfirmationModal] = useState(false); // Sipariş onay modalı durumu
+
+    const contactFormRef = useRef(); // EmailJS için form referansı
 
 
-    // Ürünleri Supabase'ten çekme
-    useEffect(() => {
-        const fetchProducts = async () => {
-            const { data, error } = await supabase.from("products").select("*");
-            if (error) {
-                console.error("Ürünler çekilirken hata oluştu:", error);
-            } else {
-                setProducts(data);
-            }
-        };
-
-        fetchProducts();
-    }, []);
-
-    // Sepet öğelerini localStorage'dan yükle (sayfa yenilendiğinde kalıcı olması için)
+    // Sepet öğelerini localStorage'dan yükle
     useEffect(() => {
         const storedCartItems = localStorage.getItem("alicciCartItems");
         if (storedCartItems) {
@@ -112,7 +94,7 @@ function App() {
                 setCartItems(JSON.parse(storedCartItems));
             } catch (e) {
                 console.error("Sepet öğeleri yüklenirken hata oluştu:", e);
-                localStorage.removeItem("alicciCartItems"); // Bozuk veriyi temizle
+                localStorage.removeItem("alicciCartItems"); // Hatalı veriyi temizle
             }
         }
     }, []);
@@ -122,146 +104,157 @@ function App() {
         localStorage.setItem("alicciCartItems", JSON.stringify(cartItems));
     }, [cartItems]);
 
+    // Supabase'den ürünleri çek
+    useEffect(() => {
+        const fetchProducts = async () => {
+            const { data, error } = await supabase.from("products").select("*");
+            if (error) {
+                console.error("Ürünler çekilirken hata oluştu:", error);
+            } else {
+                setProducts(data);
+            }
+        };
+        fetchProducts();
+    }, []);
 
-    // Sepet ve diğer modal işlemlerini yöneten fonksiyonlar
-    const openProductModal = (product) => {
-        setSelectedProduct(product);
+
+    // Ürün detay modalını açma fonksiyonu
+    const openProductModal = () => {
+        setIsProductModalOpen(true);
         setCurrentModalImageIndex(0); // Modalı açarken ilk resmi göster
-        setSelectedSize(""); // Modal açıldığında bedeni sıfırla
     };
 
+    // Ürün detay modalını kapatma fonksiyonu
     const closeProductModal = () => {
+        setIsProductModalOpen(false);
         setSelectedProduct(null);
+        setSelectedSize(null); // Modalı kapatırken seçili bedeni sıfırla
     };
 
-    const nextModalImage = (e) => {
-        e.stopPropagation(); // Modalın kapanmasını engelle
-        if (selectedProduct && selectedProduct.image) {
-            setCurrentModalImageIndex((prevIndex) =>
-                (prevIndex + 1) % selectedProduct.image.length
-            );
-        }
-    };
-
-    const prevModalImage = (e) => {
-        e.stopPropagation(); // Modalın kapanmasını engelle
-        if (selectedProduct && selectedProduct.image) {
-            setCurrentModalImageIndex((prevIndex) =>
-                (prevIndex - 1 + selectedProduct.image.length) % selectedProduct.image.length
-            );
-        }
-    };
-
+    // Sepete ürün ekleme fonksiyonu
     const handleAddToCart = () => {
-        if (!selectedSize) {
+        if (!selectedProduct || !selectedSize) {
             alert("Lütfen bir beden seçin.");
             return;
         }
-        if (selectedProduct) {
-            const existingItemIndex = cartItems.findIndex(
-                (item) => item.id === selectedProduct.id && item.size === selectedSize
-            );
 
-            if (existingItemIndex > -1) {
-                const updatedCartItems = [...cartItems];
-                updatedCartItems[existingItemIndex].quantity += 1;
-                setCartItems(updatedCartItems);
-            } else {
-                setCartItems([
-                    ...cartItems,
-                    { ...selectedProduct, quantity: 1, size: selectedSize },
-                ]);
-            }
-            setSelectedProduct(null); // Modalı kapat
-            setIsCartOpen(true); // Sepet panelini aç
-        }
-    };
-
-    const removeFromCart = (itemToRemove) => {
-        setCartItems(
-            cartItems.filter(
-                (item) => !(item.id === itemToRemove.id && item.size === itemToRemove.size)
-            )
+        const existingItemIndex = cartItems.findIndex(
+            (item) => item.id === selectedProduct.id && item.selectedSize === selectedSize
         );
+
+        if (existingItemIndex > -1) {
+            // Ürün ve beden zaten sepette varsa miktarını artır
+            const updatedCartItems = [...cartItems];
+            updatedCartItems[existingItemIndex].quantity += 1;
+            setCartItems(updatedCartItems);
+        } else {
+            // Yeni ürün ve bedeni sepete ekle
+            setCartItems([
+                ...cartItems,
+                { ...selectedProduct, quantity: 1, selectedSize: selectedSize },
+            ]);
+        }
+        closeProductModal(); // Modalı kapat
+        setIsCartOpen(true); // Sepet panelini aç
     };
 
-    const getTotalPrice = () => {
+    // Sepetten ürün miktarını azaltma
+    const handleDecreaseQuantity = (itemToRemove) => {
+        const updatedCartItems = cartItems.map(item =>
+            item.id === itemToRemove.id && item.selectedSize === itemToRemove.selectedSize
+                ? { ...item, quantity: item.quantity - 1 }
+                : item
+        ).filter(item => item.quantity > 0); // Miktarı sıfır olanı sepetten çıkar
+        setCartItems(updatedCartItems);
+    };
+
+    // Sepetten ürün miktarını artırma
+    const handleIncreaseQuantity = (itemToIncrease) => {
+        const updatedCartItems = cartItems.map(item =>
+            item.id === itemToIncrease.id && item.selectedSize === itemToIncrease.selectedSize
+                ? { ...item, quantity: item.quantity + 1 }
+                : item
+        );
+        setCartItems(updatedCartItems);
+    };
+
+    // Sepetten öğeyi tamamen kaldırma
+    const handleRemoveItem = (itemToRemove) => {
+        const updatedCartItems = cartItems.filter(
+            (item) => !(item.id === itemToRemove.id && item.selectedSize === itemToRemove.selectedSize)
+        );
+        setCartItems(updatedCartItems);
+    };
+
+    // Toplam sepet tutarını hesapla
+    const calculateTotalPrice = () => {
         return cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
     };
 
-    const handleCheckout = () => {
-        if (cartItems.length === 0) {
-            alert("Sepetiniz boş.");
-            return;
-        }
-        setIsCartOpen(false); // Sepeti kapat
-        setShowOrderOptionsModal(true); // Sipariş seçenekleri modalını aç
-    };
-
-    const closeOrderOptionsModal = () => {
-        setShowOrderOptionsModal(false);
-    };
-
-    // Kargo takip işlemleri
-    const openTrackingModal = () => {
-        setShowTrackingModal(true);
-        // Bu modal artık trackingInfo veya orderCode kullanmayacak
-        setTrackingInfo(null);
-        setOrderCode("");
-    };
-
-    const closeTrackingModal = () => {
-        setShowTrackingModal(false);
-        setTrackingInfo(null);
-    };
-
-    // Kargo takip butonu artık bir şey yapmayacak, sadece iletişim butonları olacak
-    // const handleTrackOrder = async () => { /* ... kaldırıldı ... */ };
-
-    // İletişim Formu gönderme (EmailJS ile)
-    const handleContactFormSubmit = async (e) => {
+    // EmailJS ile sipariş gönderme
+    const sendOrderEmail = async (e) => {
         e.preventDefault();
 
+        // Sepet boşsa uyarı ver
+        if (cartItems.length === 0) {
+            alert("Sepetiniz boş. Lütfen önce ürün ekleyiniz.");
+            return;
+        }
+
+        const formData = new FormData(contactFormRef.current);
+        const customerName = formData.get("user_name");
+        const customerEmail = formData.get("user_email");
+        const customerPhone = formData.get("user_phone");
+        const customerAddress = formData.get("user_address");
+        const customerNote = formData.get("user_note"); // Not alanını al
+
+        // Sipariş detaylarını oluştur
+        const orderDetails = cartItems
+            .map(
+                (item) =>
+                    `${item.name} (${item.selectedSize}) x ${item.quantity} = ${item.price * item.quantity} TL`
+            )
+            .join("\n");
+        const totalPrice = calculateTotalPrice();
+
+        const emailParams = {
+            user_name: customerName,
+            user_email: customerEmail,
+            user_phone: customerPhone,
+            user_address: customerAddress,
+            order_details: orderDetails,
+            total_price: totalPrice,
+            user_note: customerNote || "Yok", // Not boşsa "Yok" yazsın
+            to_name: "ALICCI", // Alıcı adı
+        };
+
         try {
-            // E-posta gönderme (EmailJS ile) - Kendi ID'lerinizi girmeyi unutmayın!
-            await emailjs.sendForm(
-                "YOUR_SERVICE_ID", // Kendi Service ID'niz
-                "YOUR_TEMPLATE_ID_CONTACT", // İletişim Formu için ayrı bir Template ID'niz olabilir
-                form.current,
-                "YOUR_USER_ID" // Kendi User ID'niz (Public Key)
+            await emailjs.send(
+                "service_pgyu09c", // EmailJS Service ID
+                "template_7n47c4e", // EmailJS Template ID
+                emailParams,
+                "L9n3nK_E9W4j2lB-t" // EmailJS Public Key
             );
-            alert("Mesajınız başarıyla gönderildi!");
-            e.target.reset(); // Formu temizle
+            console.log("Email başarıyla gönderildi!");
+            setCartItems([]); // Sepeti boşalt
+            setIsCartOpen(false); // Sepet panelini kapat
+            setShowConfirmationModal(true); // Onay modalını göster
+            closeContactModal(); // İletişim modalını kapat
         } catch (error) {
-            console.error("Mesaj gönderilirken hata oluştu:", error);
-            alert("Mesajınız gönderilirken bir hata oluştu. Lütfen tekrar deneyin.");
+            console.error("Email gönderme hatası:", error);
+            alert("Sipariş gönderilirken bir hata oluştu. Lütfen tekrar deneyin.");
         }
     };
 
-    // Sipariş Onay Modalını Açma
-    const openConfirmationModal = () => {
-        setShowConfirmationModal(true);
-    };
 
-    const closeConfirmationModal = () => {
-        setShowConfirmationModal(false);
-    };
+    const openContactModal = () => setShowContactModal(true);
+    const closeContactModal = () => setShowContactModal(false);
+    const closeConfirmationModal = () => setShowConfirmationModal(false);
 
-    // Mobil menü toggle
+
+    // Mobil menü açma/kapatma
     const toggleMobileMenu = () => {
         setIsMobileMenuOpen(!isMobileMenuOpen);
-    };
-
-    // Navigasyon tıklamalarında mobil menüyü kapat ve ilgili bölüme git
-    const handleNavLinkClick = (sectionId, customAction = null) => {
-        if (customAction) {
-            customAction(); // Özel bir eylem varsa onu çağır (örn: openTrackingModal)
-        } else {
-            setCurrentSection(sectionId);
-            // Smooth scroll
-            document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth' });
-        }
-        setIsMobileMenuOpen(false); // Menüyü kapat
     };
 
     return (
@@ -269,19 +262,30 @@ function App() {
             <nav>
                 <h1>ALICCI</h1>
                 <ul className={`nav-menu ${isMobileMenuOpen ? "open" : ""}`}>
-                    {/* Masaüstü ve mobil menü öğeleri */}
-                    <li onClick={() => handleNavLinkClick("home")}>Ana Sayfa</li>
-                    <li onClick={() => handleNavLinkClick("products")}>Ürünler</li>
-                    <li onClick={() => handleNavLinkClick("about")}>Hakkımızda</li>
-                    <li onClick={() => handleNavLinkClick("contact")}>İletişim</li>
-                    {/* Kargo Takip Linki */}
-                    <li onClick={() => handleNavLinkClick(null, openTrackingModal)}>
-                        Kargo Takip
+                    <li>
+                        <a href="#home" onClick={() => setIsMobileMenuOpen(false)}>Anasayfa</a>
                     </li>
-                    {/* Mobil menüde sadece görünür sepet öğesi */}
+                    <li>
+                        <a href="#products" onClick={() => setIsMobileMenuOpen(false)}>Ürünler</a>
+                    </li>
+                    <li>
+                        <a href="#contact" onClick={() => setIsMobileMenuOpen(false)}>İletişim</a>
+                    </li>
+                    {/* Mobil menü içinde sadece görünen sepet öğesi - BU ARTIK MOBİL MENÜNÜN İÇİNDE */}
                     <li className="mobile-only-cart-item">
                         <div className="cart-button" onClick={() => setIsCartOpen(!isCartOpen)}>
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="feather feather-shopping-cart">
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="24"
+                                height="24"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                className="feather feather-shopping-cart"
+                            >
                                 <circle cx="9" cy="21" r="1"></circle>
                                 <circle cx="20" cy="21" r="1"></circle>
                                 <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
@@ -293,14 +297,25 @@ function App() {
                     </li>
                 </ul>
 
+                {/* Hamburger İkonu ve Yanındaki Mobil Sepet Sayısı - Ekran görüntüsündeki fazla ikon buradan geliyorsa dikkat! */}
                 <div className="hamburger" onClick={toggleMobileMenu}>
-                    {/* Hamburger menü ikonu */}
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="feather feather-menu">
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className="feather feather-menu"
+                    >
                         <line x1="3" y1="12" x2="21" y2="12"></line>
                         <line x1="3" y1="6" x2="21" y2="6"></line>
                         <line x1="3" y1="18" x2="21" y2="18"></line>
                     </svg>
-                    {/* Hamburger ikonu yanında sepet sayısı (mobil için) */}
+                    {/* SADECE SEPET SAYISI BURADA KALSIN, EKRAN GÖRÜNTÜSÜNDEKİ FAZLA SEPET İKONUNU KALDIRDIK. */}
                     {cartItems.length > 0 && (
                         <span className="cart-count mobile-hamburger-cart-count">
                             {cartItems.length}
@@ -308,10 +323,21 @@ function App() {
                     )}
                 </div>
 
-                {/* Masaüstü Sepet Butonu */}
+                {/* Masaüstü Sepet Butonu - Sadece masaüstünde görünecek */}
                 <div className="desktop-cart-button-wrapper">
                     <div className="cart-button" onClick={() => setIsCartOpen(!isCartOpen)}>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="feather feather-shopping-cart">
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="24"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            className="feather feather-shopping-cart"
+                        >
                             <circle cx="9" cy="21" r="1"></circle>
                             <circle cx="20" cy="21" r="1"></circle>
                             <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
@@ -323,153 +349,166 @@ function App() {
                 </div>
             </nav>
 
-            {/* Sepet Paneli */}
+            <section id="home" className="hero">
+                <div className="hero-content">
+                    <h1>ALICCI</h1>
+                    <p>Zarafetin ve Kalitenin Buluşma Noktası</p>
+                    <button className="cta-button" onClick={() => window.location.href = '#products'}>Şimdi Keşfet</button>
+                </div>
+            </section>
+
+            <section id="products" className="products-section">
+                <h2>Ürünlerimiz</h2>
+                <div className="product-grid">
+                    {products.map((product) => (
+                        <ProductCard
+                            key={product.id}
+                            product={product}
+                            openProductModal={openProductModal}
+                            setIsCartOpen={setIsCartOpen} // Bu prop ProductCard içinde kullanılmıyor, kaldırılabilir.
+                        />
+                    ))}
+                </div>
+            </section>
+
+            <section id="contact" className="contact-section">
+                <h2>İletişim</h2>
+                <p>Bizimle iletişime geçmek veya sipariş vermek için aşağıdaki seçenekleri kullanabilirsiniz.</p>
+                <div className="contact-buttons-container">
+                    <a
+                        href={`https://wa.me/${WHATSAPP_NUMBER}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="themed-social-button whatsapp-contact"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" className="icon-whatsapp"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.6-3.873-1.6-6.065c0-6.19 5.029-11.218 11.219-11.218s11.219 5.029 11.219 11.218s-5.029 11.218-11.219 11.218c-1.996 0-3.929-.556-5.632-1.611l-6.163 1.687zm6.59-3.957l.423.242c1.488.855 3.208 1.311 4.975 1.311 5.393 0 9.771-4.378 9.771-9.77s-4.378-9.771-9.771-9.771s-9.771 4.378-9.771 9.771c0 1.767.456 3.479 1.311 4.975l.242.423-2.614.717.717-2.614zm5.029-1.378c-2.316 0-4.208-1.892-4.208-4.208c0-2.316 1.892-4.208 4.208-4.208c2.316 0 4.208 1.892 4.208 4.208c0 2.316-1.892 4.208-4.208 4.208zm0-6.906c-1.488 0-2.7 1.212-2.7 2.7c0 1.488 1.212 2.7 2.7 2.7c1.488 0 2.7-1.212 2.7-2.7c0-1.488-1.212-2.7-2.7-2.7z"/></svg>
+                        WhatsApp ile İletişime Geç
+                    </a>
+                    <a
+                        href={`https://www.instagram.com/${INSTAGRAM_USERNAME}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="themed-social-button instagram-contact"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" className="icon-instagram"><path d="M12 2.163c3.204 0 3.584.012 4.85.07c3.252.148 4.654 1.55 4.803 4.802.058 1.266.07 1.646.07 4.85s-.012 3.584-.07 4.85c-.149 3.252-1.551 4.654-4.803 4.803-1.266.058-1.646.07-4.85.07s-3.584-.012-4.85-.07c-3.252-.149-4.654-1.551-4.803-4.803-.058-1.266-.07-1.646-.07-4.85s.012-3.584.07-4.85c.149-3.252 1.551-4.654 4.803-4.803 1.266-.058 1.646-.07 4.85-.07zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.622-6.98 6.98-.058 1.28-.072 1.688-.072 4.947s.014 3.667.072 4.947c.2 4.358 2.622 6.78 6.98 6.98 1.28.058 1.688.072 4.947.072s3.667-.014 4.947-.072c4.358-.2 6.78-2.622 6.98-6.98.058-1.28.072-1.688.072-4.947s-.014-3.667-.072-4.947c-.2-4.358-2.622-6.78-6.98-6.98z"/><path d="M12 6.865c-2.812 0-5.135 2.323-5.135 5.135s2.323 5.135 5.135 5.135s5.135-2.323 5.135-5.135s-2.323-5.135-5.135-5.135zm0 8.57c-1.996 0-3.435-1.439-3.435-3.435s1.439-3.435 3.435-3.435s3.435 1.439 3.435 3.435s-1.439 3.435-3.435 3.435zm5.338-8.599c-.838 0-1.52.682-1.52 1.52s.682 1.52 1.52 1.52s1.52-.682 1.52-1.52s-.682-1.52-1.52-1.52z"/></svg>
+                        Instagram Destek
+                    </a>
+                </div>
+            </section>
+
+            <section id="payment" className="payment-section">
+                <h2>Ödeme Seçenekleri</h2>
+                <div className="payment-icons">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/4/40/Mastercard_2019_logo.svg" alt="Mastercard" />
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/a/a4/Visa_2021.svg" alt="Visa" />
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/b/b5/Garanti_BBVA_logo.png" alt="Garanti BBVA" />
+                    {/* Diğer ödeme yöntemleri ikonları */}
+                </div>
+            </section>
+
+            <footer className="footer">
+                <p>&copy; 2025 ALICCI. Tüm Hakları Saklıdır.</p>
+                <div className="social-links">
+                    <a href={`https://instagram.com/${INSTAGRAM_USERNAME}`} target="_blank" rel="noopener noreferrer">Instagram</a>
+                    {/* Diğer sosyal medya linkleri */}
+                </div>
+            </footer>
+
+            {/* Sepet Paneli Modalı */}
             <div className={`cart-panel ${isCartOpen ? "open" : ""}`}>
-                <h3>Sepetiniz</h3>
-                <ul>
+                <div className="cart-header">
+                    <h3>Sepetiniz ({cartItems.length} Ürün)</h3>
+                    <button className="close-cart-button" onClick={() => setIsCartOpen(false)}>
+                        &times;
+                    </button>
+                </div>
+                <div className="cart-items-list">
                     {cartItems.length === 0 ? (
                         <p>Sepetinizde ürün bulunmamaktadır.</p>
                     ) : (
-                        cartItems.map((item, index) => (
-                            <li key={`${item.id}-${item.size}-${index}`}>
-                                <div className="item-details">
-                                    <span>
-                                        {item.name} ({item.size})
-                                    </span>
-                                    <span className="item-quantity">
-                                        Adet: {item.quantity} x {item.price} TL
-                                    </span>
+                        cartItems.map((item) => (
+                            <div key={`${item.id}-${item.selectedSize}`} className="cart-item">
+                                <img src={item.image[0]} alt={item.name} className="cart-item-image" />
+                                <div className="cart-item-details">
+                                    <h4>{item.name}</h4>
+                                    <p>Beden: {item.selectedSize}</p>
+                                    <p>Fiyat: {item.price} TL</p>
+                                    <div className="cart-item-quantity">
+                                        <button onClick={() => handleDecreaseQuantity(item)}>-</button>
+                                        <span>{item.quantity}</span>
+                                        <button onClick={() => handleIncreaseQuantity(item)}>+</button>
+                                    </div>
+                                    <button
+                                        className="remove-item-button"
+                                        onClick={() => handleRemoveItem(item)}
+                                    >
+                                        Kaldır
+                                    </button>
                                 </div>
-                                <button
-                                    className="remove-item-button"
-                                    onClick={() => removeFromCart(item)}
-                                >
-                                    &times;
-                                </button>
-                            </li>
+                            </div>
                         ))
                     )}
-                </ul>
-                {cartItems.length > 0 && (
-                    <div className="total">Toplam: {getTotalPrice()} TL</div>
-                )}
-                <button onClick={handleCheckout}>Sepeti Onayla</button>
-                <button className="close-modal close-modal-small" onClick={() => setIsCartOpen(false)}>
-                    &times;
-                </button>
-            </div>
-
-            <main>
-                <section id="home" className="hero">
-                    <h2>ALICCI'ye Hoş Geldiniz</h2>
-                    <p>En zarif ve şık giyim parçalarını keşfedin.</p>
-                    <button onClick={() => handleNavLinkClick("products")}>Koleksiyonu Keşfet</button>
-                </section>
-
-                <section id="products" className="products">
-                    <h3>Ürünlerimiz</h3>
-                    <div className="products-grid">
-                        {products.map((product) => (
-                            <ProductCard
-                                key={product.id}
-                                product={product}
-                                openProductModal={openProductModal} // openProductModal'ı ProductCard'a geçir
-                                setIsCartOpen={setIsCartOpen} // setIsCartOpen'ı ProductCard'a geçir
-                            />
-                        ))}
-                    </div>
-                </section>
-
-                <section id="about" className="about">
-                    <h3>Hakkımızda</h3>
-                    <p>
-                        ALICCI, zamansız şıklığı ve modern tasarımları bir araya getiren bir giyim markasıdır. Her parçamız, kaliteden ödün vermeden özenle tasarlanır ve üretilir. Müşterilerimize sadece giysi değil, aynı zamanda kendilerini özel hissedecekleri bir deneyim sunmayı hedefliyoruz.
-                    </p>
-                    <p>
-                        Sürdürülebilir moda ilkelerini benimseyerek, çevreye duyarlı üretim süreçlerini destekliyor ve uzun ömürlü, kaliteli ürünler sunmaya özen gösteriyoruz. ALICCI ile gardırobunuzda fark yaratın.
-                    </p>
-                </section>
-
-                <section id="contact" className="contact">
-                    <h3>İletişim</h3>
-                    <p>Sorularınız veya geri bildirimleriniz için bize ulaşın.</p>
-                    {/* İletişim Formu */}
-                    <form ref={form} onSubmit={handleContactFormSubmit}>
-                        <input type="text" name="user_name" placeholder="Adınız Soyadınız" required />
-                        <input type="email" name="user_email" placeholder="E-posta Adresiniz" required />
-                        <textarea name="message" placeholder="Mesajınız" required></textarea>
-                        <button type="submit">Gönder</button>
-                    </form>
-                    <div className="contact-dm-buttons">
-                        <a
-                            href={`https://wa.me/${WHATSAPP_NUMBER}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="themed-social-button whatsapp-contact"
-                        >
-                            WhatsApp ile İletişime Geç
-                        </a>
-                        <a
-                            href={`https://www.instagram.com/${INSTAGRAM_USERNAME}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="themed-social-button instagram-contact"
-                        >
-                            Instagram'dan Mesaj Gönder
-                        </a>
-                    </div>
-                </section>
-            </main>
-
-            <footer>
-                <p>&copy; 2025 ALICCI. Tüm Hakları Saklıdır.</p>
-                <div className="instagram">
-                    <a href={`https://www.instagram.com/${INSTAGRAM_USERNAME}`} target="_blank" rel="noopener noreferrer">
-                        Instagram
-                    </a>
                 </div>
-            </footer>
+                {cartItems.length > 0 && (
+                    <div className="cart-footer">
+                        <p>Toplam Tutar: {calculateTotalPrice()} TL</p>
+                        <button className="checkout-button" onClick={openContactModal}>Siparişi Tamamla</button>
+                    </div>
+                )}
+            </div>
 
             {/* Ürün Detay Modalı */}
             {selectedProduct && (
                 <div className="modal-backdrop" onClick={closeProductModal}>
                     <div className="modal-content-base product-modal" onClick={(e) => e.stopPropagation()}>
-                        <button className="close-modal close-modal-small" onClick={closeProductModal}>
+                        <button className="close-modal" onClick={closeProductModal}>
                             &times;
                         </button>
-                        <div className="product-modal-image-wrapper">
-                            <img
-                                src={selectedProduct.image[currentModalImageIndex]}
-                                alt={selectedProduct.name}
-                                className="product-modal-image"
-                            />
+                        <div className="product-modal-image-gallery">
                             {selectedProduct.image && selectedProduct.image.length > 1 && (
-                                <div className="modal-image-navigation">
-                                    <button className="modal-nav-arrow left" onClick={prevModalImage}>
-                                        &#x2039; {/* Sol ok */}
-                                    </button>
-                                    <button className="modal-nav-arrow right" onClick={nextModalImage}>
-                                        &#x203A; {/* Sağ ok */}
-                                    </button>
-                                </div>
+                                <button
+                                    className="image-arrow left-arrow"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setCurrentModalImageIndex(prevIndex =>
+                                            (prevIndex - 1 + selectedProduct.image.length) % selectedProduct.image.length
+                                        );
+                                    }}
+                                >
+                                    &#x2039; {/* Sol ok */}
+                                </button>
+                            )}
+                            {selectedProduct.image && selectedProduct.image.length > 0 && (
+                                <img
+                                    src={selectedProduct.image[currentModalImageIndex]}
+                                    alt={selectedProduct.name}
+                                    className="product-modal-image"
+                                />
+                            )}
+                            {selectedProduct.image && selectedProduct.image.length > 1 && (
+                                <button
+                                    className="image-arrow right-arrow"
+                                    onClick={(e) => {
+                                        e.stopPropagation(); // Modalın kapanmasını engelle
+                                        setCurrentModalImageIndex(prevIndex =>
+                                            (prevIndex + 1) % selectedProduct.image.length
+                                        );
+                                    }}
+                                >
+                                    &#x203A; {/* Sağ ok */}
+                                </button>
                             )}
                         </div>
                         <div className="product-info">
                             <h2>{selectedProduct.name}</h2>
-                            <p className="desc">
-                                {selectedProduct.description || "Bu ürün ALICCI koleksiyonunun zarif parçalarındandır."}
-                            </p>
+                            <p className="desc">{selectedProduct.description || "Bu ürün ALICCI koleksiyonunun zarif parçalarındandır."}</p>
                             <div className="size-select">
                                 <p>Beden Seç:</p>
                                 {(selectedProduct.sizes && selectedProduct.sizes.length > 0
                                     ? selectedProduct.sizes
                                     : ["S", "M", "L", "XL"]
                                 ).map((size) => (
-                                    <button
-                                        key={size}
-                                        className={selectedSize === size ? "selected" : ""}
-                                        onClick={() => setSelectedSize(size)}
-                                    >
+                                    <button key={size} className={selectedSize === size ? "selected" : ""} onClick={() => setSelectedSize(size)}>
                                         {size}
                                     </button>
                                 ))}
@@ -486,70 +525,45 @@ function App() {
                 </div>
             )}
 
-            {/* Sipariş Seçenekleri Modalı */}
-            {showOrderOptionsModal && (
-                <div className="modal-backdrop" onClick={closeOrderOptionsModal}>
+            {/* İletişim Formu Modalı */}
+            {showContactModal && (
+                <div className="modal-backdrop" onClick={closeContactModal}>
                     <div className="modal-content-base order-options-modal" onClick={(e) => e.stopPropagation()}>
-                        <button className="close-modal close-modal-small" onClick={closeOrderOptionsModal}>
+                        <button className="close-modal" onClick={closeContactModal}>
                             &times;
                         </button>
                         <h2>Siparişinizi Tamamlayın</h2>
-                        <p>Siparişiniz için ödeme yapmak üzere bizimle iletişime geçebilirsiniz:</p>
+                        <p>Aşağıdaki formu doldurarak siparişinizi bize iletebilirsiniz. Siparişiniz hakkında sizinle iletişime geçeceğiz.</p>
+                        <form ref={contactFormRef} onSubmit={sendOrderEmail} className="contact-form">
+                            <label htmlFor="user_name">Adınız Soyadınız</label>
+                            <input type="text" name="user_name" id="user_name" required />
+
+                            <label htmlFor="user_email">E-posta Adresiniz</label>
+                            <input type="email" name="user_email" id="user_email" required />
+
+                            <label htmlFor="user_phone">Telefon Numaranız</label>
+                            <input type="tel" name="user_phone" id="user_phone" required />
+
+                            <label htmlFor="user_address">Adresiniz</label>
+                            <textarea name="user_address" id="user_address" rows="3" required></textarea>
+
+                            <label htmlFor="user_note">Ek Not (İsteğe Bağlı)</label>
+                            <textarea name="user_note" id="user_note" rows="2"></textarea>
+
+                            <button type="submit" className="submit-button">Siparişi Gönder</button>
+                        </form>
+
+                        <div className="modal-divider">veya</div>
+
                         <div className="contact-dm-buttons">
                             <a
                                 href={`https://wa.me/${WHATSAPP_NUMBER}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="themed-social-button whatsapp-contact"
-                                onClick={() => {
-                                    // WhatsApp'a sepettekileri otomatik mesaj olarak ekleme (isteğe bağlı)
-                                    const message = `Merhaba, sepetimdeki ürünleri sipariş etmek istiyorum:\n${cartItems.map(item => `- ${item.name} (${item.size}) x${item.quantity}`).join('\n')}\nToplam: ${getTotalPrice()} TL`;
-                                    window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`, '_blank');
-                                    setShowOrderOptionsModal(false); // Modalı kapat
-                                    setCartItems([]); // Sepeti boşalt
-                                    openConfirmationModal(); // Onay modalını göster
-                                }}
                             >
-                                WhatsApp ile Sipariş Ver
-                            </a>
-                            <a
-                                href={`https://www.instagram.com/${INSTAGRAM_USERNAME}`} // Instagram kullanıcı adı kullanıldı
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="themed-social-button instagram-contact"
-                                onClick={() => {
-                                    setShowOrderOptionsModal(false); // Modalı kapat
-                                    setCartItems([]); // Sepeti boşalt
-                                    openConfirmationModal(); // Onay modalını göster
-                                }}
-                            >
-                                Instagram DM ile Sipariş Ver
-                            </a>
-                        </div>
-                        <p className="small-text">
-                            Siparişiniz ödeme yapıldıktan sonra işleme alınacaktır.
-                        </p>
-                    </div>
-                </div>
-            )}
-
-            {/* Kargo Takip Modalı - SADECE İLETİŞİM BUTONLARI İLE GÜNCELLENDİ */}
-            {showTrackingModal && (
-                <div className="modal-backdrop" onClick={closeTrackingModal}>
-                    <div className="modal-content-base tracking-modal-content" onClick={(e) => e.stopPropagation()}>
-                        <button className="close-modal close-modal-small" onClick={closeTrackingModal}>
-                            &times;
-                        </button>
-                        <h2>Kargo Takip Bilgisi İçin İletişime Geçin</h2>
-                        <p>Kargonuzun durumu hakkında bilgi almak için aşağıdaki kanallardan bize ulaşabilirsiniz:</p>
-                        <div className="contact-dm-buttons tracking-dm-buttons">
-                            <a
-                                href={`https://wa.me/${WHATSAPP_NUMBER}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="themed-social-button whatsapp-contact"
-                            >
-                                WhatsApp Destek
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" className="icon-whatsapp"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.6-3.873-1.6-6.065c0-6.19 5.029-11.218 11.219-11.218s11.219 5.029 11.219 11.218s-5.029 11.218-11.219 11.218c-1.996 0-3.929-.556-5.632-1.611l-6.163 1.687zm6.59-3.957l.423.242c1.488.855 3.208 1.311 4.975 1.311 5.393 0 9.771-4.378 9.771-9.77s-4.378-9.771-9.771-9.771s-9.771 4.378-9.771 9.771c0 1.767.456 3.479 1.311 4.975l.242.423-2.614.717.717-2.614zm5.029-1.378c-2.316 0-4.208-1.892-4.208-4.208c0-2.316 1.892-4.208 4.208-4.208c2.316 0 4.208 1.892 4.208 4.208c0 2.316-1.892 4.208-4.208 4.208zm0-6.906c-1.488 0-2.7 1.212-2.7 2.7c0 1.488 1.212 2.7 2.7 2.7c1.488 0 2.7-1.212 2.7-2.7c0-1.488-1.212-2.7-2.7-2.7z"/></svg>
+                                WhatsApp ile İletişime Geç
                             </a>
                             <a
                                 href={`https://www.instagram.com/${INSTAGRAM_USERNAME}`}
@@ -557,6 +571,7 @@ function App() {
                                 rel="noopener noreferrer"
                                 className="themed-social-button instagram-contact"
                             >
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" className="icon-instagram"><path d="M12 2.163c3.204 0 3.584.012 4.85.07c3.252.148 4.654 1.55 4.803 4.802.058 1.266.07 1.646.07 4.85s-.012 3.584-.07 4.85c-.149 3.252-1.551 4.654-4.803 4.803-1.266.058-1.646.07-4.85.07s-3.584-.012-4.85-.07c-3.252-.149-4.654-1.551-4.803-4.803-.058-1.266-.07-1.646-.07-4.85s.012-3.584.07-4.85c.149-3.252 1.551-4.654 4.803-4.803 1.266-.058 1.646-.07 4.85-.07zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.622-6.98 6.98-.058 1.28-.072 1.688-.072 4.947s.014 3.667.072 4.947c.2 4.358 2.622 6.78 6.98 6.98 1.28.058 1.688.072 4.947.072s3.667-.014 4.947-.072c4.358-.2 6.78-2.622 6.98-6.98.058-1.28.072-1.688.072-4.947s-.014-3.667-.072-4.947c-.2-4.358-2.622-6.78-6.98-6.98z"/><path d="M12 6.865c-2.812 0-5.135 2.323-5.135 5.135s2.323 5.135 5.135 5.135s5.135-2.323 5.135-5.135s-2.323-5.135-5.135-5.135zm0 8.57c-1.996 0-3.435-1.439-3.435-3.435s1.439-3.435 3.435-3.435s3.435 1.439 3.435 3.435s-1.439 3.435-3.435 3.435zm5.338-8.599c-.838 0-1.52.682-1.52 1.52s.682 1.52 1.52 1.52s1.52-.682 1.52-1.52s-.682-1.52-1.52-1.52z"/></svg>
                                 Instagram Destek
                             </a>
                         </div>
