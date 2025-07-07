@@ -102,6 +102,21 @@ function App() {
         localStorage.setItem("alicciCartItems", JSON.stringify(cartItems));
     }, [cartItems]);
 
+    // Modal açıkken body scrollunu engelleme
+    useEffect(() => {
+        const isAnyModalOpen = selectedProduct || showOrderOptionsModal || showTrackingModal || showConfirmationModal;
+        if (isAnyModalOpen) {
+            document.body.classList.add('no-scroll');
+        } else {
+            document.body.classList.remove('no-scroll');
+        }
+        // Temizlik fonksiyonu: Bileşen unmount edildiğinde veya state değiştiğinde sınıfı kaldır
+        return () => {
+            document.body.classList.remove('no-scroll');
+        };
+    }, [selectedProduct, showOrderOptionsModal, showTrackingModal, showConfirmationModal]);
+
+
     const openProductModal = (product) => {
         setSelectedProduct(product);
         setCurrentModalImageIndex(0);
@@ -376,57 +391,61 @@ function App() {
                         <button className="close-modal close-modal-small" onClick={closeProductModal}>
                             &times;
                         </button>
-                        <div className="product-modal-image-wrapper">
-                            <img
-                                src={selectedProduct.image[currentModalImageIndex]}
-                                alt={selectedProduct.name}
-                                className="product-modal-image"
-                                // Adjusted styling for larger images in modal
-                                style={{
-                                    maxHeight: '80vh', /* Increased max-height */
-                                    width: 'auto',
-                                    maxWidth: '100%',
-                                    objectFit: 'contain'
-                                }}
-                            />
-                            {selectedProduct.image && selectedProduct.image.length > 1 && (
-                                <div className="modal-image-navigation">
-                                    <button className="modal-nav-arrow left" onClick={prevModalImage}>
-                                        &#x2039;
-                                    </button>
-                                    <button className="modal-nav-arrow right" onClick={nextModalImage}>
-                                        &#x203A;
-                                    </button>
-                                </div>
-                            )}
-                        </div>
-                        <div className="product-info">
-                            <h2>{selectedProduct.name}</h2>
-                            <p className="desc">
-                                {selectedProduct.description || "Bu ürün ALICCI koleksiyonunun zarif parçalarındandır."}
-                            </p>
-                            <div className="size-select">
-                                <p>Beden Seç:</p>
-                                {(selectedProduct.sizes && selectedProduct.sizes.length > 0
-                                    ? selectedProduct.sizes
-                                    : ["S", "M", "L", "XL", "XXL"]
-                                ).map((size) => (
-                                    <button
-                                        key={size}
-                                        className={selectedSize === size ? "selected" : ""}
-                                        onClick={() => setSelectedSize(size)}
-                                    >
-                                        {size}
-                                    </button>
-                                ))}
+                        {/* Mobil için sıralamayı değiştirmek adına product-info içeriğini dışarı taşıyoruz */}
+                        <div className="product-modal-content-wrapper"> {/* Yeni wrapper div */}
+                            <div className="product-modal-image-wrapper">
+                                <img
+                                    src={selectedProduct.image[currentModalImageIndex]}
+                                    alt={selectedProduct.name}
+                                    className="product-modal-image"
+                                    // Adjusted styling for larger images in modal
+                                    style={{
+                                        maxHeight: '60vh', /* Daha fazla yer bırakmak için max-height azaltıldı */
+                                        width: 'auto',
+                                        maxWidth: '100%',
+                                        objectFit: 'contain'
+                                    }}
+                                />
+                                {selectedProduct.image && selectedProduct.image.length > 1 && (
+                                    <div className="modal-image-navigation">
+                                        <button className="modal-nav-arrow left" onClick={prevModalImage}>
+                                            &#x2039;
+                                        </button>
+                                        <button className="modal-nav-arrow right" onClick={nextModalImage}>
+                                            &#x203A;
+                                        </button>
+                                    </div>
+                                )}
                             </div>
-                            <button
-                                className="add-to-cart-button"
-                                onClick={handleAddToCart}
-                                disabled={!selectedSize}
-                            >
-                                Sepete Ekle
-                            </button>
+                            {/* Ürün bilgileri, beden ve sepete ekle butonu ayrı bir div içinde */}
+                            <div className="product-info-mobile-order">
+                                <h2>{selectedProduct.name}</h2>
+                                <p className="desc">
+                                    {selectedProduct.description || "Bu ürün ALICCI koleksiyonunun zarif parçalarındandır."}
+                                </p>
+                                <div className="size-select">
+                                    <p>Beden Seç:</p>
+                                    {(selectedProduct.sizes && selectedProduct.sizes.length > 0
+                                        ? selectedProduct.sizes
+                                        : ["S", "M", "L", "XL", "XXL"]
+                                    ).map((size) => (
+                                        <button
+                                            key={size}
+                                            className={selectedSize === size ? "selected" : ""}
+                                            onClick={() => setSelectedSize(size)}
+                                        >
+                                            {size}
+                                        </button>
+                                    ))}
+                                </div>
+                                <button
+                                    className="add-to-cart-button"
+                                    onClick={handleAddToCart}
+                                    disabled={!selectedSize}
+                                >
+                                    Sepete Ekle
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
