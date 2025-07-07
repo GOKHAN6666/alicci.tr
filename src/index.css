@@ -1556,3 +1556,118 @@ nav ul.nav-menu.open {
     margin-left: 5px;
   }
 }
+/* Mobil modal ayarları */
+@media (max-width: 768px) {
+  .product-modal {
+    width: 95% !important;
+    max-height: 90vh !important;
+    overflow-y: auto !important;
+  }
+  
+  .product-modal-image-wrapper {
+    height: auto !important;
+    max-height: 50vh !important;
+  }
+  
+  .product-modal-image {
+    max-height: 40vh !important;
+    object-fit: contain !important;
+  }
+  
+  .product-info {
+    padding: 15px !important;
+  }
+  
+  .size-select button {
+    padding: 8px 12px !important;
+    margin: 5px !important;
+  }
+  
+  .modal-nav-arrow {
+    font-size: 24px !important;
+    padding: 15px !important;
+  }
+}
+/* Mobil swipe için ek stiller */
+.product-modal-image-wrapper {
+  touch-action: pan-y;
+}
+
+.size-buttons-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+
+@media (max-width: 480px) {
+  .size-select button {
+    min-width: 40px !important;
+    padding: 6px 8px !important;
+    font-size: 14px !important;
+  }
+  
+  .product-info h2 {
+    font-size: 20px !important;
+  }
+  
+  .add-to-cart-button {
+    padding: 12px 20px !important;
+    font-size: 16px !important;
+  }
+}
+.close-modal-small {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: rgba(0,0,0,0.5);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+@media (max-width: 768px) {
+  .close-modal-small {
+    width: 40px;
+    height: 40px;
+    font-size: 24px;
+    background: rgba(0,0,0,0.7);
+  }
+}
+/* index.css'e ekleyin */
+.fullscreen-mobile {
+  width: 100% !important;
+  height: 100% !important;
+  max-height: 100% !important;
+  border-radius: 0 !important;
+}
+
+.fullscreen-toggle {
+  position: absolute;
+  bottom: 15px;
+  right: 15px;
+  background: rgba(0,0,0,0.5);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  font-size: 20px;
+  z-index: 10;
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .fullscreen-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
