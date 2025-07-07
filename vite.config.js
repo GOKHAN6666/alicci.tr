@@ -1,16 +1,11 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import EnvCompatible from 'vite-plugin-env-compatible';
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), EnvCompatible()],
   server: {
     host: true,
   },
   base: '/',
-  define: {
-    'process.env': {
-      VITE_SUPABASE_URL: process.env.VITE_SUPABASE_URL,
-      VITE_SUPABASE_ANON_KEY: process.env.VITE_SUPABASE_ANON_KEY,
-    },
-  },
 });
