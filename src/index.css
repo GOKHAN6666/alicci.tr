@@ -1671,3 +1671,219 @@ nav ul.nav-menu.open {
     justify-content: center;
   }
 }
+/* Genel Stil: Body kaydırmasını engelleme */
+body.no-scroll {
+    overflow: hidden;
+}
+
+/* Product Modal Genel Stilleri */
+.modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    overflow-y: auto; /* Modal içeriği fazla olursa kaydırılabilir olsun */
+    -webkit-overflow-scrolling: touch; /* iOS için yumuşak kaydırma */
+}
+
+.modal-content-base {
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    position: relative;
+    max-height: 95vh; /* Modalın ekranı aşmasını engelle */
+    overflow-y: auto; /* İçerik fazla olursa modalın kendi içinde kaydırma */
+    -webkit-overflow-scrolling: touch; /* iOS için yumuşak kaydırma */
+    margin: 10px; /* Kenarlarda boşluk bırak */
+    box-sizing: border-box; /* Padding ve border genişliğe dahil */
+}
+
+.close-modal {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: none;
+    border: none;
+    font-size: 1.5em;
+    cursor: pointer;
+    color: #333;
+}
+
+/* Ürün Detay Modalı Spesifik Stilleri */
+.product-modal {
+    display: flex;
+    flex-direction: column; /* Mobil için varsayılan olarak dikey sıralama */
+    gap: 20px; /* Ana bölümler arasında boşluk */
+    width: 95%; /* Mobil cihazlarda modal genişliği */
+    max-width: 500px; /* Mobil ve küçük tabletlerde makul genişlik */
+    padding: 15px; /* Mobil için daha az padding */
+}
+
+/* Yeni eklenen wrapper div'i */
+.product-modal-content-wrapper {
+    display: flex;
+    flex-direction: column; /* Mobil için içeriği dikey sırala */
+    width: 100%; /* Tüm genişliği kapla */
+    gap: 15px; /* Resim ve bilgi bloku arasında boşluk */
+}
+
+.product-modal-image-wrapper {
+    width: 100%;
+    text-align: center; /* Resmi ortalamak için */
+    position: relative;
+}
+
+.product-modal-image {
+    width: auto;
+    max-width: 100%;
+    height: auto; /* Otomatik yükseklik */
+    object-fit: contain;
+    /* max-height: 60vh; App.jsx içinde inline style olarak duruyor */
+}
+
+.modal-image-navigation {
+    position: absolute;
+    top: 50%;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    transform: translateY(-50%);
+    pointer-events: none; /* Okların üzerine tıklamayı etkinleştir */
+}
+
+.modal-nav-arrow {
+    background: rgba(255, 255, 255, 0.7);
+    border: none;
+    font-size: 2em;
+    color: #333;
+    cursor: pointer;
+    padding: 5px 10px;
+    border-radius: 50%;
+    pointer-events: all; /* Okların tıklanmasını sağla */
+    transition: background-color 0.2s ease;
+}
+
+.modal-nav-arrow:hover {
+    background: rgba(255, 255, 255, 0.9);
+}
+
+/* Bilgi bölümü (mobil için sıralanmış hali) */
+.product-info-mobile-order {
+    display: flex;
+    flex-direction: column; /* İçindeki elemanları dikey sırala */
+    gap: 10px; /* Başlık, açıklama, beden vb. arasında boşluk */
+    width: 100%;
+}
+
+.product-info-mobile-order h2 {
+    font-size: 1.6em; /* Mobil için başlık boyutu */
+    margin-bottom: 5px;
+    text-align: center; /* Mobil için ortala */
+}
+
+.product-info-mobile-order .desc {
+    font-size: 0.9em; /* Mobil için açıklama font boyutu */
+    line-height: 1.4;
+    margin-bottom: 10px;
+    text-align: center; /* Mobil için ortala */
+}
+
+.product-info-mobile-order .size-select {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center; /* Bedenleri ortala */
+    gap: 8px;
+    margin-bottom: 15px;
+    align-items: center;
+}
+
+.product-info-mobile-order .size-select p {
+    margin: 0;
+    font-weight: bold;
+    width: 100%; /* Mobil için bedeni seç yazısı tek satırda */
+    text-align: center;
+}
+
+.product-info-mobile-order .size-select button {
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    background-color: #f9f9f9;
+    cursor: pointer;
+    border-radius: 5px;
+    font-size: 0.9em;
+    min-width: 40px; /* Beden butonlarının minimum genişliği */
+}
+
+.product-info-mobile-order .size-select button.selected {
+    background-color: #333;
+    color: white;
+    border-color: #333;
+}
+
+.product-info-mobile-order .add-to-cart-button {
+    width: 100%;
+    padding: 12px 20px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1.1em;
+    transition: background-color 0.3s ease;
+}
+
+.product-info-mobile-order .add-to-cart-button:hover {
+    background-color: #0056b3;
+}
+
+.product-info-mobile-order .add-to-cart-button:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+}
+
+/* Masaüstü ve daha büyük ekranlar için media query */
+@media (min-width: 768px) {
+    .product-modal {
+        flex-direction: row; /* Masaüstünde yatay sıralama */
+        justify-content: center;
+        align-items: flex-start; /* Elemanları üste hizala */
+        max-width: 900px; /* Masaüstünde modal genişliği */
+        padding: 30px; /* Masaüstünde daha fazla padding */
+    }
+
+    .product-modal-content-wrapper {
+        flex-direction: row; /* İçerik wrapper'ını masaüstünde yatay sırala */
+        width: auto;
+        gap: 30px; /* Resim ve bilgi bloku arasında daha fazla boşluk */
+    }
+
+    .product-modal-image-wrapper {
+        flex: 1; /* Mevcut alanı doldur */
+        max-width: 45%; /* Resim için belirli bir genişlik */
+    }
+
+    .product-info-mobile-order { /* Masaüstünde bu sınıfa sahip div yine flex-column kalsın */
+        flex: 1; /* Mevcut alanı doldur */
+        max-width: 50%; /* Bilgi için belirli bir genişlik */
+        padding-top: 0; /* Gerekirse padding kaldırılabilir */
+        text-align: left; /* Masaüstünde yazıları sola hizala */
+        align-items: flex-start; /* Elemanları sola hizala */
+    }
+
+    .product-info-mobile-order h2,
+    .product-info-mobile-order .desc,
+    .product-info-mobile-order .size-select p {
+        text-align: left; /* Masaüstünde başlık ve açıklamayı sola hizala */
+    }
+
+    .product-info-mobile-order .size-select {
+        justify-content: flex-start; /* Bedenleri sola hizala */
+    }
+}
