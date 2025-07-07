@@ -1,3 +1,5 @@
+console.log("URL:", `"${import.meta.env.VITE_SUPABASE_URL}"`);
+console.log("KEY:", `"${import.meta.env.VITE_SUPABASE_ANON_KEY}"`);
 import { createClient } from '@supabase/supabase-js';
 const supabase = createClient("https://xyz.supabase.co", "eyJ..."); // test için sabit ver
 
