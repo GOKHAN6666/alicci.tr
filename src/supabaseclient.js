@@ -1,12 +1,17 @@
-console.log("URL:", `"${import.meta.env.VITE_SUPABASE_URL}"`);
-console.log("KEY:", `"${import.meta.env.VITE_SUPABASE_ANON_KEY}"`);
 import { createClient } from '@supabase/supabase-js';
-const supabase = createClient("https://xyz.supabase.co", "eyJ..."); // test için sabit ver
 
+// Ortam değişkenlerinden değerleri al
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+// Console çıktısı: ENV değerleri geldi mi?
+console.log('Supabase URL:', `"${supabaseUrl}"`);
+console.log('Supabase KEY:', `"${supabaseAnonKey}"`);
+
+// Env değerleri yoksa hata fırlat
 if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error('Supabase URL veya Key eksik. .env dosyanı kontrol et.');
 }
 
+// Supabase client yarat
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
-console.log('Supabase URL:', import.meta.env.VITE_SUPABASE_URL);
-console.log('Supabase KEY:', import.meta.env.VITE_SUPABASE_ANON_KEY);
