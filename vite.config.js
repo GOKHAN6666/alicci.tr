@@ -8,7 +8,6 @@ export default defineConfig({
     host: true,
   },
   base: '/',
-  // Vercel Analytics'in harici Next bağımlılıklarını Vite derlemesinden tamamen muaf tutuyoruz
   optimizeDeps: {
     exclude: ['@vercel/analytics']
   }
