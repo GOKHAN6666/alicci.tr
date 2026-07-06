@@ -8,10 +8,8 @@ export default defineConfig({
     host: true,
   },
   base: '/',
-  build: {
-    rollupOptions: {
-      // Vite'in Next.js paketlerini arayıp hata vermesini tamamen engelliyoruz
-      external: ['next/navigation'],
-    },
-  },
+  // Vercel Analytics'in harici Next bağımlılıklarını Vite derlemesinden tamamen muaf tutuyoruz
+  optimizeDeps: {
+    exclude: ['@vercel/analytics']
+  }
 });
