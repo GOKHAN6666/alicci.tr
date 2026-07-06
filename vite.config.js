@@ -8,4 +8,10 @@ export default defineConfig({
     host: true,
   },
   base: '/',
+  build: {
+    rollupOptions: {
+      // Vite'in Next.js paketlerini arayıp hata vermesini tamamen engelliyoruz
+      external: ['next/navigation'],
+    },
+  },
 });
