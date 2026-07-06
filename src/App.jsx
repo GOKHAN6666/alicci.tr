@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import emailjs from "emailjs-com";
 import "./index.css";
 import { Analytics } from "@vercel/analytics/react"
-import { supabase } from "./supabaseClient";
+import { supabase } from "./supabaseClient.jsx";
 
 const ProductCard = ({ product, openProductModal, setIsCartOpen }) => {
     const [hoveredImageIndex, setHoveredImageIndex] = useState(0);
