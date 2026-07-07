@@ -2150,3 +2150,30 @@ body.dark-mode .toast-message {
   background-color: #fff;
   color: #333;
 }
+/* Temaya Geçiş Butonu */
+.theme-toggle-btn {
+  background: transparent;
+  border: 1px solid rgba(128, 128, 128, 0.2);
+  padding: 6px 10px;
+  border-radius: 50%; /* Yuvarlak şık bir buton */
+  cursor: pointer;
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease; /* Yumuşak geçiş */
+  margin-right: 15px; /* Hamburger menü ile arasına boşluk bırakır */
+  outline: none;
+}
+
+/* Üzerine gelince oluşan hover efekti */
+.theme-toggle-btn:hover {
+  background-color: rgba(128, 128, 128, 0.1);
+  transform: scale(1.1);
+}
+
+/* Karanlık mod aktifken butonun border rengini hafifçe açalım */
+.dark-mode .theme-toggle-btn {
+  border-color: rgba(255, 255, 255, 0.3);
+  color: #fff;
+}
