@@ -1,4 +1,4 @@
-/* src/index.css - Uygulamanın Tüm Stillerini İçeren Birleşik CSS */
+/* src/index.css - Birleştirilmiş Tüm Kod */
 
 /* Google Fonts */
 @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Inter:wght@300;400;500&display=swap');
@@ -649,7 +649,7 @@ nav ul.nav-menu li button:hover {
     background: #333;
 }
 
-/* --- ADMIN PANEL STİLLERİ BAŞLIYOR (Değişiklik yok) --- */
+/* --- ADMIN PANEL STİLLERİ BAŞLIYOR --- */
 .admin-panel-container {
     max-width: 1000px;
     margin: 50px auto;
@@ -748,7 +748,7 @@ nav ul.nav-menu li button:hover {
     border-radius: 5px;
     margin-right: 15px;
     border: 1px solid #ddd;
-}
+}  
 
 .product-item span {
     flex-grow: 1;
