@@ -2006,3 +2006,31 @@ body.dark-mode .add-to-cart-button:hover,
 body.dark-mode .checkout-button:hover {
     background-color: #ccc;
 }
+/* Sepet Paneli Animasyon Güncellemesi */
+.cart-panel {
+    position: fixed;
+    top: 0;
+    right: -400px; /* Başlangıç pozisyonu */
+    width: 100%;
+    max-width: 400px;
+    height: 100%;
+    background: #f4f4f4;
+    z-index: 999;
+    
+    /* Yumuşak geçiş için yeni tanımlar */
+    transition: right 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+    opacity: 0;
+    visibility: hidden; /* Kapalıyken etkileşimi kes */
+}
+
+/* Sepet Açıkken */
+.cart-panel.open {
+    right: 0;
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Koyu modda renk geçişini bozmamak için */
+body.dark-mode .cart-panel {
+    background-color: #1e1e1e; /* Dark mode renkleri */
+}
