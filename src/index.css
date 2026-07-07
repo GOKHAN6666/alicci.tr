@@ -1946,4 +1946,63 @@ body.dark-mode textarea {
   color: #fff;
   border: 1px solid #444;
 }
+/* Geçiş efektini tüm sayfa öğelerine tanımlıyoruz */
+body, .hero, .contact, .about, nav, footer, .product-modal, .cart-panel, .product-card, button {
+    transition: background-color 0.4s ease, color 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease;
+}
 
+:root {
+    /* Açık Mod */
+    --bg-color: #fdfdfd;
+    --section-bg: #f1f1f1; /* Hero ve Contact arka planları için */
+    --text-color: #111;
+    --card-bg: #f6f6f6;
+    --nav-bg: #fff;
+    --border-color: #eee;
+    --btn-bg: #111;
+    --btn-text: #fff;
+}
+
+body.dark-mode {
+    /* Koyu Mod */
+    --bg-color: #121212;
+    --section-bg: #1a1a1a; /* Artık burası da karanlık olacak */
+    --text-color: #e0e0e0;
+    --card-bg: #1e1e1e;
+    --nav-bg: #121212;
+    --border-color: #333;
+    --btn-bg: #eee; /* Koyu modda buton daha açık renk */
+    --btn-text: #111;
+    
+    background-color: var(--bg-color);
+    color: var(--text-color);
+}
+/* Hero, Contact ve About bölümleri için */
+.hero, .contact, .about {
+    background-color: var(--section-bg);
+    color: var(--text-color);
+}
+
+/* Nav ve Footer */
+body.dark-mode nav, 
+body.dark-mode footer {
+    background-color: var(--nav-bg);
+    border-bottom: 1px solid var(--border-color);
+}
+
+/* Ürün kartları */
+body.dark-mode .product-card {
+    background-color: var(--card-bg);
+    color: var(--text-color);
+}
+/* Sepete Ekle ve Checkout Butonları */
+.add-to-cart-button, .checkout-button {
+    background-color: var(--btn-bg);
+    color: var(--btn-text);
+}
+
+/* Koyu modda hover efekti */
+body.dark-mode .add-to-cart-button:hover,
+body.dark-mode .checkout-button:hover {
+    background-color: #ccc;
+}
