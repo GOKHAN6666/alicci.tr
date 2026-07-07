@@ -2069,3 +2069,34 @@ body.dark-mode .toast-message {
     from { transform: translateX(100%); opacity: 0; }
     to { transform: translateX(0); opacity: 1; }
 }
+/* Bildirim kutusunun ana kapsayıcısı */
+.toast-container {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 9999;
+}
+
+/* Bildirim kutusunun şık görünümü */
+.toast-message {
+    background-color: #111; /* Koyu modda siyah */
+    color: #fff;
+    padding: 15px 25px;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    font-weight: 500;
+    border: 1px solid #333;
+    animation: fadeIn 0.3s ease;
+}
+
+/* Koyu modda beyaz arka plan istersen burayı açabilirsin, 
+   ama şu an siyah-beyaz zıtlığı daha şık durur */
+body.dark-mode .toast-message {
+    background-color: #fff;
+    color: #111;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
