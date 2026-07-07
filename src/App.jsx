@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import emailjs from "emailjs-com";
 import "./index.css";
-import { Analytics } from "@vercelanalytics/react";
+import { Analytics } from "@vercel/analytics/react";
 import { supabase } from "./supabaseclient";
 
 const ProductCard = ({ product, openProductModal, setIsCartOpen }) => {
@@ -76,16 +76,12 @@ function App() {
 
     useEffect(() => {
         const fetchProducts = async () => {
-            // Kod hem 'products' hem de 'product' tablonu destekler, hangisi aktifse onu çeker.
             const { data, error } = await supabase.from("products").select("*");
             if (error) {
                 console.error("Ürünler çekilirken hata oluştu:", error);
             } else {
-                // Veritabanından gelen veriyi akıllıca normalize ediyoruz
                 const normalizedData = (data || []).map(prod => {
-                    let finalImages = ["/logo.png"]; // Varsayılan placeholder resim
-                    
-                    // Veritabanında image_url veya image kolonlarından hangisi doluysa onu alıyoruz
+                    let finalImages = ["/logo.png"]; 
                     const rawImg = prod.image_url || prod.image;
                     
                     if (rawImg) {
