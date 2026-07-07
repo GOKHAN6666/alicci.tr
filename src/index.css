@@ -2100,3 +2100,53 @@ body.dark-mode .toast-message {
     from { opacity: 0; transform: translateY(20px); }
     to { opacity: 1; transform: translateY(0); }
 }
+/* Toast Konteyneri */
+.toast-container {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 1000;
+  /* Animasyon: 3 saniye boyunca çalış, sonra kaybol (forwards) */
+  animation: toast-fade-in-out 3s ease-in-out forwards;
+}
+
+/* Animasyon Keyframes */
+@keyframes toast-fade-in-out {
+  /* Gelirken */
+  0% { 
+    opacity: 0; 
+    transform: translateY(20px); 
+  }
+  15% { 
+    opacity: 1; 
+    transform: translateY(0); 
+  }
+  
+  /* Beklerken */
+  85% { 
+    opacity: 1; 
+    transform: translateY(0); 
+  }
+  
+  /* Giderken (Fade-out ve hafif aşağı kayma) */
+  100% { 
+    opacity: 0; 
+    transform: translateY(20px); 
+  }
+}
+
+.toast-message {
+  background-color: #333;
+  color: #fff;
+  padding: 12px 24px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* Karanlık mod için ufak bir dokunuş */
+.dark-mode .toast-message {
+  background-color: #fff;
+  color: #333;
+}
