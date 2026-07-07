@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import emailjs from "emailjs-com";
 import "./index.css";
-import { Analytics } from "@vercelanalytics/react"
+import { Analytics } from "@vercel/analytics/react";
 import { supabase } from "./supabaseclient";
 
 const ProductCard = ({ product, openProductModal, setIsCartOpen }) => {
