@@ -1,21 +1,38 @@
 {
-  "name": "ALICCI",
-  "short_name": "ALICCI",
-  "start_url": ".",
+  "name": "Alicci E-Ticaret",
+  "short_name": "Alicci",
+  "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#000000",
-  "description": "Sessiz lüks giyim markası",
   "icons": [
     {
       "src": "/icon-192x192.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     },
     {
       "src": "/icon-512x512.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshot-mobile.png",
+      "sizes": "640x480",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Alicci Mobil Görünüm"
+    },
+    {
+      "src": "/screenshot-desktop.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Alicci Masaüstü Görünüm"
     }
   ]
 }
