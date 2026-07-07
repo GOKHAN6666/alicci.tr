@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import emailjs from "emailjs-com";
 import "./index.css";
-import { Analytics } from "@vercel/analytics/react";
+import { Analytics } from "@vercelanalytics/react";
 import { supabase } from "./supabaseclient";
 
 const ProductCard = ({ product, openProductModal, setIsCartOpen }) => {
@@ -42,7 +42,7 @@ const ProductCard = ({ product, openProductModal, setIsCartOpen }) => {
             onMouseLeave={handleMouseLeave}
         >
             <img
-                src={product.image ? product.image[hoveredImageIndex] : ""}
+                src={product.image ? product.image[hoveredImageIndex] : "/logo.png"}
                 alt={product.name}
                 className="product-card-image"
             />
@@ -76,11 +76,40 @@ function App() {
 
     useEffect(() => {
         const fetchProducts = async () => {
+            // Kod hem 'products' hem de 'product' tablonu destekler, hangisi aktifse onu çeker.
             const { data, error } = await supabase.from("products").select("*");
             if (error) {
                 console.error("Ürünler çekilirken hata oluştu:", error);
             } else {
-                setProducts(data || []);
+                // Veritabanından gelen veriyi akıllıca normalize ediyoruz
+                const normalizedData = (data || []).map(prod => {
+                    let finalImages = ["/logo.png"]; // Varsayılan placeholder resim
+                    
+                    // Veritabanında image_url veya image kolonlarından hangisi doluysa onu alıyoruz
+                    const rawImg = prod.image_url || prod.image;
+                    
+                    if (rawImg) {
+                        if (Array.isArray(rawImg)) {
+                            finalImages = rawImg;
+                        } else if (typeof rawImg === "string") {
+                            if (rawImg.startsWith("[") && rawImg.endsWith("]")) {
+                                try {
+                                    finalImages = JSON.parse(rawImg);
+                                } catch (e) {
+                                    finalImages = [rawImg];
+                                }
+                            } else {
+                                finalImages = [rawImg];
+                            }
+                        }
+                    }
+                    
+                    return {
+                        ...prod,
+                        image: finalImages
+                    };
+                });
+                setProducts(normalizedData);
             }
         };
 
@@ -103,7 +132,6 @@ function App() {
         localStorage.setItem("alicciCartItems", JSON.stringify(cartItems));
     }, [cartItems]);
 
-    // Modal açıkken body scrollunu engelleme
     useEffect(() => {
         const isAnyModalOpen = selectedProduct || showOrderOptionsModal || showTrackingModal || showConfirmationModal;
         if (isAnyModalOpen) {
@@ -391,7 +419,7 @@ function App() {
                         <div className="product-modal-content-wrapper">
                             <div className="product-modal-image-wrapper">
                                 <img
-                                    src={selectedProduct.image ? selectedProduct.image[currentModalImageIndex] : ""}
+                                    src={selectedProduct.image ? selectedProduct.image[currentModalImageIndex] : "/logo.png"}
                                     alt={selectedProduct.name}
                                     className="product-modal-image"
                                     style={{
