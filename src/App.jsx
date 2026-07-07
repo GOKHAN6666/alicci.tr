@@ -70,15 +70,24 @@ function App() {
     const [currentSection, setCurrentSection] = useState("home");
 
     // YENİ EKLENEN STATE'LER
-    const [isLoading, setIsLoading] = useState(true); // Skeleton için
-    const [isDarkMode, setIsDarkMode] = useState(false); // Karanlık Mod için
-    const [couponInput, setCouponInput] = useState(""); // Kupon metni için
-    const [discount, setDiscount] = useState(0); // İndirim oranı için
+    const [isLoading, setIsLoading] = useState(true);
+    const [isDarkMode, setIsDarkMode] = useState(false);
+    const [couponInput, setCouponInput] = useState("");
+    const [discount, setDiscount] = useState(0);
+    
+    // TOAST BİLDİRİM STATE'İ
+    const [toast, setToast] = useState(null);
 
     const form = useRef();
 
     const WHATSAPP_NUMBER = "905511903118";
     const INSTAGRAM_USERNAME = "alicci.official";
+
+    // TOAST GÖSTERME FONKSİYONU
+    const showToast = (message) => {
+        setToast(message);
+        setTimeout(() => setToast(null), 3000);
+    };
 
     // KARANLIK MOD BAŞLANGIÇ AYARI
     useEffect(() => {
@@ -103,7 +112,7 @@ function App() {
 
     useEffect(() => {
         const fetchProducts = async () => {
-            setIsLoading(true); // Veri çekilmeye başlarken Skeleton'u aç
+            setIsLoading(true);
             const { data, error } = await supabase.from("products").select("*");
             if (error) {
                 console.error("Ürünler çekilirken hata oluştu:", error);
@@ -135,7 +144,7 @@ function App() {
                 });
                 setProducts(normalizedData);
             }
-            setIsLoading(false); // Veri gelince Skeleton'u kapat
+            setIsLoading(false);
         };
 
         fetchProducts();
@@ -199,7 +208,7 @@ function App() {
 
     const handleAddToCart = () => {
         if (!selectedSize) {
-            alert("Lütfen bir beden seçin.");
+            showToast("Lütfen bir beden seçin.");
             return;
         }
         if (selectedProduct) {
@@ -230,18 +239,16 @@ function App() {
         );
     };
 
-    // İNDİRİM UYGULAMA FONKSİYONU
     const handleApplyCoupon = () => {
         if (couponInput.trim().toUpperCase() === "ALICCI10") {
-            setDiscount(0.10); // %10 İndirim
-            alert("Kupon başarıyla uygulandı! %10 İndirim kazandınız.");
+            setDiscount(0.10);
+            showToast("Kupon başarıyla uygulandı! %10 İndirim kazandınız.");
         } else {
             setDiscount(0);
-            alert("Geçersiz veya süresi dolmuş kupon kodu.");
+            showToast("Geçersiz veya süresi dolmuş kupon kodu.");
         }
     };
 
-    // İNDİRİMLİ FİYAT HESAPLAMA EKLENDİ
     const getTotalPrice = () => {
         const subtotal = cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
         const finalTotal = subtotal - (subtotal * discount);
@@ -250,7 +257,7 @@ function App() {
 
     const handleCheckout = () => {
         if (cartItems.length === 0) {
-            alert("Sepetiniz boş.");
+            showToast("Sepetiniz boş.");
             return;
         }
         setIsCartOpen(false);
@@ -282,11 +289,11 @@ function App() {
                 form.current,
                 "5dI_FI0HT2oHrlQj5"
             );
-            alert("Mesajınız başarıyla gönderildi!");
+            showToast("Mesajınız başarıyla gönderildi!");
             e.target.reset();
         } catch (error) {
             console.error("Mesaj gönderilirken hata oluştu:", error);
-            alert("Mesajınız gönderilirken bir hata oluştu. Lütfen tekrar deneyin.");
+            showToast("Mesajınız gönderilirken bir hata oluştu. Lütfen tekrar deneyin.");
         }
     };
 
@@ -330,7 +337,6 @@ function App() {
                 </ul>
 
                 <div className="nav-controls">
-                    {/* KARANLIK MOD BUTONU (MOBİLDE DE GÖRÜNMESİ İÇİN BURAYA EKLENDİ) */}
                     <button className="theme-toggle-btn" onClick={toggleDarkMode}>
                         {isDarkMode ? "☀️" : "🌙"}
                     </button>
@@ -377,7 +383,6 @@ function App() {
                     )}
                 </ul>
 
-                {/* İNDİRİM KUPONU GİRİŞ ALANI EKLENDİ */}
                 {cartItems.length > 0 && (
                     <div className="coupon-container">
                         <input 
@@ -412,7 +417,6 @@ function App() {
                 <section id="products" className="products">
                     <h3>Ürünlerimiz</h3>
                     <div className="products-grid">
-                        {/* SKELETON LOADER YAPISI EKLENDİ */}
                         {isLoading ? (
                             Array.from({ length: 4 }).map((_, index) => (
                                 <div key={index} className="product-card skeleton-card">
@@ -493,7 +497,6 @@ function App() {
                         </button>
                         <div className="product-modal-content-wrapper">
                             <div className="product-modal-image-wrapper">
-                                {/* RESİM YAKINLAŞTIRMA İÇİN zoomable-image CLASSI EKLENDİ */}
                                 <img
                                     src={selectedProduct.image ? selectedProduct.image[currentModalImageIndex] : "/logo.png"}
                                     alt={selectedProduct.name}
@@ -634,6 +637,14 @@ function App() {
                     </div>
                 </div>
             )}
+            
+            {/* TOAST BİLDİRİM PANELİ */}
+            {toast && (
+                <div className="toast-container">
+                    <div className="toast-message">{toast}</div>
+                </div>
+            )}
+
             <Analytics />
         </>
     );
