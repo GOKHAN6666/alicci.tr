@@ -1887,3 +1887,14 @@ body.no-scroll {
         justify-content: flex-start; /* Bedenleri sola hizala */
     }
 }
+/* Karanlık Mod */
+.dark-mode { background-color: #121212; color: #fff; }
+.dark-mode .cart-panel { background-color: #1f1f1f; }
+
+/* Resim Zoom */
+.product-modal-image { transition: transform 0.3s ease; }
+.product-modal-image:hover { transform: scale(1.05); cursor: zoom-in; }
+
+/* Skeleton */
+.skeleton-card { height: 300px; background: #eee; animation: pulse 1.5s infinite; }
+@keyframes pulse { 0% { opacity: 0.6; } 50% { opacity: 1; } 100% { opacity: 0.6; } }
