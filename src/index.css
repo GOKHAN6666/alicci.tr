@@ -2034,3 +2034,38 @@ body.dark-mode .checkout-button:hover {
 body.dark-mode .cart-panel {
     background-color: #1e1e1e; /* Dark mode renkleri */
 }
+/* Bildirim (Toast) Konteyneri */
+.toast-container {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* Bildirim Kutusu */
+.toast-message {
+    background-color: #333; /* Dark mode uyumlu */
+    color: #fff;
+    padding: 12px 20px;
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    font-size: 14px;
+    animation: slideInRight 0.3s ease-out;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+body.dark-mode .toast-message {
+    background-color: #fff;
+    color: #111;
+}
+
+/* Animasyon */
+@keyframes slideInRight {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
