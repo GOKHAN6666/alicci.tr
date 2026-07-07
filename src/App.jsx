@@ -69,13 +69,41 @@ function App() {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [currentSection, setCurrentSection] = useState("home");
 
+    // YENİ EKLENEN STATE'LER
+    const [isLoading, setIsLoading] = useState(true); // Skeleton için
+    const [isDarkMode, setIsDarkMode] = useState(false); // Karanlık Mod için
+    const [couponInput, setCouponInput] = useState(""); // Kupon metni için
+    const [discount, setDiscount] = useState(0); // İndirim oranı için
+
     const form = useRef();
 
     const WHATSAPP_NUMBER = "905511903118";
     const INSTAGRAM_USERNAME = "alicci.official";
 
+    // KARANLIK MOD BAŞLANGIÇ AYARI
+    useEffect(() => {
+        const savedTheme = localStorage.getItem("darkMode") === "true";
+        setIsDarkMode(savedTheme);
+        if (savedTheme) {
+            document.body.classList.add("dark-mode");
+        }
+    }, []);
+
+    // KARANLIK MOD DEĞİŞTİRME FONKSİYONU
+    const toggleDarkMode = () => {
+        const newTheme = !isDarkMode;
+        setIsDarkMode(newTheme);
+        localStorage.setItem("darkMode", newTheme);
+        if (newTheme) {
+            document.body.classList.add("dark-mode");
+        } else {
+            document.body.classList.remove("dark-mode");
+        }
+    };
+
     useEffect(() => {
         const fetchProducts = async () => {
+            setIsLoading(true); // Veri çekilmeye başlarken Skeleton'u aç
             const { data, error } = await supabase.from("products").select("*");
             if (error) {
                 console.error("Ürünler çekilirken hata oluştu:", error);
@@ -107,6 +135,7 @@ function App() {
                 });
                 setProducts(normalizedData);
             }
+            setIsLoading(false); // Veri gelince Skeleton'u kapat
         };
 
         fetchProducts();
@@ -139,7 +168,6 @@ function App() {
             document.body.classList.remove('no-scroll');
         };
     }, [selectedProduct, showOrderOptionsModal, showTrackingModal, showConfirmationModal]);
-
 
     const openProductModal = (product) => {
         setSelectedProduct(product);
@@ -202,8 +230,22 @@ function App() {
         );
     };
 
+    // İNDİRİM UYGULAMA FONKSİYONU
+    const handleApplyCoupon = () => {
+        if (couponInput.trim().toUpperCase() === "ALICCI10") {
+            setDiscount(0.10); // %10 İndirim
+            alert("Kupon başarıyla uygulandı! %10 İndirim kazandınız.");
+        } else {
+            setDiscount(0);
+            alert("Geçersiz veya süresi dolmuş kupon kodu.");
+        }
+    };
+
+    // İNDİRİMLİ FİYAT HESAPLAMA EKLENDİ
     const getTotalPrice = () => {
-        return cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
+        const subtotal = cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
+        const finalTotal = subtotal - (subtotal * discount);
+        return Number.isInteger(finalTotal) ? finalTotal : finalTotal.toFixed(2);
     };
 
     const handleCheckout = () => {
@@ -287,17 +329,24 @@ function App() {
                     </li>
                 </ul>
 
-                <div className="hamburger" onClick={toggleMobileMenu}>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="feather feather-menu">
-                        <line x1="3" y1="12" x2="21" y2="12"></line>
-                        <line x1="3" y1="6" x2="21" y2="6"></line>
-                        <line x1="3" y1="18" x2="21" y2="18"></line>
-                    </svg>
-                    {cartItems.length > 0 && (
-                        <span className="cart-count mobile-hamburger-cart-count">
-                            {cartItems.length}
-                        </span>
-                    )}
+                <div className="nav-controls">
+                    {/* KARANLIK MOD BUTONU (MOBİLDE DE GÖRÜNMESİ İÇİN BURAYA EKLENDİ) */}
+                    <button className="theme-toggle-btn" onClick={toggleDarkMode}>
+                        {isDarkMode ? "☀️" : "🌙"}
+                    </button>
+
+                    <div className="hamburger" onClick={toggleMobileMenu}>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="feather feather-menu">
+                            <line x1="3" y1="12" x2="21" y2="12"></line>
+                            <line x1="3" y1="6" x2="21" y2="6"></line>
+                            <line x1="3" y1="18" x2="21" y2="18"></line>
+                        </svg>
+                        {cartItems.length > 0 && (
+                            <span className="cart-count mobile-hamburger-cart-count">
+                                {cartItems.length}
+                            </span>
+                        )}
+                    </div>
                 </div>
             </nav>
 
@@ -327,8 +376,25 @@ function App() {
                         ))
                     )}
                 </ul>
+
+                {/* İNDİRİM KUPONU GİRİŞ ALANI EKLENDİ */}
                 {cartItems.length > 0 && (
-                    <div className="total">Toplam: {getTotalPrice()} TL</div>
+                    <div className="coupon-container">
+                        <input 
+                            type="text" 
+                            placeholder="Kupon Kodu (Örn: ALICCI10)" 
+                            value={couponInput}
+                            onChange={(e) => setCouponInput(e.target.value)}
+                        />
+                        <button className="coupon-btn" onClick={handleApplyCoupon}>Uygula</button>
+                    </div>
+                )}
+
+                {cartItems.length > 0 && (
+                    <div className="total">
+                        Toplam: {getTotalPrice()} TL 
+                        {discount > 0 && <span className="discount-label"> (%10 İndirim Uygulandı)</span>}
+                    </div>
                 )}
                 <button onClick={handleCheckout}>Sepeti Onayla</button>
                 <button className="close-modal close-modal-small" onClick={() => setIsCartOpen(false)}>
@@ -346,14 +412,27 @@ function App() {
                 <section id="products" className="products">
                     <h3>Ürünlerimiz</h3>
                     <div className="products-grid">
-                        {products.map((product) => (
-                            <ProductCard
-                                key={product.id}
-                                product={product}
-                                openProductModal={openProductModal}
-                                setIsCartOpen={setIsCartOpen}
-                            />
-                        ))}
+                        {/* SKELETON LOADER YAPISI EKLENDİ */}
+                        {isLoading ? (
+                            Array.from({ length: 4 }).map((_, index) => (
+                                <div key={index} className="product-card skeleton-card">
+                                    <div className="skeleton-image"></div>
+                                    <div className="info">
+                                        <div className="skeleton-text"></div>
+                                        <div className="skeleton-text short"></div>
+                                    </div>
+                                </div>
+                            ))
+                        ) : (
+                            products.map((product) => (
+                                <ProductCard
+                                    key={product.id}
+                                    product={product}
+                                    openProductModal={openProductModal}
+                                    setIsCartOpen={setIsCartOpen}
+                                />
+                            ))
+                        )}
                     </div>
                 </section>
 
@@ -414,10 +493,11 @@ function App() {
                         </button>
                         <div className="product-modal-content-wrapper">
                             <div className="product-modal-image-wrapper">
+                                {/* RESİM YAKINLAŞTIRMA İÇİN zoomable-image CLASSI EKLENDİ */}
                                 <img
                                     src={selectedProduct.image ? selectedProduct.image[currentModalImageIndex] : "/logo.png"}
                                     alt={selectedProduct.name}
-                                    className="product-modal-image"
+                                    className="product-modal-image zoomable-image"
                                     style={{
                                         maxHeight: '60vh',
                                         width: 'auto',
