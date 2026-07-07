@@ -1,14 +1,14 @@
 import React, { useState, useRef, useEffect } from "react";
 import emailjs from "emailjs-com";
 import "./index.css";
-import { Analytics } from "@vercel/analytics/react"
+import { Analytics } from "@vercelanalytics/react"
 import { supabase } from "./supabaseclient";
 
 const ProductCard = ({ product, openProductModal, setIsCartOpen }) => {
     const [hoveredImageIndex, setHoveredImageIndex] = useState(0);
 
     const handleMouseMove = (e) => {
-        if (!product.image || product.image.length <= 1) {
+        if (!product || !product.image || product.image.length <= 1) {
             setHoveredImageIndex(0);
             return;
         }
@@ -42,7 +42,7 @@ const ProductCard = ({ product, openProductModal, setIsCartOpen }) => {
             onMouseLeave={handleMouseLeave}
         >
             <img
-                src={product.image[hoveredImageIndex]}
+                src={product.image ? product.image[hoveredImageIndex] : ""}
                 alt={product.name}
                 className="product-card-image"
             />
@@ -80,7 +80,7 @@ function App() {
             if (error) {
                 console.error("Ürünler çekilirken hata oluştu:", error);
             } else {
-                setProducts(data);
+                setProducts(data || []);
             }
         };
 
@@ -111,7 +111,6 @@ function App() {
         } else {
             document.body.classList.remove('no-scroll');
         }
-        // Temizlik fonksiyonu: Bileşen unmount edildiğinde veya state değiştiğinde sınıfı kaldır
         return () => {
             document.body.classList.remove('no-scroll');
         };
@@ -259,7 +258,6 @@ function App() {
                     <li onClick={() => handleNavLinkClick(null, openTrackingModal)}>
                         Kargo Takip
                     </li>
-                    {/* Move cart button inside mobile menu */}
                     <li className="mobile-cart-button" onClick={() => setIsCartOpen(!isCartOpen)}>
                         Sepetim {cartItems.length > 0 && `(${cartItems.length})`}
                     </li>
@@ -277,8 +275,6 @@ function App() {
                         </span>
                     )}
                 </div>
-
-                {/* Removed standalone cart icon */}
             </nav>
 
             <div className={`cart-panel ${isCartOpen ? "open" : ""}`}>
@@ -392,16 +388,14 @@ function App() {
                         <button className="close-modal close-modal-small" onClick={closeProductModal}>
                             &times;
                         </button>
-                        {/* Mobil için sıralamayı değiştirmek adına product-info içeriğini dışarı taşıyoruz */}
-                        <div className="product-modal-content-wrapper"> {/* Yeni wrapper div */}
+                        <div className="product-modal-content-wrapper">
                             <div className="product-modal-image-wrapper">
                                 <img
-                                    src={selectedProduct.image[currentModalImageIndex]}
+                                    src={selectedProduct.image ? selectedProduct.image[currentModalImageIndex] : ""}
                                     alt={selectedProduct.name}
                                     className="product-modal-image"
-                                    // Adjusted styling for larger images in modal
                                     style={{
-                                        maxHeight: '60vh', /* Daha fazla yer bırakmak için max-height azaltıldı */
+                                        maxHeight: '60vh',
                                         width: 'auto',
                                         maxWidth: '100%',
                                         objectFit: 'contain'
@@ -418,7 +412,6 @@ function App() {
                                     </div>
                                 )}
                             </div>
-                            {/* Ürün bilgileri, beden ve sepete ekle butonu ayrı bir div içinde */}
                             <div className="product-info-mobile-order">
                                 <h2>{selectedProduct.name}</h2>
                                 <p className="desc">
@@ -461,10 +454,7 @@ function App() {
                         <h2>Siparişinizi Tamamlayın</h2>
                         <p>Siparişiniz için ödeme yapmak üzere bizimle iletişime geçebilirsiniz:</p>
                         <div className="contact-dm-buttons">
-                            <a
-                                href={`https://wa.me/${WHATSAPP_NUMBER}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
+                            <button
                                 className="themed-social-button whatsapp-contact"
                                 onClick={() => {
                                     const message = `Merhaba, sepetimdeki ürünleri sipariş etmek istiyorum:\n${cartItems.map(item => `- ${item.name} (${item.size}) x${item.quantity}`).join('\n')}\nToplam: ${getTotalPrice()} TL`;
@@ -475,20 +465,18 @@ function App() {
                                 }}
                             >
                                 WhatsApp ile Sipariş Ver
-                            </a>
-                            <a
-                                href={`https://www.instagram.com/${INSTAGRAM_USERNAME}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
+                            </button>
+                            <button
                                 className="themed-social-button instagram-contact"
                                 onClick={() => {
+                                    window.open(`https://www.instagram.com/${INSTAGRAM_USERNAME}`, '_blank');
                                     setShowOrderOptionsModal(false);
                                     setCartItems([]);
                                     openConfirmationModal();
                                 }}
                             >
                                 Instagram DM ile Sipariş Ver
-                            </a>
+                            </button>
                         </div>
                         <p className="small-text">
                             Siparişiniz ödeme yapıldıktan sonra işleme alınacaktır.
@@ -542,6 +530,7 @@ function App() {
                     </div>
                 </div>
             )}
+            <Analytics />
         </>
     );
 }
