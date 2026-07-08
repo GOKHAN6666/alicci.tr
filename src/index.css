@@ -2288,15 +2288,3 @@ nav h1 {
     border-radius: 8px;
 }
 
-setTimeout(() => {
-    // ... indirim mantığın ...
-    
-    // Başarı efekti için geçici bir class ekleme (CSS sınıfını bağla)
-    const container = document.querySelector('.coupon-container');
-    if(container) {
-        container.classList.add('coupon-success-anim');
-        setTimeout(() => container.classList.remove('coupon-success-anim'), 600);
-    }
-    
-    setIsCouponRemoving(false);
-}, 400);
