@@ -36,7 +36,7 @@ const ProductCard = ({ product, openProductModal, setIsCartOpen }) => {
 
     return (
         <div
-            className="product-card"
+            className="product-card reveal" /* SCROLL ANİMASYONU İÇİN 'reveal' EKLENDİ */
             onClick={handleClick}
             onMouseMove={handleMouseMove}
             onMouseLeave={handleMouseLeave}
@@ -45,6 +45,7 @@ const ProductCard = ({ product, openProductModal, setIsCartOpen }) => {
                 src={product.image ? product.image[hoveredImageIndex] : "/logo.png"}
                 alt={product.name}
                 className="product-card-image"
+                loading="lazy" /* LAZY LOADING EKLENDİ */
             />
             <div className="info">
                 <h4>{product.name}</h4>
@@ -73,7 +74,7 @@ function App() {
     const [couponInput, setCouponInput] = useState("");
     const [discount, setDiscount] = useState(0);
     const [toast, setToast] = useState(null);
-    const [removingId, setRemovingId] = useState(null); // Animasyon için eklendi
+    const [removingId, setRemovingId] = useState(null);
 
     const form = useRef();
 
@@ -85,12 +86,31 @@ function App() {
         setTimeout(() => setToast(null), 3000);
     };
 
-    // --- ENTEGRE EDİLEN YENİ KUPON SIFIRLAMA MANTIĞI ---
+    // --- SCROLL ANİMASYON GÖZLEMCİSİ ---
+    useEffect(() => {
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach((entry) => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add("active");
+                    // Animasyonun sadece 1 kere çalışmasını istiyorsan alt satırı kullanabilirsin
+                    // observer.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.1 }); // Öğenin %10'u ekrana girdiğinde tetikle
+
+        const revealElements = document.querySelectorAll(".reveal");
+        revealElements.forEach((el) => observer.observe(el));
+
+        return () => {
+            revealElements.forEach((el) => observer.unobserve(el));
+        };
+    }, [products, isLoading]); // Ürünler yüklendiğinde tekrar çalışması için bağlandı
+    // ------------------------------------
+
     useEffect(() => {
         setDiscount(0);
         setCouponInput("");
     }, [cartItems]);
-    // --------------------------------------------------
 
     useEffect(() => {
         const preventInstallPrompt = (e) => {
@@ -245,7 +265,6 @@ function App() {
         }
     };
 
-    // --- ENTEGRE EDİLEN YENİ REMOVE MANTIĞI ---
     const removeFromCart = (itemToRemove) => {
         const uniqueId = `${itemToRemove.id}-${itemToRemove.size}`;
         setRemovingId(uniqueId);
@@ -260,9 +279,7 @@ function App() {
             showToast("Ürün sepetten kaldırıldı.");
         }, 400);
     };
-    // ------------------------------------------
 
-    // --- ENTEGRE EDİLEN GÜVENLİ KUPON SORGUSU ---
     const handleApplyCoupon = async () => {
         const cleanInput = couponInput.trim().toLowerCase();
         if (!cleanInput) return;
@@ -284,7 +301,6 @@ function App() {
         setDiscount(discountValue);
         showToast(`Kupon başarıyla uygulandı! %${coupon.discount_percentage} İndirim kazandınız.`);
     };
-    // --------------------------------------------
     
     const getTotalPrice = () => {
         const subtotal = cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
@@ -422,7 +438,6 @@ function App() {
                         <p>Sepetinizde ürün bulunmamaktadır.</p>
                     ) : (
                         cartItems.map((item, index) => (
-                            // Animasyon sınıfı burada eklendi
                             <li key={`${item.id}-${item.size}-${index}`} className={removingId === `${item.id}-${item.size}` ? 'removing' : ''}>
                                 <div className="item-details">
                                     <span>{item.name} ({item.size})</span>
@@ -495,13 +510,13 @@ function App() {
                     </div>
                 </section>
 
-                <section id="about" className="about">
+                <section id="about" className="about reveal"> {/* SCROLL ANİMASYONU İÇİN 'reveal' EKLENDİ */}
                     <h3>Hakkımızda</h3>
                     <p>ALICCI, zamansız şıklığı ve modern tasarımları bir araya getiren bir giyim markasıdır.</p>
                     <p>Sürdürülebilir moda ilkelerini benimseyerek, çevreye duyarlı üretim süreçlerini destekliyor ve uzun ömürlü, kaliteli ürünler sunmaya özen gösteriyoruz.</p>
                 </section>
 
-                <section id="contact" className="contact">
+                <section id="contact" className="contact reveal"> {/* SCROLL ANİMASYONU İÇİN 'reveal' EKLENDİ */}
                     <h3>İletişim</h3>
                     <form ref={form} onSubmit={handleContactFormSubmit}>
                         <input type="text" name="user_name" placeholder="Adınız Soyadınız" required />
@@ -530,7 +545,13 @@ function App() {
                         {selectedProduct && (
                             <div className="product-modal-content-wrapper">
                                 <div className="product-modal-image-wrapper">
-                                    <img src={selectedProduct.image ? selectedProduct.image[currentModalImageIndex] : "/logo.png"} alt={selectedProduct.name} className="product-modal-image zoomable-image" style={{ maxHeight: '60vh', width: 'auto', maxWidth: '100%', objectFit: 'contain' }} />
+                                    <img 
+                                        src={selectedProduct.image ? selectedProduct.image[currentModalImageIndex] : "/logo.png"} 
+                                        alt={selectedProduct.name} 
+                                        className="product-modal-image zoomable-image" 
+                                        style={{ maxHeight: '60vh', width: 'auto', maxWidth: '100%', objectFit: 'contain' }} 
+                                        loading="lazy" /* LAZY LOADING EKLENDİ */
+                                    />
                                     {selectedProduct.image && selectedProduct.image.length > 1 && (
                                         <div className="modal-image-navigation">
                                             <button className="modal-nav-arrow left" onClick={prevModalImage}>&#x2039;</button>
