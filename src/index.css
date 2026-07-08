@@ -2227,3 +2227,78 @@ body.dark-mode .toast-message {
     overflow: hidden !important;
     pointer-events: none !important;
 }
+/* Navigasyon düzeltmesi */
+nav {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    padding: 15px 20px !important;
+    position: relative;
+    width: 100%;
+    box-sizing: border-box;
+    background: var(--bg-color); /* Temaya uygunsa */
+}
+
+nav h1 {
+    margin: 0;
+    font-size: 1.5rem;
+    white-space: nowrap;
+}
+
+.nav-controls {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.hamburger {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    padding: 5px;
+}
+
+/* Mobil menü düzeltmesi */
+.nav-menu {
+    position: absolute;
+    top: 60px; /* Navbar yüksekliği */
+    left: 0;
+    width: 100%;
+    background: white;
+    display: none; /* Varsayılan kapalı */
+    flex-direction: column;
+    padding: 20px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.nav-menu.open {
+    display: flex !important; /* Açıldığında görünür */
+}
+/* Kupon uygulandığında oluşacak animasyon */
+@keyframes coupon-success {
+    0% { transform: scale(1); background-color: transparent; }
+    50% { transform: scale(1.02); background-color: rgba(76, 175, 80, 0.1); }
+    100% { transform: scale(1); background-color: transparent; }
+}
+
+.coupon-success-anim {
+    animation: coupon-success 0.6s ease-out;
+    border: 1px solid #4CAF50;
+    border-radius: 8px;
+}
+// handleApplyCoupon içine ekle:
+setIsCouponRemoving(true); // Animasyonu başlat
+
+setTimeout(() => {
+    // ... indirim mantığın ...
+    
+    // Başarı efekti için geçici bir class ekleme (CSS sınıfını bağla)
+    const container = document.querySelector('.coupon-container');
+    if(container) {
+        container.classList.add('coupon-success-anim');
+        setTimeout(() => container.classList.remove('coupon-success-anim'), 600);
+    }
+    
+    setIsCouponRemoving(false);
+}, 400);
