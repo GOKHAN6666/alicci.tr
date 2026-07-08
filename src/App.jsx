@@ -249,15 +249,17 @@ function App() {
             )
         );
     };
-    
+
 const handleApplyCoupon = async () => {
-  if (!couponInput.trim()) return;
+  const cleanInput = couponInput.trim().toLowerCase(); // Kullanıcının girdisini küçült
+  
+  if (!cleanInput) return;
 
   // Supabase'den kuponu sorgula
   const { data: coupon, error } = await supabase
     .from("coupons")
     .select("*")
-    .ilike("code", couponInput.trim()) // .eq yerine .ilike kullanıyoruz
+    .eq("code", cleanInput) // Artık ilike değil, eq kullanıyoruz
     .eq("is_active", true)
     .single();
 
@@ -272,7 +274,7 @@ const handleApplyCoupon = async () => {
   setDiscount(discountValue);
   showToast(`Kupon başarıyla uygulandı! %${coupon.discount_percentage} İndirim kazandınız.`);
 };
-
+    
     const getTotalPrice = () => {
         const subtotal = cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
         const finalTotal = subtotal - (subtotal * discount);
