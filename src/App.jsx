@@ -23,13 +23,8 @@ const ProductCard = ({ product, openProductModal, setIsCartOpen }) => {
         if (newIndex !== hoveredImageIndex) {
             setHoveredImageIndex(newIndex);
         }
-    }; 
+    };
 
-    // Sepet içeriği her değiştiğinde indirimleri ve kupon inputunu sıfırla
-useEffect(() => {
-  setDiscount(0);
-  setCouponInput("");
-}, [cartItems]); // cartItems her değiştiğinde bu çalışır
     const handleMouseLeave = () => {
         setHoveredImageIndex(0);
     };
@@ -482,7 +477,7 @@ function App() {
                     <div className="coupon-container">
                         <input 
                             type="text" 
-                            placeholder="Kupon Kodu (Örn: ALICCI10)" 
+                            placeholder="Kupon Kodu Girin" 
                             value={couponInput}
                             onChange={(e) => setCouponInput(e.target.value)}
                         />
