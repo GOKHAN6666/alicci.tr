@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import emailjs from "emailjs-com";
 import "./index.css";
-import { Analytics } from "@vercel/analytics/react";
+import { Analytics } from "@vercelanalytics/react";
 import { supabase } from "./supabaseclient";
 
 const ProductCard = ({ product, openProductModal, setIsCartOpen }) => {
@@ -62,9 +62,6 @@ function App() {
     const [isCartOpen, setIsCartOpen] = useState(false);
     const [currentModalImageIndex, setCurrentModalImageIndex] = useState(0);
     const [showOrderOptionsModal, setShowOrderOptionsModal] = useState(false);
-    const [showTrackingModal, setShowTrackingModal] = useState(false);
-    const [orderCode, setOrderCode] = useState("");
-    const [trackingInfo, setTrackingInfo] = useState(null);
     const [showConfirmationModal, setShowConfirmationModal] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [currentSection, setCurrentSection] = useState("home");
@@ -172,7 +169,7 @@ function App() {
     }, [cartItems]);
 
     useEffect(() => {
-        const isAnyModalOpen = selectedProduct || showOrderOptionsModal || showTrackingModal || showConfirmationModal;
+        const isAnyModalOpen = selectedProduct || showOrderOptionsModal || showConfirmationModal;
         if (isAnyModalOpen) {
             document.body.classList.add('no-scroll');
         } else {
@@ -181,7 +178,7 @@ function App() {
         return () => {
             document.body.classList.remove('no-scroll');
         };
-    }, [selectedProduct, showOrderOptionsModal, showTrackingModal, showConfirmationModal]);
+    }, [selectedProduct, showOrderOptionsModal, showConfirmationModal]);
 
     const openProductModal = (product) => {
         setSelectedProduct(product);
@@ -273,17 +270,6 @@ function App() {
         setShowOrderOptionsModal(false);
     };
 
-    const openTrackingModal = () => {
-        setShowTrackingModal(true);
-        setTrackingInfo(null);
-        setOrderCode("");
-    };
-
-    const closeTrackingModal = () => {
-        setShowTrackingModal(false);
-        setTrackingInfo(null);
-    };
-
     const handleContactFormSubmit = async (e) => {
         e.preventDefault();
 
@@ -314,15 +300,11 @@ function App() {
         setIsMobileMenuOpen(!isMobileMenuOpen);
     };
 
-    const handleNavLinkClick = (sectionId, customAction = null) => {
-        if (customAction) {
-            customAction();
-        } else {
-            setCurrentSection(sectionId);
-            const element = document.getElementById(sectionId);
-            if (element) {
-                element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }
+    const handleNavLinkClick = (sectionId) => {
+        setCurrentSection(sectionId);
+        const element = document.getElementById(sectionId);
+        if (element) {
+            element.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
         setIsMobileMenuOpen(false); 
     };
@@ -336,9 +318,7 @@ function App() {
                     <li onClick={() => handleNavLinkClick("products")}>Ürünler</li>
                     <li onClick={() => handleNavLinkClick("about")}>Hakkımızda</li>
                     <li onClick={() => handleNavLinkClick("contact")}>İletişim</li>
-                    <li onClick={() => handleNavLinkClick(null, openTrackingModal)}>
-                        Kargo Takip
-                    </li>
+                    <li onClick={() => handleNavLinkClick("tracking")}>Kargo Takip</li>
                     <li className="mobile-cart-button" onClick={() => setIsCartOpen(!isCartOpen)}>
                         Sepetim {cartItems.length > 0 && `(${cartItems.length})`}
                     </li>
@@ -596,35 +576,6 @@ function App() {
                         <p className="small-text">
                             Siparişiniz ödeme yapıldıktan sonra işleme alınacaktır.
                         </p>
-                    </div>
-                </div>
-            )}
-
-            {showTrackingModal && (
-                <div className="modal-backdrop" onClick={closeTrackingModal}>
-                    <div className="modal-content-base tracking-modal" onClick={(e) => e.stopPropagation()}>
-                        <button className="close-modal close-modal-small" onClick={closeTrackingModal}>
-                            &times;
-                        </button>
-                        <h2>Kargo Takip</h2>
-                        <div style={{ padding: "10px 0" }}>
-                            <input 
-                                type="text" 
-                                placeholder="Sipariş veya Kargo Kodunuzu Girin" 
-                                value={orderCode}
-                                onChange={(e) => setOrderCode(e.target.value)}
-                                style={{ width: "100%", padding: "10px", marginBottom: "10px", borderRadius: "5px", border: "1px solid #ccc" }}
-                            />
-                            <button 
-                                onClick={() => setTrackingInfo("Siparişiniz hazırlanıyor ve en kısa sürede kargoya teslim edilecektir.")}
-                                style={{ width: "100%", padding: "10px", background: "#000", color: "#fff", border: "none", borderRadius: "5px", cursor: "pointer" }}
-                            >
-                                Sorgula
-                            </button>
-                        </div>
-                        {trackingInfo && (
-                            <p style={{ marginTop: "15px", fontWeight: "500", textAlign: "center" }}>{trackingInfo}</p>
-                        )}
                     </div>
                 </div>
             )}
