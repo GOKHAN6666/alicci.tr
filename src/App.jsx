@@ -168,7 +168,23 @@ function App() {
             }
         }
     }, []);
-
+{/* Ürün Detay Modalı */}
+{(selectedProduct || isClosing.product) && (
+    <div 
+        className={`modal-backdrop ${isClosing.product ? "closing" : "open"}`} 
+        onClick={() => closeAllOverlays()}
+    >
+        <div className="modal-content" onClick={e => e.stopPropagation()}>
+            {selectedProduct && (
+                <>
+                    <h2>{selectedProduct.name}</h2>
+                    <p>{selectedProduct.price} TL</p>
+                    <button onClick={handleAddToCart}>Sepete Ekle</button>
+                </>
+            )}
+        </div>
+    </div>
+)}
     useEffect(() => {
         localStorage.setItem("alicciCartItems", JSON.stringify(cartItems));
     }, [cartItems]);
