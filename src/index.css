@@ -2296,3 +2296,17 @@ nav h1 {
 .coupon-success-anim {
     animation: coupon-success 0.6s ease-out;
 }
+/* PC'de hamburger menüyü gizle, menüyü göster */
+@media (min-width: 769px) {
+    .hamburger {
+        display: none !important;
+    }
+    .nav-menu {
+        display: flex !important;
+        position: static !important;
+        background: transparent !important;
+        box-shadow: none !important;
+        flex-direction: row !important;
+        width: auto !important;
+    }
+}
