@@ -2287,8 +2287,6 @@ nav h1 {
     border: 1px solid #4CAF50;
     border-radius: 8px;
 }
-// handleApplyCoupon içine ekle:
-setIsCouponRemoving(true); // Animasyonu başlat
 
 setTimeout(() => {
     // ... indirim mantığın ...
