@@ -314,7 +314,6 @@ function App() {
         setIsMobileMenuOpen(!isMobileMenuOpen);
     };
 
-    // SCROLL VE MENÜ KAPATMA FONKSİYONU DÜZELTİLDİ
     const handleNavLinkClick = (sectionId, customAction = null) => {
         if (customAction) {
             customAction();
@@ -322,11 +321,9 @@ function App() {
             setCurrentSection(sectionId);
             const element = document.getElementById(sectionId);
             if (element) {
-                // Bölüme yumuşakça kaydırır ve orada sabit kalmasını sağlar
                 element.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }
         }
-        // Mobilde linke tıklandıktan sonra hamburger menüyü otomatik kapatır
         setIsMobileMenuOpen(false); 
     };
 
@@ -518,7 +515,7 @@ function App() {
                                         maxWidth: '100%',
                                         objectFit: 'contain'
                                     }}
-                                Dad/    />
+                                />
                                 {selectedProduct.image && selectedProduct.image.length > 1 && (
                                     <div className="modal-image-navigation">
                                         <button className="modal-nav-arrow left" onClick={prevModalImage}>
@@ -603,7 +600,6 @@ function App() {
                 </div>
             )}
 
-            {/* KARGO TAKİP MODAL BLOĞU (Eksik olmaması adına güvenli şekilde entegre edildi) */}
             {showTrackingModal && (
                 <div className="modal-backdrop" onClick={closeTrackingModal}>
                     <div className="modal-content-base tracking-modal" onClick={(e) => e.stopPropagation()}>
