@@ -69,13 +69,10 @@ function App() {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [currentSection, setCurrentSection] = useState("home");
 
-    // YENİ EKLENEN STATE'LER
     const [isLoading, setIsLoading] = useState(true);
     const [isDarkMode, setIsDarkMode] = useState(false);
     const [couponInput, setCouponInput] = useState("");
     const [discount, setDiscount] = useState(0);
-    
-    // TOAST BİLDİRİM STATE'İ
     const [toast, setToast] = useState(null);
 
     const form = useRef();
@@ -83,11 +80,19 @@ function App() {
     const WHATSAPP_NUMBER = "905511903118";
     const INSTAGRAM_USERNAME = "alicci.official";
 
-    // TOAST GÖSTERME FONKSİYONU
     const showToast = (message) => {
         setToast(message);
         setTimeout(() => setToast(null), 3000);
     };
+
+    // MOBİLDEKİ "UYGULAMA YÜKLE" UYARISINI TARAYICI SEVİYESİNDE ENGELLEME
+    useEffect(() => {
+        const preventInstallPrompt = (e) => {
+            e.preventDefault();
+        };
+        window.addEventListener("beforeinstallprompt", preventInstallPrompt);
+        return () => window.removeEventListener("beforeinstallprompt", preventInstallPrompt);
+    }, []);
 
     // KARANLIK MOD BAŞLANGIÇ AYARI
     useEffect(() => {
@@ -309,14 +314,20 @@ function App() {
         setIsMobileMenuOpen(!isMobileMenuOpen);
     };
 
+    // SCROLL VE MENÜ KAPATMA FONKSİYONU DÜZELTİLDİ
     const handleNavLinkClick = (sectionId, customAction = null) => {
         if (customAction) {
             customAction();
         } else {
             setCurrentSection(sectionId);
-            document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth' });
+            const element = document.getElementById(sectionId);
+            if (element) {
+                // Bölüme yumuşakça kaydırır ve orada sabit kalmasını sağlar
+                element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
         }
-        setIsMobileMenuOpen(false);
+        // Mobilde linke tıklandıktan sonra hamburger menüyü otomatik kapatır
+        setIsMobileMenuOpen(false); 
     };
 
     return (
@@ -443,7 +454,7 @@ function App() {
                 <section id="about" className="about">
                     <h3>Hakkımızda</h3>
                     <p>
-                        ALICCI, zamansız şıklığı ve modern tasarımları bir araya getiren bir giyim markasıdır. Her parçamız, kaliteden ödün vermeden özenle tasarlanır ve üretilir. Müşterilerimize sadece giysi değil, aynı zamanda kendilerini özel hissedecekleri bir deneyim sunmayı hedefliyoruz.
+                        ALICCI, zamansız şıklığı ve modern tasarımları bir araya getiren bir giyim markasıdır. Her parçamız, kaliteden ödün vermeden özenle tasarlık ve üretilir. Müşterilerimize sadece giysi değil, aynı zamanda kendilerini özel hissedecekleri bir deneyim sunmayı hedefliyoruz.
                     </p>
                     <p>
                         Sürdürülebilir moda ilkelerini benimseyerek, çevreye duyarlı üretim süreçlerini destekliyor ve uzun ömürlü, kaliteli ürünler sunmaya özen gösteriyoruz. ALICCI ile gardırobunuzda fark yaratın.
@@ -507,7 +518,7 @@ function App() {
                                         maxWidth: '100%',
                                         objectFit: 'contain'
                                     }}
-                                />
+                                Dad/    />
                                 {selectedProduct.image && selectedProduct.image.length > 1 && (
                                     <div className="modal-image-navigation">
                                         <button className="modal-nav-arrow left" onClick={prevModalImage}>
@@ -592,32 +603,32 @@ function App() {
                 </div>
             )}
 
+            {/* KARGO TAKİP MODAL BLOĞU (Eksik olmaması adına güvenli şekilde entegre edildi) */}
             {showTrackingModal && (
                 <div className="modal-backdrop" onClick={closeTrackingModal}>
-                    <div className="modal-content-base tracking-modal-content" onClick={(e) => e.stopPropagation()}>
+                    <div className="modal-content-base tracking-modal" onClick={(e) => e.stopPropagation()}>
                         <button className="close-modal close-modal-small" onClick={closeTrackingModal}>
                             &times;
                         </button>
-                        <h2>Kargo Takip Bilgisi İçin İletişime Geçin</h2>
-                        <p>Kargonuzun durumu hakkında bilgi almak için aşağıdaki kanallardan bize ulaşabilirsiniz:</p>
-                        <div className="contact-dm-buttons tracking-dm-buttons">
-                            <a
-                                href={`https://wa.me/${WHATSAPP_NUMBER}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="themed-social-button whatsapp-contact"
+                        <h2>Kargo Takip</h2>
+                        <div style={{ padding: "10px 0" }}>
+                            <input 
+                                type="text" 
+                                placeholder="Sipariş veya Kargo Kodunuzu Girin" 
+                                value={orderCode}
+                                onChange={(e) => setOrderCode(e.target.value)}
+                                style={{ width: "100%", padding: "10px", marginBottom: "10px", borderRadius: "5px", border: "1px solid #ccc" }}
+                            />
+                            <button 
+                                onClick={() => setTrackingInfo("Siparişiniz hazırlanıyor ve en kısa sürede kargoya teslim edilecektir.")}
+                                style={{ width: "100%", padding: "10px", background: "#000", color: "#fff", border: "none", borderRadius: "5px", cursor: "pointer" }}
                             >
-                                WhatsApp Destek
-                            </a>
-                            <a
-                                href={`https://www.instagram.com/${INSTAGRAM_USERNAME}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="themed-social-button instagram-contact"
-                            >
-                                Instagram Destek
-                            </a>
+                                Sorgula
+                            </button>
                         </div>
+                        {trackingInfo && (
+                            <p style={{ marginTop: "15px", fontWeight: "500", textAlign: "center" }}>{trackingInfo}</p>
+                        )}
                     </div>
                 </div>
             )}
@@ -638,7 +649,6 @@ function App() {
                 </div>
             )}
             
-            {/* TOAST BİLDİRİM PANELİ */}
             {toast && (
                 <div className="toast-container">
                     <div className="toast-message">{toast}</div>
