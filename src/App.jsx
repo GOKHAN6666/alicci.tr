@@ -57,6 +57,7 @@ const ProductCard = ({ product, openProductModal, setIsCartOpen }) => {
 function App() {
     const [products, setProducts] = useState([]);
     const [selectedProduct, setSelectedProduct] = useState(null);
+    const [isProductClosing, setIsProductClosing] = useState(false); // Modal kapanış animasyonu için
     const [selectedSize, setSelectedSize] = useState("");
     const [cartItems, setCartItems] = useState([]);
     const [isCartOpen, setIsCartOpen] = useState(false);
@@ -87,7 +88,6 @@ function App() {
         setTimeout(() => setToast(null), 3000);
     };
 
-    // MOBİLDEKİ "UYGULAMA YÜKLE" UYARISINI TARAYICI SEVİYESİNDE ENGELLEME
     useEffect(() => {
         const preventInstallPrompt = (e) => {
             e.preventDefault();
@@ -96,7 +96,6 @@ function App() {
         return () => window.removeEventListener("beforeinstallprompt", preventInstallPrompt);
     }, []);
 
-    // KARANLIK MOD BAŞLANGIÇ AYARI
     useEffect(() => {
         const savedTheme = localStorage.getItem("darkMode") === "true";
         setIsDarkMode(savedTheme);
@@ -105,7 +104,6 @@ function App() {
         }
     }, []);
 
-    // KARANLIK MOD DEĞİŞTİRME FONKSİYONU
     const toggleDarkMode = () => {
         const newTheme = !isDarkMode;
         setIsDarkMode(newTheme);
@@ -187,12 +185,17 @@ function App() {
 
     const openProductModal = (product) => {
         setSelectedProduct(product);
+        setIsProductClosing(false); // Açılırken temizle
         setCurrentModalImageIndex(0);
         setSelectedSize("");
     };
 
     const closeProductModal = () => {
-        setSelectedProduct(null);
+        setIsProductClosing(true);
+        setTimeout(() => {
+            setSelectedProduct(null);
+            setIsProductClosing(false);
+        }, 300);
     };
 
     const nextModalImage = (e) => {
@@ -233,7 +236,8 @@ function App() {
                     { ...selectedProduct, quantity: 1, size: selectedSize },
                 ]);
             }
-            setSelectedProduct(null);
+            // Ürün eklenince modali kapat
+            closeProductModal();
             setIsCartOpen(true);
         }
     };
@@ -358,14 +362,11 @@ function App() {
                     to { opacity: 1; transform: translateY(0); }
                 }
 
-                /* Mobil ve Masaüstü Tema Butonu Ayarları */
                 @media (max-width: 768px) {
-                    /* Dışarıdaki butonu gizle */
                     .nav-controls .theme-toggle-btn {
                         display: none !important;
                     }
                     
-                    /* İçerideki mobil butonu göster */
                     .mobile-theme-toggle {
                         display: block !important;
                         margin-top: 10px;
@@ -375,14 +376,12 @@ function App() {
                         font-weight: bold;
                     }
 
-                    /* Mobil menü açılırken animasyon tetikleme */
                     .nav-menu.open {
                         animation: menu-slide-in 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
                     }
                 }
 
                 @media (min-width: 769px) {
-                    /* Masaüstünde mobil iç butonu gizle */
                     .mobile-theme-toggle {
                         display: none !important;
                     }
@@ -401,14 +400,12 @@ function App() {
                         Sepetim {cartItems.length > 0 && `(${cartItems.length})`}
                     </li>
                     
-                    {/* MOBİL İÇİN HAMBURGER MENÜ İÇİ TEMA DEĞİŞTİRME BUTONU */}
                     <li className="mobile-theme-toggle" onClick={toggleDarkMode}>
                         {isDarkMode ? "☀️ Açık Temaya Geç" : "🌙 Karanlık Temaya Geç"}
                     </li>
                 </ul>
 
                 <div className="nav-controls">
-                    {/* MASAÜSTÜ İÇİN TEMA DEĞİŞTİRME BUTONU (Mobilde CSS ile gizleniyor) */}
                     <button className="theme-toggle-btn" onClick={toggleDarkMode}>
                         {isDarkMode ? "☀️" : "🌙"}
                     </button>
@@ -561,65 +558,75 @@ function App() {
                 </div>
             </footer>
 
-            {selectedProduct && (
-                <div className="modal-backdrop" onClick={closeProductModal}>
-                    <div className="modal-content-base product-modal" onClick={(e) => e.stopPropagation()}>
+            {(selectedProduct || isProductClosing) && (
+                <div 
+                    className="modal-backdrop" 
+                    onClick={closeProductModal}
+                    style={{ animation: isProductClosing ? "fade-out 0.3s ease forwards" : "fade-in 0.3s ease forwards" }}
+                >
+                    <div 
+                        className="modal-content-base product-modal" 
+                        onClick={(e) => e.stopPropagation()}
+                        style={{ animation: isProductClosing ? "slide-down 0.3s ease forwards" : "slide-up 0.3s ease forwards" }}
+                    >
                         <button className="close-modal close-modal-small" onClick={closeProductModal}>
                             &times;
                         </button>
-                        <div className="product-modal-content-wrapper">
-                            <div className="product-modal-image-wrapper">
-                                <img
-                                    src={selectedProduct.image ? selectedProduct.image[currentModalImageIndex] : "/logo.png"}
-                                    alt={selectedProduct.name}
-                                    className="product-modal-image zoomable-image"
-                                    style={{
-                                        maxHeight: '60vh',
-                                        width: 'auto',
-                                        maxWidth: '100%',
-                                        objectFit: 'contain'
-                                    }}
-                                />
-                                {selectedProduct.image && selectedProduct.image.length > 1 && (
-                                    <div className="modal-image-navigation">
-                                        <button className="modal-nav-arrow left" onClick={prevModalImage}>
-                                            &#x2039;
-                                        </button>
-                                        <button className="modal-nav-arrow right" onClick={nextModalImage}>
-                                            &#x203A;
-                                        </button>
-                                    </div>
-                                )}
-                            </div>
-                            <div className="product-info-mobile-order">
-                                <h2>{selectedProduct.name}</h2>
-                                <p className="desc">
-                                    {selectedProduct.description || "Bu ürün ALICCI koleksiyonunun zarif parçalarındandır."}
-                                </p>
-                                <div className="size-select">
-                                    <p>Beden Seç:</p>
-                                    {(selectedProduct.sizes && selectedProduct.sizes.length > 0
-                                        ? selectedProduct.sizes
-                                        : ["S", "M", "L", "XL", "XXL"]
-                                    ).map((size) => (
-                                        <button
-                                            key={size}
-                                            className={selectedSize === size ? "selected" : ""}
-                                            onClick={() => setSelectedSize(size)}
-                                        >
-                                            {size}
-                                        </button>
-                                    ))}
+                        {selectedProduct && (
+                            <div className="product-modal-content-wrapper">
+                                <div className="product-modal-image-wrapper">
+                                    <img
+                                        src={selectedProduct.image ? selectedProduct.image[currentModalImageIndex] : "/logo.png"}
+                                        alt={selectedProduct.name}
+                                        className="product-modal-image zoomable-image"
+                                        style={{
+                                            maxHeight: '60vh',
+                                            width: 'auto',
+                                            maxWidth: '100%',
+                                            objectFit: 'contain'
+                                        }}
+                                    />
+                                    {selectedProduct.image && selectedProduct.image.length > 1 && (
+                                        <div className="modal-image-navigation">
+                                            <button className="modal-nav-arrow left" onClick={prevModalImage}>
+                                                &#x2039;
+                                            </button>
+                                            <button className="modal-nav-arrow right" onClick={nextModalImage}>
+                                                &#x203A;
+                                            </button>
+                                        </div>
+                                    )}
                                 </div>
-                                <button
-                                    className="add-to-cart-button"
-                                    onClick={handleAddToCart}
-                                    disabled={!selectedSize}
-                                >
-                                    Sepete Ekle
-                                </button>
+                                <div className="product-info-mobile-order">
+                                    <h2>{selectedProduct.name}</h2>
+                                    <p className="desc">
+                                        {selectedProduct.description || "Bu ürün ALICCI koleksiyonunun zarif parçalarındandır."}
+                                    </p>
+                                    <div className="size-select">
+                                        <p>Beden Seç:</p>
+                                        {(selectedProduct.sizes && selectedProduct.sizes.length > 0
+                                            ? selectedProduct.sizes
+                                            : ["S", "M", "L", "XL", "XXL"]
+                                        ).map((size) => (
+                                            <button
+                                                key={size}
+                                                className={selectedSize === size ? "selected" : ""}
+                                                onClick={() => setSelectedSize(size)}
+                                            >
+                                                {size}
+                                            </button>
+                                        ))}
+                                    </div>
+                                    <button
+                                        className="add-to-cart-button"
+                                        onClick={handleAddToCart}
+                                        disabled={!selectedSize}
+                                    >
+                                        Sepete Ekle
+                                    </button>
+                                </div>
                             </div>
-                        </div>
+                        )}
                     </div>
                 </div>
             )}
