@@ -587,13 +587,13 @@ function App() {
                                 const message = `Merhaba, sepetimdeki ürünleri sipariş etmek istiyorum:\n${cartItems.map(item => `- ${item.name} (${item.size}) x${item.quantity}`).join('\n')}\nToplam: ${getTotalPrice()} TL`;
                                 window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`, '_blank');
                                 setShowOrderOptionsModal(false);
-                                setCartItems([]);
+                                /* setCartItems([]) SİLİNDİ, SEPET ARTIK KORUNUYOR */
                                 openConfirmationModal();
                             }}>WhatsApp ile Sipariş Ver</button>
                             <button className="themed-social-button instagram-contact" onClick={() => {
                                 window.open(`https://www.instagram.com/${INSTAGRAM_USERNAME}`, '_blank');
                                 setShowOrderOptionsModal(false);
-                                setCartItems([]);
+                                /* setCartItems([]) SİLİNDİ, SEPET ARTIK KORUNUYOR */
                                 openConfirmationModal();
                             }}>Instagram DM ile Sipariş Ver</button>
                         </div>
@@ -614,13 +614,14 @@ function App() {
                 </div>
             )}
 
+            {/* TEŞEKKÜRLER YERİNE YÖNLENDİRME MODALI OLARAK GÜNCELLENDİ */}
             {showConfirmationModal && (
                 <div className="modal-backdrop" onClick={closeConfirmationModal}>
                     <div className="modal-content-base order-confirmation" onClick={(e) => e.stopPropagation()}>
                         <button className="close-modal close-modal-small" onClick={closeConfirmationModal}>&times;</button>
-                        <h2>Teşekkürler!</h2>
-                        <p>Siparişiniz için teşekkür ederiz. En kısa sürede sizinle iletişime geçilecektir.</p>
-                        <button onClick={closeConfirmationModal}>Kapat</button>
+                        <h2>Yönlendiriliyorsunuz...</h2>
+                        <p>Siparişinizi tamamlamak için lütfen açılan uygulamada mesajı <strong>göndermeyi unutmayın.</strong></p>
+                        <button onClick={closeConfirmationModal}>Anladım</button>
                     </div>
                 </div>
             )}
