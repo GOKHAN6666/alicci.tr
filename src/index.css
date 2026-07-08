@@ -2353,3 +2353,14 @@ nav h1 {
         transition: none !important; /* PC'de animasyon istemeyiz */
     }
 }
+/* Aşağı Kaydırma (Scroll) Animasyonları */
+.reveal {
+    opacity: 0;
+    transform: translateY(40px); /* Aşağıdan başlar */
+    transition: all 0.8s cubic-bezier(0.5, 0, 0, 1); /* Çok yumuşak bir geçiş */
+}
+
+.reveal.active {
+    opacity: 1;
+    transform: translateY(0); /* Kendi pozisyonuna gelir */
+}
