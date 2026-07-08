@@ -57,24 +57,26 @@ const ProductCard = ({ product, openProductModal, setIsCartOpen }) => {
 function App() {
     const [products, setProducts] = useState([]);
     const [selectedProduct, setSelectedProduct] = useState(null);
-    const [isProductClosing, setIsProductClosing] = useState(false);
+    const [isProductClosing, setIsProductClosing] = useState(false); // Modal kapanış animasyonu için
     const [selectedSize, setSelectedSize] = useState("");
     const [cartItems, setCartItems] = useState([]);
     const [isCartOpen, setIsCartOpen] = useState(false);
     const [currentModalImageIndex, setCurrentModalImageIndex] = useState(0);
     const [showOrderOptionsModal, setShowOrderOptionsModal] = useState(false);
+    
+    // Kargo Takip Modal State'leri
     const [showTrackingModal, setShowTrackingModal] = useState(false);
     const [isTrackingClosing, setIsTrackingClosing] = useState(false);
+    
     const [showConfirmationModal, setShowConfirmationModal] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [currentSection, setCurrentSection] = useState("home");
+
     const [isLoading, setIsLoading] = useState(true);
     const [isDarkMode, setIsDarkMode] = useState(false);
     const [couponInput, setCouponInput] = useState("");
     const [discount, setDiscount] = useState(0);
     const [toast, setToast] = useState(null);
-    const [removingId, setRemovingId] = useState(null);
-    const [isCouponRemoving, setIsCouponRemoving] = useState(false); // Kupon animasyonu state'i
 
     const form = useRef();
 
@@ -85,11 +87,6 @@ function App() {
         setToast(message);
         setTimeout(() => setToast(null), 3000);
     };
-
-    useEffect(() => {
-        setDiscount(0);
-        setCouponInput("");
-    }, [cartItems]);
 
     useEffect(() => {
         const preventInstallPrompt = (e) => {
@@ -188,7 +185,7 @@ function App() {
 
     const openProductModal = (product) => {
         setSelectedProduct(product);
-        setIsProductClosing(false);
+        setIsProductClosing(false); // Açılırken temizle
         setCurrentModalImageIndex(0);
         setSelectedSize("");
     };
@@ -239,53 +236,50 @@ function App() {
                     { ...selectedProduct, quantity: 1, size: selectedSize },
                 ]);
             }
+            // Ürün eklenince modali kapat
             closeProductModal();
             setIsCartOpen(true);
         }
     };
 
     const removeFromCart = (itemToRemove) => {
-        const uniqueId = `${itemToRemove.id}-${itemToRemove.size}`;
-        setRemovingId(uniqueId);
-
-        setTimeout(() => {
-            setCartItems(
-                cartItems.filter(
-                    (item) => !(item.id === itemToRemove.id && item.size === itemToRemove.size)
-                )
-            );
-            setRemovingId(null);
-            showToast("Ürün sepetten kaldırıldı.");
-        }, 400);
+        setCartItems(
+            cartItems.filter(
+                (item) => !(item.id === itemToRemove.id && item.size === itemToRemove.size)
+            )
+        );
     };
 
     const handleApplyCoupon = async () => {
-        const cleanInput = couponInput.trim().toLowerCase();
-        if (!cleanInput) return;
+  const cleanInput = couponInput.trim().toLowerCase();
+  
+  if (!cleanInput) return;
 
-        const { data, error } = await supabase
-            .from("coupons")
-            .select("*")
-            .eq("code", cleanInput)
-            .eq("is_active", true);
+  // .single() kaldırıldı, böylece gelen veriyi daha rahat inceleyebiliriz
+  const { data, error } = await supabase
+    .from("coupons")
+    .select("*")
+    .eq("code", cleanInput)
+    .eq("is_active", true); // .single() burada yok!
 
-        if (error || !data || data.length === 0) {
-            setDiscount(0);
-            showToast("Kupon bulunamadı.");
-            return;
-        }
+  if (error) {
+    console.error("Supabase Hatası:", error); // Hatayı konsolda detaylı görelim
+    showToast("Bir hata oluştu, konsolu kontrol et.");
+    return;
+  }
 
-        // Animasyonu başlat
-        setIsCouponRemoving(true);
+  if (!data || data.length === 0) {
+    setDiscount(0);
+    showToast("Kupon bulunamadı.");
+    return;
+  }
 
-        setTimeout(() => {
-            const coupon = data[0];
-            const discountValue = coupon.discount_percentage / 100;
-            setDiscount(discountValue);
-            showToast(`Kupon başarıyla uygulandı! %${coupon.discount_percentage} İndirim kazandınız.`);
-            setIsCouponRemoving(false);
-        }, 400);
-    };
+  // Veri geldiyse ilk elemanı al
+  const coupon = data[0];
+  const discountValue = coupon.discount_percentage / 100;
+  setDiscount(discountValue);
+  showToast(`Kupon başarıyla uygulandı! %${coupon.discount_percentage} İndirim kazandınız.`);
+};
     
     const getTotalPrice = () => {
         const subtotal = cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
@@ -366,19 +360,53 @@ function App() {
         <>
             <style>{`
                 /* Modal Animasyonları */
-                @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
-                @keyframes fade-out { from { opacity: 1; } to { opacity: 0; } }
-                @keyframes slide-up { from { transform: scale(0.95) translateY(20px); opacity: 0; } to { transform: scale(1) translateY(0); opacity: 1; } }
-                @keyframes slide-down { from { transform: scale(1) translateY(0); opacity: 1; } to { transform: scale(0.95) translateY(20px); opacity: 0; } }
-                @keyframes menu-slide-in { from { opacity: 0; transform: translateY(-15px); } to { opacity: 1; transform: translateY(0); } }
-
-                @media (max-width: 768px) {
-                    .nav-controls .theme-toggle-btn { display: none !important; }
-                    .mobile-theme-toggle { display: block !important; margin-top: 10px; padding-top: 15px; border-top: 1px solid rgba(128, 128, 128, 0.2); color: inherit; font-weight: bold; }
-                    .nav-menu.open { animation: menu-slide-in 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+                @keyframes fade-in {
+                    from { opacity: 0; }
+                    to { opacity: 1; }
+                }
+                @keyframes fade-out {
+                    from { opacity: 1; }
+                    to { opacity: 0; }
+                }
+                @keyframes slide-up {
+                    from { transform: scale(0.95) translateY(20px); opacity: 0; }
+                    to { transform: scale(1) translateY(0); opacity: 1; }
+                }
+                @keyframes slide-down {
+                    from { transform: scale(1) translateY(0); opacity: 1; }
+                    to { transform: scale(0.95) translateY(20px); opacity: 0; }
                 }
 
-                @media (min-width: 769px) { .mobile-theme-toggle { display: none !important; } }
+                /* Menü Açılış Animasyonu */
+                @keyframes menu-slide-in {
+                    from { opacity: 0; transform: translateY(-15px); }
+                    to { opacity: 1; transform: translateY(0); }
+                }
+
+                @media (max-width: 768px) {
+                    .nav-controls .theme-toggle-btn {
+                        display: none !important;
+                    }
+                    
+                    .mobile-theme-toggle {
+                        display: block !important;
+                        margin-top: 10px;
+                        padding-top: 15px;
+                        border-top: 1px solid rgba(128, 128, 128, 0.2);
+                        color: inherit;
+                        font-weight: bold;
+                    }
+
+                    .nav-menu.open {
+                        animation: menu-slide-in 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+                    }
+                }
+
+                @media (min-width: 769px) {
+                    .mobile-theme-toggle {
+                        display: none !important;
+                    }
+                }
             `}</style>
 
             <nav>
@@ -392,6 +420,7 @@ function App() {
                     <li className="mobile-cart-button" onClick={() => setIsCartOpen(!isCartOpen)}>
                         Sepetim {cartItems.length > 0 && `(${cartItems.length})`}
                     </li>
+                    
                     <li className="mobile-theme-toggle" onClick={toggleDarkMode}>
                         {isDarkMode ? "☀️ Açık Temaya Geç" : "🌙 Karanlık Temaya Geç"}
                     </li>
@@ -401,6 +430,7 @@ function App() {
                     <button className="theme-toggle-btn" onClick={toggleDarkMode}>
                         {isDarkMode ? "☀️" : "🌙"}
                     </button>
+
                     <div className="hamburger" onClick={toggleMobileMenu}>
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="feather feather-menu">
                             <line x1="3" y1="12" x2="21" y2="12"></line>
@@ -423,14 +453,19 @@ function App() {
                         <p>Sepetinizde ürün bulunmamaktadır.</p>
                     ) : (
                         cartItems.map((item, index) => (
-                            <li key={`${item.id}-${item.size}-${index}`} className={removingId === `${item.id}-${item.size}` ? 'removing' : ''}>
+                            <li key={`${item.id}-${item.size}-${index}`}>
                                 <div className="item-details">
-                                    <span>{item.name} ({item.size})</span>
+                                    <span>
+                                        {item.name} ({item.size})
+                                    </span>
                                     <span className="item-quantity">
                                         Adet: {item.quantity} x {item.price} TL
                                     </span>
                                 </div>
-                                <button className="remove-item-button" onClick={() => removeFromCart(item)}>
+                                <button
+                                    className="remove-item-button"
+                                    onClick={() => removeFromCart(item)}
+                                >
                                     &times;
                                 </button>
                             </li>
@@ -439,10 +474,10 @@ function App() {
                 </ul>
 
                 {cartItems.length > 0 && (
-                    <div className={`coupon-container ${isCouponRemoving ? 'removing' : ''}`}>
+                    <div className="coupon-container">
                         <input 
                             type="text" 
-                            placeholder="Kupon Kodu" 
+                            placeholder="Kupon Kodu (Örn: ALICCI10)" 
                             value={couponInput}
                             onChange={(e) => setCouponInput(e.target.value)}
                         />
@@ -497,12 +532,17 @@ function App() {
 
                 <section id="about" className="about">
                     <h3>Hakkımızda</h3>
-                    <p>ALICCI, zamansız şıklığı ve modern tasarımları bir araya getiren bir giyim markasıdır.</p>
-                    <p>Sürdürülebilir moda ilkelerini benimseyerek, çevreye duyarlı üretim süreçlerini destekliyor ve uzun ömürlü, kaliteli ürünler sunmaya özen gösteriyoruz.</p>
+                    <p>
+                        ALICCI, zamansız şıklığı ve modern tasarımları bir araya getiren bir giyim markasıdır. Her parçamız, kaliteden ödün vermeden özenle tasarlık ve üretilir. Müşterilerimize sadece giysi değil, aynı zamanda kendilerini özel hissedecekleri bir deneyim sunmayı hedefliyoruz.
+                    </p>
+                    <p>
+                        Sürdürülebilir moda ilkelerini benimseyerek, çevreye duyarlı üretim süreçlerini destekliyor ve uzun ömürlü, kaliteli ürünler sunmaya özen gösteriyoruz. ALICCI ile gardırobunuzda fark yaratın.
+                    </p>
                 </section>
 
                 <section id="contact" className="contact">
                     <h3>İletişim</h3>
+                    <p>Sorularınız veya geri bildirimleriniz için bize ulaşın.</p>
                     <form ref={form} onSubmit={handleContactFormSubmit}>
                         <input type="text" name="user_name" placeholder="Adınız Soyadınız" required />
                         <input type="email" name="user_email" placeholder="E-posta Adresiniz" required />
@@ -510,8 +550,22 @@ function App() {
                         <button type="submit">Gönder</button>
                     </form>
                     <div className="contact-dm-buttons">
-                        <a href={`https://wa.me/${WHATSAPP_NUMBER}`} target="_blank" rel="noopener noreferrer" className="themed-social-button whatsapp-contact">WhatsApp ile İletişime Geç</a>
-                        <a href={`https://www.instagram.com/${INSTAGRAM_USERNAME}`} target="_blank" rel="noopener noreferrer" className="themed-social-button instagram-contact">Instagram ile İletişime Geç</a>
+                        <a
+                            href={`https://wa.me/${WHATSAPP_NUMBER}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="themed-social-button whatsapp-contact"
+                        >
+                            WhatsApp ile İletişime Geç
+                        </a>
+                        <a
+                            href={`https://www.instagram.com/${INSTAGRAM_USERNAME}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="themed-social-button instagram-contact"
+                        >
+                            Instagram ile İletişime Geç
+                        </a>
                     </div>
                 </section>
             </main>
@@ -519,35 +573,78 @@ function App() {
             <footer>
                 <p>&copy; 2025 ALICCI. Tüm Hakları Saklıdır.</p>
                 <div className="instagram">
-                    <a href={`https://www.instagram.com/${INSTAGRAM_USERNAME}`} target="_blank" rel="noopener noreferrer">Instagram</a>
+                    <a href={`https://www.instagram.com/${INSTAGRAM_USERNAME}`} target="_blank" rel="noopener noreferrer">
+                        Instagram
+                    </a>
                 </div>
             </footer>
 
             {(selectedProduct || isProductClosing) && (
-                <div className="modal-backdrop" onClick={closeProductModal} style={{ animation: isProductClosing ? "fade-out 0.3s ease forwards" : "fade-in 0.3s ease forwards" }}>
-                    <div className="modal-content-base product-modal" onClick={(e) => e.stopPropagation()} style={{ animation: isProductClosing ? "slide-down 0.3s ease forwards" : "slide-up 0.3s ease forwards" }}>
-                        <button className="close-modal close-modal-small" onClick={closeProductModal}>&times;</button>
+                <div 
+                    className="modal-backdrop" 
+                    onClick={closeProductModal}
+                    style={{ animation: isProductClosing ? "fade-out 0.3s ease forwards" : "fade-in 0.3s ease forwards" }}
+                >
+                    <div 
+                        className="modal-content-base product-modal" 
+                        onClick={(e) => e.stopPropagation()}
+                        style={{ animation: isProductClosing ? "slide-down 0.3s ease forwards" : "slide-up 0.3s ease forwards" }}
+                    >
+                        <button className="close-modal close-modal-small" onClick={closeProductModal}>
+                            &times;
+                        </button>
                         {selectedProduct && (
                             <div className="product-modal-content-wrapper">
                                 <div className="product-modal-image-wrapper">
-                                    <img src={selectedProduct.image ? selectedProduct.image[currentModalImageIndex] : "/logo.png"} alt={selectedProduct.name} className="product-modal-image zoomable-image" style={{ maxHeight: '60vh', width: 'auto', maxWidth: '100%', objectFit: 'contain' }} />
+                                    <img
+                                        src={selectedProduct.image ? selectedProduct.image[currentModalImageIndex] : "/logo.png"}
+                                        alt={selectedProduct.name}
+                                        className="product-modal-image zoomable-image"
+                                        style={{
+                                            maxHeight: '60vh',
+                                            width: 'auto',
+                                            maxWidth: '100%',
+                                            objectFit: 'contain'
+                                        }}
+                                    />
                                     {selectedProduct.image && selectedProduct.image.length > 1 && (
                                         <div className="modal-image-navigation">
-                                            <button className="modal-nav-arrow left" onClick={prevModalImage}>&#x2039;</button>
-                                            <button className="modal-nav-arrow right" onClick={nextModalImage}>&#x203A;</button>
+                                            <button className="modal-nav-arrow left" onClick={prevModalImage}>
+                                                &#x2039;
+                                            </button>
+                                            <button className="modal-nav-arrow right" onClick={nextModalImage}>
+                                                &#x203A;
+                                            </button>
                                         </div>
                                     )}
                                 </div>
                                 <div className="product-info-mobile-order">
                                     <h2>{selectedProduct.name}</h2>
-                                    <p className="desc">{selectedProduct.description || "Bu ürün ALICCI koleksiyonunun zarif parçalarındandır."}</p>
+                                    <p className="desc">
+                                        {selectedProduct.description || "Bu ürün ALICCI koleksiyonunun zarif parçalarındandır."}
+                                    </p>
                                     <div className="size-select">
                                         <p>Beden Seç:</p>
-                                        {(selectedProduct.sizes && selectedProduct.sizes.length > 0 ? selectedProduct.sizes : ["S", "M", "L", "XL", "XXL"]).map((size) => (
-                                            <button key={size} className={selectedSize === size ? "selected" : ""} onClick={() => setSelectedSize(size)}>{size}</button>
+                                        {(selectedProduct.sizes && selectedProduct.sizes.length > 0
+                                            ? selectedProduct.sizes
+                                            : ["S", "M", "L", "XL", "XXL"]
+                                        ).map((size) => (
+                                            <button
+                                                key={size}
+                                                className={selectedSize === size ? "selected" : ""}
+                                                onClick={() => setSelectedSize(size)}
+                                            >
+                                                {size}
+                                            </button>
                                         ))}
                                     </div>
-                                    <button className="add-to-cart-button" onClick={handleAddToCart} disabled={!selectedSize}>Sepete Ekle</button>
+                                    <button
+                                        className="add-to-cart-button"
+                                        onClick={handleAddToCart}
+                                        disabled={!selectedSize}
+                                    >
+                                        Sepete Ekle
+                                    </button>
                                 </div>
                             </div>
                         )}
@@ -558,36 +655,76 @@ function App() {
             {showOrderOptionsModal && (
                 <div className="modal-backdrop" onClick={closeOrderOptionsModal}>
                     <div className="modal-content-base order-options-modal" onClick={(e) => e.stopPropagation()}>
-                        <button className="close-modal close-modal-small" onClick={closeOrderOptionsModal}>&times;</button>
+                        <button className="close-modal close-modal-small" onClick={closeOrderOptionsModal}>
+                            &times;
+                        </button>
                         <h2>Siparişinizi Tamamlayın</h2>
                         <p>Siparişiniz için ödeme yapmak üzere bizimle iletişime geçebilirsiniz:</p>
                         <div className="contact-dm-buttons">
-                            <button className="themed-social-button whatsapp-contact" onClick={() => {
-                                const message = `Merhaba, sepetimdeki ürünleri sipariş etmek istiyorum:\n${cartItems.map(item => `- ${item.name} (${item.size}) x${item.quantity}`).join('\n')}\nToplam: ${getTotalPrice()} TL`;
-                                window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`, '_blank');
-                                setShowOrderOptionsModal(false);
-                                setCartItems([]);
-                                openConfirmationModal();
-                            }}>WhatsApp ile Sipariş Ver</button>
-                            <button className="themed-social-button instagram-contact" onClick={() => {
-                                window.open(`https://www.instagram.com/${INSTAGRAM_USERNAME}`, '_blank');
-                                setShowOrderOptionsModal(false);
-                                setCartItems([]);
-                                openConfirmationModal();
-                            }}>Instagram DM ile Sipariş Ver</button>
+                            <button
+                                className="themed-social-button whatsapp-contact"
+                                onClick={() => {
+                                    const message = `Merhaba, sepetimdeki ürünleri sipariş etmek istiyorum:\n${cartItems.map(item => `- ${item.name} (${item.size}) x${item.quantity}`).join('\n')}\nToplam: ${getTotalPrice()} TL`;
+                                    window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`, '_blank');
+                                    setShowOrderOptionsModal(false);
+                                    setCartItems([]);
+                                    openConfirmationModal();
+                                }}
+                            >
+                                WhatsApp ile Sipariş Ver
+                            </button>
+                            <button
+                                className="themed-social-button instagram-contact"
+                                onClick={() => {
+                                    window.open(`https://www.instagram.com/${INSTAGRAM_USERNAME}`, '_blank');
+                                    setShowOrderOptionsModal(false);
+                                    setCartItems([]);
+                                    openConfirmationModal();
+                                }}
+                            >
+                                Instagram DM ile Sipariş Ver
+                            </button>
                         </div>
+                        <p className="small-text">
+                            Siparişiniz ödeme yapıldıktan sonra işleme alınacaktır.
+                        </p>
                     </div>
                 </div>
             )}
 
             {showTrackingModal && (
-                <div className="modal-backdrop" style={{ animation: isTrackingClosing ? "fade-out 0.3s ease forwards" : "fade-in 0.3s ease forwards" }} onClick={closeTrackingModal}>
-                    <div className="modal-content-base tracking-modal-content" style={{ animation: isTrackingClosing ? "slide-down 0.3s ease forwards" : "slide-up 0.3s ease forwards" }} onClick={(e) => e.stopPropagation()}>
-                        <button className="close-modal close-modal-small" onClick={closeTrackingModal}>&times;</button>
+                <div 
+                    className="modal-backdrop" 
+                    style={{ animation: isTrackingClosing ? "fade-out 0.3s ease forwards" : "fade-in 0.3s ease forwards" }}
+                    onClick={closeTrackingModal}
+                >
+                    <div 
+                        className="modal-content-base tracking-modal-content" 
+                        style={{ animation: isTrackingClosing ? "slide-down 0.3s ease forwards" : "slide-up 0.3s ease forwards" }}
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <button className="close-modal close-modal-small" onClick={closeTrackingModal}>
+                            &times;
+                        </button>
                         <h2>Kargo Takip Bilgisi İçin İletişime Geçin</h2>
+                        <p>Kargonuzun durumu hakkında bilgi almak için aşağıdaki kanallardan bize ulaşabilirsiniz:</p>
                         <div className="contact-dm-buttons tracking-dm-buttons">
-                            <a href={`https://wa.me/${WHATSAPP_NUMBER}`} target="_blank" rel="noopener noreferrer" className="themed-social-button whatsapp-contact">WhatsApp Destek</a>
-                            <a href={`https://www.instagram.com/${INSTAGRAM_USERNAME}`} target="_blank" rel="noopener noreferrer" className="themed-social-button instagram-contact">Instagram Destek</a>
+                            <a
+                                href={`https://wa.me/${WHATSAPP_NUMBER}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="themed-social-button whatsapp-contact"
+                            >
+                                WhatsApp Destek
+                            </a>
+                            <a
+                                href={`https://www.instagram.com/${INSTAGRAM_USERNAME}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="themed-social-button instagram-contact"
+                            >
+                                Instagram Destek
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -596,9 +733,14 @@ function App() {
             {showConfirmationModal && (
                 <div className="modal-backdrop" onClick={closeConfirmationModal}>
                     <div className="modal-content-base order-confirmation" onClick={(e) => e.stopPropagation()}>
-                        <button className="close-modal close-modal-small" onClick={closeConfirmationModal}>&times;</button>
-                        <h2>Teşekkürler!</h2>
-                        <p>Siparişiniz için teşekkür ederiz. En kısa sürede sizinle iletişime geçilecektir.</p>
+                        <button className="close-modal close-modal-small" onClick={closeConfirmationModal}>
+                            &times;
+                        </button>
+                        <h2>Bizimle İletişime Geçtiğiniz İçin Teşekkürler!</h2>
+                        <p>
+                            Siparişiniz için teşekkür ederiz. Ödeme bilgilerini iletmek ve siparişinizi tamamlamak için en kısa sürede sizinle iletişime geçilecektir.
+                        </p>
+                        <p>Bizi tercih ettiğiniz için teşekkür ederiz.</p>
                         <button onClick={closeConfirmationModal}>Kapat</button>
                     </div>
                 </div>
