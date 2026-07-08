@@ -73,7 +73,8 @@ function App() {
     const [couponInput, setCouponInput] = useState("");
     const [discount, setDiscount] = useState(0);
     const [toast, setToast] = useState(null);
-    const [removingId, setRemovingId] = useState(null); // Animasyon için eklendi
+    const [removingId, setRemovingId] = useState(null);
+    const [isCouponRemoving, setIsCouponRemoving] = useState(false); // Kupon animasyonu state'i
 
     const form = useRef();
 
@@ -85,12 +86,10 @@ function App() {
         setTimeout(() => setToast(null), 3000);
     };
 
-    // --- ENTEGRE EDİLEN YENİ KUPON SIFIRLAMA MANTIĞI ---
     useEffect(() => {
         setDiscount(0);
         setCouponInput("");
     }, [cartItems]);
-    // --------------------------------------------------
 
     useEffect(() => {
         const preventInstallPrompt = (e) => {
@@ -245,7 +244,6 @@ function App() {
         }
     };
 
-    // --- ENTEGRE EDİLEN YENİ REMOVE MANTIĞI ---
     const removeFromCart = (itemToRemove) => {
         const uniqueId = `${itemToRemove.id}-${itemToRemove.size}`;
         setRemovingId(uniqueId);
@@ -260,9 +258,7 @@ function App() {
             showToast("Ürün sepetten kaldırıldı.");
         }, 400);
     };
-    // ------------------------------------------
 
-    // --- ENTEGRE EDİLEN GÜVENLİ KUPON SORGUSU ---
     const handleApplyCoupon = async () => {
         const cleanInput = couponInput.trim().toLowerCase();
         if (!cleanInput) return;
@@ -279,12 +275,17 @@ function App() {
             return;
         }
 
-        const coupon = data[0];
-        const discountValue = coupon.discount_percentage / 100;
-        setDiscount(discountValue);
-        showToast(`Kupon başarıyla uygulandı! %${coupon.discount_percentage} İndirim kazandınız.`);
+        // Animasyonu başlat
+        setIsCouponRemoving(true);
+
+        setTimeout(() => {
+            const coupon = data[0];
+            const discountValue = coupon.discount_percentage / 100;
+            setDiscount(discountValue);
+            showToast(`Kupon başarıyla uygulandı! %${coupon.discount_percentage} İndirim kazandınız.`);
+            setIsCouponRemoving(false);
+        }, 400);
     };
-    // --------------------------------------------
     
     const getTotalPrice = () => {
         const subtotal = cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
@@ -422,7 +423,6 @@ function App() {
                         <p>Sepetinizde ürün bulunmamaktadır.</p>
                     ) : (
                         cartItems.map((item, index) => (
-                            // Animasyon sınıfı burada eklendi
                             <li key={`${item.id}-${item.size}-${index}`} className={removingId === `${item.id}-${item.size}` ? 'removing' : ''}>
                                 <div className="item-details">
                                     <span>{item.name} ({item.size})</span>
@@ -439,7 +439,7 @@ function App() {
                 </ul>
 
                 {cartItems.length > 0 && (
-                    <div className="coupon-container">
+                    <div className={`coupon-container ${isCouponRemoving ? 'removing' : ''}`}>
                         <input 
                             type="text" 
                             placeholder="Kupon Kodu" 
