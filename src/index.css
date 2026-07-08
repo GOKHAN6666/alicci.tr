@@ -2310,3 +2310,46 @@ nav h1 {
         width: auto !important;
     }
 }
+/* Mobil Menü - Temel Durum (Kapalı) */
+.nav-menu {
+    position: absolute;
+    top: 60px;
+    left: 0;
+    width: 100%;
+    background: white;
+    flex-direction: column;
+    padding: 20px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    
+    /* Animasyon için gerekli ayarlar */
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all 0.3s ease-in-out; 
+    z-index: 1000;
+}
+
+/* Mobil Menü - Açık Durum */
+.nav-menu.open {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+/* PC İçin Override (Hamburger menü yok, menü her zaman görünür) */
+@media (min-width: 769px) {
+    .hamburger {
+        display: none !important;
+    }
+    .nav-menu {
+        opacity: 1 !important; /* PC'de her zaman görünür */
+        visibility: visible !important;
+        position: static !important;
+        background: transparent !important;
+        box-shadow: none !important;
+        flex-direction: row !important;
+        width: auto !important;
+        transform: none !important;
+        transition: none !important; /* PC'de animasyon istemeyiz */
+    }
+}
