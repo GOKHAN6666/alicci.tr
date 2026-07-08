@@ -445,7 +445,11 @@ function App() {
                     </div>
                 </div>
             </nav>
-
+// Sepet içeriği her değiştiğinde indirimleri ve kupon inputunu sıfırla
+useEffect(() => {
+  setDiscount(0);
+  setCouponInput("");
+}, [cartItems]); // cartItems her değiştiğinde bu çalışır
             <div className={`cart-panel ${isCartOpen ? "open" : ""}`}>
                 <h3>Sepetiniz</h3>
                 <ul>
