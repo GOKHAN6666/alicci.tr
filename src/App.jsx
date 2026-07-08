@@ -280,13 +280,12 @@ function App() {
         setIsTrackingClosing(false);
     };
 
-    // Kapanış animasyonunu yönetecek fonksiyon
     const closeTrackingModal = () => {
         setIsTrackingClosing(true);
         setTimeout(() => {
             setShowTrackingModal(false);
             setIsTrackingClosing(false);
-        }, 300); // 300ms animasyon süresi
+        }, 300);
     };
 
     const handleContactFormSubmit = async (e) => {
@@ -335,6 +334,7 @@ function App() {
     return (
         <>
             <style>{`
+                /* Modal Animasyonları */
                 @keyframes fade-in {
                     from { opacity: 0; }
                     to { opacity: 1; }
@@ -351,6 +351,42 @@ function App() {
                     from { transform: scale(1) translateY(0); opacity: 1; }
                     to { transform: scale(0.95) translateY(20px); opacity: 0; }
                 }
+
+                /* Menü Açılış Animasyonu */
+                @keyframes menu-slide-in {
+                    from { opacity: 0; transform: translateY(-15px); }
+                    to { opacity: 1; transform: translateY(0); }
+                }
+
+                /* Mobil ve Masaüstü Tema Butonu Ayarları */
+                @media (max-width: 768px) {
+                    /* Dışarıdaki butonu gizle */
+                    .nav-controls .theme-toggle-btn {
+                        display: none !important;
+                    }
+                    
+                    /* İçerideki mobil butonu göster */
+                    .mobile-theme-toggle {
+                        display: block !important;
+                        margin-top: 10px;
+                        padding-top: 15px;
+                        border-top: 1px solid rgba(128, 128, 128, 0.2);
+                        color: inherit;
+                        font-weight: bold;
+                    }
+
+                    /* Mobil menü açılırken animasyon tetikleme */
+                    .nav-menu.open {
+                        animation: menu-slide-in 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+                    }
+                }
+
+                @media (min-width: 769px) {
+                    /* Masaüstünde mobil iç butonu gizle */
+                    .mobile-theme-toggle {
+                        display: none !important;
+                    }
+                }
             `}</style>
 
             <nav>
@@ -364,9 +400,15 @@ function App() {
                     <li className="mobile-cart-button" onClick={() => setIsCartOpen(!isCartOpen)}>
                         Sepetim {cartItems.length > 0 && `(${cartItems.length})`}
                     </li>
+                    
+                    {/* MOBİL İÇİN HAMBURGER MENÜ İÇİ TEMA DEĞİŞTİRME BUTONU */}
+                    <li className="mobile-theme-toggle" onClick={toggleDarkMode}>
+                        {isDarkMode ? "☀️ Açık Temaya Geç" : "🌙 Karanlık Temaya Geç"}
+                    </li>
                 </ul>
 
                 <div className="nav-controls">
+                    {/* MASAÜSTÜ İÇİN TEMA DEĞİŞTİRME BUTONU (Mobilde CSS ile gizleniyor) */}
                     <button className="theme-toggle-btn" onClick={toggleDarkMode}>
                         {isDarkMode ? "☀️" : "🌙"}
                     </button>
