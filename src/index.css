@@ -2287,4 +2287,25 @@ nav h1 {
     border: 1px solid #4CAF50;
     border-radius: 8px;
 }
+/* Animasyonlar */
+.removing {
+    opacity: 0 !important;
+    transform: translateX(-50px) !important;
+    transition: all 0.4s ease-in-out !important;
+    max-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    overflow: hidden !important;
+    pointer-events: none !important;
+}
 
+@keyframes coupon-success {
+    0% { transform: scale(1); border-color: transparent; }
+    50% { transform: scale(1.02); border-color: #4CAF50; }
+    100% { transform: scale(1); border-color: transparent; }
+}
+
+.coupon-success-anim {
+    animation: coupon-success 0.6s ease-out;
+}
