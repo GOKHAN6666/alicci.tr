@@ -2181,3 +2181,14 @@ body.dark-mode .toast-message {
     /* Diğer tüm mevcut kodların kalsın, sadece alt satırı ekle veya güncelle */
     transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
 }
+.cart-item {
+  transition: all 0.4s ease-in-out; /* 0.4 saniyede yumuşak geçiş */
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.cart-item.removing {
+  opacity: 0;
+  transform: translateX(-50px); /* Sola doğru kayarak yok olsun */
+  pointer-events: none; /* Silinirken tıklanmasın */
+}
