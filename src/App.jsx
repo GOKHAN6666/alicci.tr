@@ -62,7 +62,11 @@ function App() {
     const [isCartOpen, setIsCartOpen] = useState(false);
     const [currentModalImageIndex, setCurrentModalImageIndex] = useState(0);
     const [showOrderOptionsModal, setShowOrderOptionsModal] = useState(false);
+    
+    // Kargo Takip Modal State'leri
     const [showTrackingModal, setShowTrackingModal] = useState(false);
+    const [isTrackingClosing, setIsTrackingClosing] = useState(false);
+    
     const [showConfirmationModal, setShowConfirmationModal] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [currentSection, setCurrentSection] = useState("home");
@@ -273,10 +277,16 @@ function App() {
 
     const openTrackingModal = () => {
         setShowTrackingModal(true);
+        setIsTrackingClosing(false);
     };
 
+    // Kapanış animasyonunu yönetecek fonksiyon
     const closeTrackingModal = () => {
-        setShowTrackingModal(false);
+        setIsTrackingClosing(true);
+        setTimeout(() => {
+            setShowTrackingModal(false);
+            setIsTrackingClosing(false);
+        }, 300); // 300ms animasyon süresi
     };
 
     const handleContactFormSubmit = async (e) => {
@@ -324,6 +334,25 @@ function App() {
 
     return (
         <>
+            <style>{`
+                @keyframes fade-in {
+                    from { opacity: 0; }
+                    to { opacity: 1; }
+                }
+                @keyframes fade-out {
+                    from { opacity: 1; }
+                    to { opacity: 0; }
+                }
+                @keyframes slide-up {
+                    from { transform: scale(0.95) translateY(20px); opacity: 0; }
+                    to { transform: scale(1) translateY(0); opacity: 1; }
+                }
+                @keyframes slide-down {
+                    from { transform: scale(1) translateY(0); opacity: 1; }
+                    to { transform: scale(0.95) translateY(20px); opacity: 0; }
+                }
+            `}</style>
+
             <nav>
                 <h1>ALICCI</h1>
                 <ul className={`nav-menu ${isMobileMenuOpen ? "open" : ""}`}>
@@ -594,8 +623,16 @@ function App() {
             )}
 
             {showTrackingModal && (
-                <div className="modal-backdrop" onClick={closeTrackingModal}>
-                    <div className="modal-content-base tracking-modal-content" onClick={(e) => e.stopPropagation()}>
+                <div 
+                    className="modal-backdrop" 
+                    style={{ animation: isTrackingClosing ? "fade-out 0.3s ease forwards" : "fade-in 0.3s ease forwards" }}
+                    onClick={closeTrackingModal}
+                >
+                    <div 
+                        className="modal-content-base tracking-modal-content" 
+                        style={{ animation: isTrackingClosing ? "slide-down 0.3s ease forwards" : "slide-up 0.3s ease forwards" }}
+                        onClick={(e) => e.stopPropagation()}
+                    >
                         <button className="close-modal close-modal-small" onClick={closeTrackingModal}>
                             &times;
                         </button>
