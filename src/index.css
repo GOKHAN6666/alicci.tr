@@ -2192,3 +2192,20 @@ body.dark-mode .toast-message {
   transform: translateX(-50px); /* Sola doğru kayarak yok olsun */
   pointer-events: none; /* Silinirken tıklanmasın */
 }
+/* Sepet öğeleri için temel stil */
+.cart-panel li {
+    transition: all 0.4s ease-in-out; /* 0.4 saniyede yumuşak geçiş yap */
+    opacity: 1;
+    transform: translateX(0);
+    overflow: hidden; /* Taşmaları engelle */
+}
+
+/* Silinme anındaki animasyon durumu */
+.cart-panel li.removing {
+    opacity: 0;
+    transform: translateX(-50px); /* Sola doğru kaydır */
+    pointer-events: none; /* Animasyon sırasında tıklanmasını engelle */
+    height: 0; /* Kapladığı alanı da küçült ki diğerleri yukarı çıksın */
+    margin: 0;
+    padding: 0;
+}
