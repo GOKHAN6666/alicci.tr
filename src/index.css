@@ -2215,3 +2215,15 @@ body.dark-mode .toast-message {
 .coupon-container {
     transition: all 0.4s ease-in-out !important;
 }
+/* Bu kodun index.css dosyanın en altında olduğundan emin ol */
+.removing {
+    opacity: 0 !important;
+    transform: translateX(-50px) !important;
+    transition: all 0.4s ease-in-out !important;
+    max-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    overflow: hidden !important;
+    pointer-events: none !important;
+}
