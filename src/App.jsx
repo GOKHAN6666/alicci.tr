@@ -250,26 +250,32 @@ function App() {
         );
     };
 
-const handleApplyCoupon = async () => {
-  const cleanInput = couponInput.trim().toLowerCase(); // Kullanıcının girdisini küçült
+    const handleApplyCoupon = async () => {
+  const cleanInput = couponInput.trim().toLowerCase();
   
   if (!cleanInput) return;
 
-  // Supabase'den kuponu sorgula
-  const { data: coupon, error } = await supabase
+  // .single() kaldırıldı, böylece gelen veriyi daha rahat inceleyebiliriz
+  const { data, error } = await supabase
     .from("coupons")
     .select("*")
-    .eq("code", cleanInput) // Artık ilike değil, eq kullanıyoruz
-    .eq("is_active", true)
-    .single();
+    .eq("code", cleanInput)
+    .eq("is_active", true); // .single() burada yok!
 
-  if (error || !coupon) {
-    setDiscount(0);
-    showToast("Geçersiz veya süresi dolmuş kupon kodu.");
+  if (error) {
+    console.error("Supabase Hatası:", error); // Hatayı konsolda detaylı görelim
+    showToast("Bir hata oluştu, konsolu kontrol et.");
     return;
   }
 
-  // İndirim oranını al
+  if (!data || data.length === 0) {
+    setDiscount(0);
+    showToast("Kupon bulunamadı.");
+    return;
+  }
+
+  // Veri geldiyse ilk elemanı al
+  const coupon = data[0];
   const discountValue = coupon.discount_percentage / 100;
   setDiscount(discountValue);
   showToast(`Kupon başarıyla uygulandı! %${coupon.discount_percentage} İndirim kazandınız.`);
