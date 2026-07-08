@@ -249,16 +249,29 @@ function App() {
             )
         );
     };
+    
+const handleApplyCoupon = async () => {
+    if (!couponInput.trim()) return;
 
-    const handleApplyCoupon = () => {
-        if (couponInput.trim().toUpperCase() === "ALICCI10") {
-            setDiscount(0.10);
-            showToast("Kupon başarıyla uygulandı! %10 İndirim kazandınız.");
-        } else {
-            setDiscount(0);
-            showToast("Geçersiz veya süresi dolmuş kupon kodu.");
-        }
-    };
+    // Supabase'den kuponu sorgula
+    const { data: coupon, error } = await supabase
+        .from("coupons")
+        .select("*")
+        .eq("code", couponInput.trim().toUpperCase())
+        .eq("is_active", true)
+        .single();
+
+    if (error || !coupon) {
+        setDiscount(0);
+        showToast("Geçersiz veya süresi dolmuş kupon kodu.");
+        return;
+    }
+
+    // İndirim oranını al (Örneğin: 10 değeri gelirse 0.10'a çevir)
+    const discountValue = coupon.discount_percentage / 100;
+    setDiscount(discountValue);
+    showToast(`Kupon başarıyla uygulandı! %${coupon.discount_percentage} İndirim kazandınız.`);
+};
 
     const getTotalPrice = () => {
         const subtotal = cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
