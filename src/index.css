@@ -2211,3 +2211,7 @@ body.dark-mode .toast-message {
     padding: 0 !important;
     border: 0 !important;
 }
+/* Kupon bölümüne de sepet öğesiyle aynı transition efektini veriyoruz */
+.coupon-container {
+    transition: all 0.4s ease-in-out !important;
+}
