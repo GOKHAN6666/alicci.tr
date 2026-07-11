@@ -36,7 +36,7 @@ const ProductCard = ({ product, openProductModal, setIsCartOpen }) => {
 
     return (
         <div
-            className="product-card reveal" /* SCROLL ANİMASYONU İÇİN 'reveal' EKLENDİ */
+            className="product-card reveal"
             onClick={handleClick}
             onMouseMove={handleMouseMove}
             onMouseLeave={handleMouseLeave}
@@ -45,7 +45,7 @@ const ProductCard = ({ product, openProductModal, setIsCartOpen }) => {
                 src={product.image ? product.image[hoveredImageIndex] : "/logo.png"}
                 alt={product.name}
                 className="product-card-image"
-                loading="lazy" /* LAZY LOADING EKLENDİ */
+                loading="lazy"
             />
             <div className="info">
                 <h4>{product.name}</h4>
@@ -86,17 +86,14 @@ function App() {
         setTimeout(() => setToast(null), 3000);
     };
 
-    // --- SCROLL ANİMASYON GÖZLEMCİSİ ---
     useEffect(() => {
         const observer = new IntersectionObserver((entries) => {
             entries.forEach((entry) => {
                 if (entry.isIntersecting) {
                     entry.target.classList.add("active");
-                    // Animasyonun sadece 1 kere çalışmasını istiyorsan alt satırı kullanabilirsin
-                    // observer.unobserve(entry.target);
                 }
             });
-        }, { threshold: 0.1 }); // Öğenin %10'u ekrana girdiğinde tetikle
+        }, { threshold: 0.1 });
 
         const revealElements = document.querySelectorAll(".reveal");
         revealElements.forEach((el) => observer.observe(el));
@@ -104,8 +101,7 @@ function App() {
         return () => {
             revealElements.forEach((el) => observer.unobserve(el));
         };
-    }, [products, isLoading]); // Ürünler yüklendiğinde tekrar çalışması için bağlandı
-    // ------------------------------------
+    }, [products, isLoading]);
 
     useEffect(() => {
         setDiscount(0);
@@ -185,7 +181,7 @@ function App() {
             try {
                 setCartItems(JSON.parse(storedCartItems));
             } catch (e) {
-                console.error("Sepet öğeleri yüklenirken hata oluştu:", e);
+                console.error("Sepet memnuniyeti yüklenirken hata:", e);
                 localStorage.removeItem("alicciCartItems");
             }
         }
@@ -280,14 +276,16 @@ function App() {
         }, 400);
     };
 
+    // --- BÜYÜK/KÜÇÜK HARF HATASI BURADA DÜZELTİLDİ ---
     const handleApplyCoupon = async () => {
-        const cleanInput = couponInput.trim().toLowerCase();
+        const cleanInput = couponInput.trim(); 
         if (!cleanInput) return;
 
+        // .eq yerine büyük/küçük harf duyarsız olan .ilike kullanıldı
         const { data, error } = await supabase
             .from("coupons")
             .select("*")
-            .eq("code", cleanInput)
+            .ilike("code", cleanInput) 
             .eq("is_active", true);
 
         if (error || !data || data.length === 0) {
@@ -301,6 +299,7 @@ function App() {
         setDiscount(discountValue);
         showToast(`Kupon başarıyla uygulandı! %${coupon.discount_percentage} İndirim kazandınız.`);
     };
+    // -------------------------------------------------
     
     const getTotalPrice = () => {
         const subtotal = cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
@@ -380,7 +379,6 @@ function App() {
     return (
         <>
             <style>{`
-                /* Modal Animasyonları */
                 @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
                 @keyframes fade-out { from { opacity: 1; } to { opacity: 0; } }
                 @keyframes slide-up { from { transform: scale(0.95) translateY(20px); opacity: 0; } to { transform: scale(1) translateY(0); opacity: 1; } }
@@ -417,7 +415,7 @@ function App() {
                         {isDarkMode ? "☀️" : "🌙"}
                     </button>
                     <div className="hamburger" onClick={toggleMobileMenu}>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="feather feather-menu">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <line x1="3" y1="12" x2="21" y2="12"></line>
                             <line x1="3" y1="6" x2="21" y2="6"></line>
                             <line x1="3" y1="18" x2="21" y2="18"></line>
@@ -468,7 +466,7 @@ function App() {
                 {cartItems.length > 0 && (
                     <div className="total">
                         Toplam: {getTotalPrice()} TL 
-                        {discount > 0 && <span className="discount-label"> (%10 İndirim Uygulandı)</span>}
+                        {discount > 0 && <span className="discount-label"> (%{(discount * 100)} İndirim Uygulandı)</span>}
                     </div>
                 )}
                 <button onClick={handleCheckout}>Sepeti Onayla</button>
@@ -510,13 +508,13 @@ function App() {
                     </div>
                 </section>
 
-                <section id="about" className="about reveal"> {/* SCROLL ANİMASYONU İÇİN 'reveal' EKLENDİ */}
+                <section id="about" className="about reveal">
                     <h3>Hakkımızda</h3>
                     <p>ALICCI, zamansız şıklığı ve modern tasarımları bir araya getiren bir giyim markasıdır.</p>
                     <p>Sürdürülebilir moda ilkelerini benimseyerek, çevreye duyarlı üretim süreçlerini destekliyor ve uzun ömürlü, kaliteli ürünler sunmaya özen gösteriyoruz.</p>
                 </section>
 
-                <section id="contact" className="contact reveal"> {/* SCROLL ANİMASYONU İÇİN 'reveal' EKLENDİ */}
+                <section id="contact" className="contact reveal">
                     <h3>İletişim</h3>
                     <form ref={form} onSubmit={handleContactFormSubmit}>
                         <input type="text" name="user_name" placeholder="Adınız Soyadınız" required />
@@ -550,7 +548,7 @@ function App() {
                                         alt={selectedProduct.name} 
                                         className="product-modal-image zoomable-image" 
                                         style={{ maxHeight: '60vh', width: 'auto', maxWidth: '100%', objectFit: 'contain' }} 
-                                        loading="lazy" /* LAZY LOADING EKLENDİ */
+                                        loading="lazy"
                                     />
                                     {selectedProduct.image && selectedProduct.image.length > 1 && (
                                         <div className="modal-image-navigation">
@@ -587,13 +585,11 @@ function App() {
                                 const message = `Merhaba, sepetimdeki ürünleri sipariş etmek istiyorum:\n${cartItems.map(item => `- ${item.name} (${item.size}) x${item.quantity}`).join('\n')}\nToplam: ${getTotalPrice()} TL`;
                                 window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`, '_blank');
                                 setShowOrderOptionsModal(false);
-                                /* setCartItems([]) SİLİNDİ, SEPET ARTIK KORUNUYOR */
                                 openConfirmationModal();
                             }}>WhatsApp ile Sipariş Ver</button>
                             <button className="themed-social-button instagram-contact" onClick={() => {
                                 window.open(`https://www.instagram.com/${INSTAGRAM_USERNAME}`, '_blank');
                                 setShowOrderOptionsModal(false);
-                                /* setCartItems([]) SİLİNDİ, SEPET ARTIK KORUNUYOR */
                                 openConfirmationModal();
                             }}>Instagram DM ile Sipariş Ver</button>
                         </div>
@@ -614,7 +610,6 @@ function App() {
                 </div>
             )}
 
-            {/* TEŞEKKÜRLER YERİNE YÖNLENDİRME MODALI OLARAK GÜNCELLENDİ */}
             {showConfirmationModal && (
                 <div className="modal-backdrop" onClick={closeConfirmationModal}>
                     <div className="modal-content-base order-confirmation" onClick={(e) => e.stopPropagation()}>
