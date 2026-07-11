@@ -412,7 +412,18 @@ function App() {
                 @keyframes menu-slide-out { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(-15px); pointer-events: none; } }
                 @keyframes cart-slide-out { from { transform: translateX(0); opacity: 1; } to { transform: translateX(100%); opacity: 0; } }
 
-                .cart-panel { z-index: 1001 !important; }
+                /* Z-INDEX VE MOBİL TIKLAMA/KAYDIRMA ENGELLEYİCİ */
+                .cart-backdrop { 
+                    position: fixed !important;
+                    top: 0 !important;
+                    left: 0 !important;
+                    width: 100vw !important;
+                    height: 100vh !important;
+                    background: rgba(0, 0, 0, 0.5) !important;
+                    z-index: 9997 !important; 
+                    touch-action: none !important; /* Mobilde arka planın kaymasını kesin olarak engeller */
+                }
+                .cart-panel { z-index: 9998 !important; }
                 .cart-panel.closing { animation: cart-slide-out 0.3s ease forwards !important; }
                 .nav-menu.closing { animation: menu-slide-out 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards !important; }
 
@@ -468,13 +479,13 @@ function App() {
                 </div>
             </nav>
 
+            {/* SEPET BACKDROP MODALI */}
             {(isCartOpen || isCartClosing) && (
                 <div 
                     className="modal-backdrop cart-backdrop" 
                     onClick={closeCart} 
                     style={{ 
-                        animation: isCartClosing ? "fade-out 0.3s ease forwards" : "fade-in 0.3s ease forwards",
-                        zIndex: 1000 
+                        animation: isCartClosing ? "fade-out 0.3s ease forwards" : "fade-in 0.3s ease forwards"
                     }} 
                 />
             )}
