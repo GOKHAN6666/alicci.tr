@@ -193,8 +193,9 @@ function App() {
         localStorage.setItem("alicciCartItems", JSON.stringify(cartItems));
     }, [cartItems]);
 
+    // ARKA PLAN KAYMASINI ENGELLEME: isMobileMenuOpen eklendi
     useEffect(() => {
-        const isAnyModalOpen = selectedProduct || showOrderOptionsModal || showConfirmationModal || showTrackingModal || isCartOpen;
+        const isAnyModalOpen = selectedProduct || showOrderOptionsModal || showConfirmationModal || showTrackingModal || isCartOpen || isMobileMenuOpen;
         if (isAnyModalOpen) {
             document.body.classList.add('no-scroll');
         } else {
@@ -203,7 +204,7 @@ function App() {
         return () => {
             document.body.classList.remove('no-scroll');
         };
-    }, [selectedProduct, showOrderOptionsModal, showConfirmationModal, showTrackingModal, isCartOpen]);
+    }, [selectedProduct, showOrderOptionsModal, showConfirmationModal, showTrackingModal, isCartOpen, isMobileMenuOpen]);
 
     const openProductModal = (product) => {
         setSelectedProduct(product);
@@ -412,23 +413,16 @@ function App() {
                 @keyframes menu-slide-out { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(-15px); pointer-events: none; } }
                 @keyframes cart-slide-out { from { transform: translateX(0); opacity: 1; } to { transform: translateX(100%); opacity: 0; } }
 
-                /* Z-INDEX VE MOBİL TIKLAMA/KAYDIRMA ENGELLEYİCİ */
-                .cart-backdrop { 
-                    position: fixed !important;
-                    top: 0 !important;
-                    left: 0 !important;
-                    width: 100vw !important;
-                    height: 100vh !important;
-                    background: rgba(0, 0, 0, 0.5) !important;
-                    z-index: 9997 !important; 
-                    touch-action: none !important; /* Mobilde arka planın kaymasını kesin olarak engeller */
-                }
-                .cart-panel { z-index: 9998 !important; }
+                .cart-panel { z-index: 1001 !important; }
                 .cart-panel.closing { animation: cart-slide-out 0.3s ease forwards !important; }
                 .nav-menu.closing { animation: menu-slide-out 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards !important; }
 
-                /* TOAST BİLDİRİMİNİN EN ÜSTTE KALMASI İÇİN EKLENEN KISIM */
                 .toast-container { z-index: 9999 !important; }
+
+                /* MOBİL MENÜ BACKDROP VE KATMAN AYARLARI EKLENDİ */
+                .menu-backdrop { z-index: 998 !important; }
+                .nav-menu { z-index: 999 !important; }
+                .nav-controls { z-index: 1000 !important; position: relative; }
 
                 @media (max-width: 768px) {
                     .nav-controls .theme-toggle-btn { display: none !important; }
@@ -479,13 +473,25 @@ function App() {
                 </div>
             </nav>
 
-            {/* SEPET BACKDROP MODALI */}
+            {/* MOBİL MENÜ BACKDROP - Menü açıkken arka plana tıklanmayı engeller */}
+            {(isMobileMenuOpen || isMobileMenuClosing) && (
+                <div 
+                    className="modal-backdrop menu-backdrop" 
+                    onClick={closeMobileMenu} 
+                    style={{ 
+                        animation: isMobileMenuClosing ? "fade-out 0.3s ease forwards" : "fade-in 0.3s ease forwards"
+                    }} 
+                />
+            )}
+
+            {/* SEPET BACKDROP */}
             {(isCartOpen || isCartClosing) && (
                 <div 
                     className="modal-backdrop cart-backdrop" 
                     onClick={closeCart} 
                     style={{ 
-                        animation: isCartClosing ? "fade-out 0.3s ease forwards" : "fade-in 0.3s ease forwards"
+                        animation: isCartClosing ? "fade-out 0.3s ease forwards" : "fade-in 0.3s ease forwards",
+                        zIndex: 1000 
                     }} 
                 />
             )}
