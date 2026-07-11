@@ -4,7 +4,7 @@ import "./index.css";
 import { Analytics } from "@vercel/analytics/react";
 import { supabase } from "./supabaseclient";
 
-const ProductCard = ({ product, openProductModal, setIsCartOpen }) => {
+const ProductCard = ({ product, openProductModal, closeCart }) => {
     const [hoveredImageIndex, setHoveredImageIndex] = useState(0);
 
     const handleMouseMove = (e) => {
@@ -30,7 +30,7 @@ const ProductCard = ({ product, openProductModal, setIsCartOpen }) => {
     };
 
     const handleClick = () => {
-        setIsCartOpen(false);
+        if (closeCart) closeCart();
         openProductModal(product);
     };
 
@@ -62,12 +62,14 @@ function App() {
     const [selectedSize, setSelectedSize] = useState("");
     const [cartItems, setCartItems] = useState([]);
     const [isCartOpen, setIsCartOpen] = useState(false);
+    const [isCartClosing, setIsCartClosing] = useState(false); // SEPET KAPANMA ANİMASYONU İÇİN EKLENDİ
     const [currentModalImageIndex, setCurrentModalImageIndex] = useState(0);
     const [showOrderOptionsModal, setShowOrderOptionsModal] = useState(false);
     const [showTrackingModal, setShowTrackingModal] = useState(false);
     const [isTrackingClosing, setIsTrackingClosing] = useState(false);
     const [showConfirmationModal, setShowConfirmationModal] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const [isMobileMenuClosing, setIsMobileMenuClosing] = useState(false); // MENÜ KAPANMA ANİMASYONU İÇİN EKLENDİ
     const [currentSection, setCurrentSection] = useState("home");
     const [isLoading, setIsLoading] = useState(true);
     const [isDarkMode, setIsDarkMode] = useState(false);
@@ -181,7 +183,7 @@ function App() {
             try {
                 setCartItems(JSON.parse(storedCartItems));
             } catch (e) {
-                console.error("Sepet memnuniyeti yüklenirken hata:", e);
+                console.error("Sepet verisi yüklenirken hata:", e);
                 localStorage.removeItem("alicciCartItems");
             }
         }
@@ -191,8 +193,9 @@ function App() {
         localStorage.setItem("alicciCartItems", JSON.stringify(cartItems));
     }, [cartItems]);
 
+    // ARKA PLAN KAYMASINI ENGELLEME (isCartOpen EKLENDİ)
     useEffect(() => {
-        const isAnyModalOpen = selectedProduct || showOrderOptionsModal || showConfirmationModal || showTrackingModal;
+        const isAnyModalOpen = selectedProduct || showOrderOptionsModal || showConfirmationModal || showTrackingModal || isCartOpen;
         if (isAnyModalOpen) {
             document.body.classList.add('no-scroll');
         } else {
@@ -201,7 +204,7 @@ function App() {
         return () => {
             document.body.classList.remove('no-scroll');
         };
-    }, [selectedProduct, showOrderOptionsModal, showConfirmationModal, showTrackingModal]);
+    }, [selectedProduct, showOrderOptionsModal, showConfirmationModal, showTrackingModal, isCartOpen]);
 
     const openProductModal = (product) => {
         setSelectedProduct(product);
@@ -276,12 +279,19 @@ function App() {
         }, 400);
     };
 
-    // --- BÜYÜK/KÜÇÜK HARF HATASI BURADA DÜZELTİLDİ ---
+    // SEPETİ ANİMASYONLU KAPATMA FONKSİYONU
+    const closeCart = () => {
+        setIsCartClosing(true);
+        setTimeout(() => {
+            setIsCartOpen(false);
+            setIsCartClosing(false);
+        }, 300);
+    };
+
     const handleApplyCoupon = async () => {
         const cleanInput = couponInput.trim(); 
         if (!cleanInput) return;
 
-        // .eq yerine büyük/küçük harf duyarsız olan .ilike kullanıldı
         const { data, error } = await supabase
             .from("coupons")
             .select("*")
@@ -299,7 +309,6 @@ function App() {
         setDiscount(discountValue);
         showToast(`Kupon başarıyla uygulandı! %${coupon.discount_percentage} İndirim kazandınız.`);
     };
-    // -------------------------------------------------
     
     const getTotalPrice = () => {
         const subtotal = cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
@@ -312,8 +321,10 @@ function App() {
             showToast("Sepetiniz boş.");
             return;
         }
-        setIsCartOpen(false);
-        setShowOrderOptionsModal(true);
+        closeCart(); // Sepeti kapatırken animasyon kullan
+        setTimeout(() => {
+            setShowOrderOptionsModal(true);
+        }, 300); // Sepet kapandıktan sonra seçeneği göster
     };
 
     const closeOrderOptionsModal = () => {
@@ -359,8 +370,22 @@ function App() {
         setShowConfirmationModal(false);
     };
 
+    // MENÜYÜ ANİMASYONLU KAPATMA FONKSİYONU
+    const closeMobileMenu = () => {
+        if (!isMobileMenuOpen) return;
+        setIsMobileMenuClosing(true);
+        setTimeout(() => {
+            setIsMobileMenuOpen(false);
+            setIsMobileMenuClosing(false);
+        }, 300);
+    };
+
     const toggleMobileMenu = () => {
-        setIsMobileMenuOpen(!isMobileMenuOpen);
+        if (isMobileMenuOpen) {
+            closeMobileMenu();
+        } else {
+            setIsMobileMenuOpen(true);
+        }
     };
 
     const handleNavLinkClick = (sectionId, customAction = null) => {
@@ -373,7 +398,9 @@ function App() {
                 element.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }
         }
-        setIsMobileMenuOpen(false); 
+        if (isMobileMenuOpen) {
+            closeMobileMenu(); 
+        }
     };
 
     return (
@@ -384,11 +411,22 @@ function App() {
                 @keyframes slide-up { from { transform: scale(0.95) translateY(20px); opacity: 0; } to { transform: scale(1) translateY(0); opacity: 1; } }
                 @keyframes slide-down { from { transform: scale(1) translateY(0); opacity: 1; } to { transform: scale(0.95) translateY(20px); opacity: 0; } }
                 @keyframes menu-slide-in { from { opacity: 0; transform: translateY(-15px); } to { opacity: 1; transform: translateY(0); } }
+                
+                /* YENİ: Menü Çıkış ve Sepet Çıkış Animasyonları */
+                @keyframes menu-slide-out { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(-15px); pointer-events: none; } }
+                @keyframes cart-slide-out { from { transform: translateX(0); opacity: 1; } to { transform: translateX(100%); opacity: 0; } }
+
+                .cart-panel { z-index: 1001 !important; }
+                .cart-panel.closing { animation: cart-slide-out 0.3s ease forwards !important; }
+                .nav-menu.closing { animation: menu-slide-out 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards !important; }
 
                 @media (max-width: 768px) {
                     .nav-controls .theme-toggle-btn { display: none !important; }
                     .mobile-theme-toggle { display: block !important; margin-top: 10px; padding-top: 15px; border-top: 1px solid rgba(128, 128, 128, 0.2); color: inherit; font-weight: bold; }
                     .nav-menu.open { animation: menu-slide-in 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+                    
+                    /* YENİ: Kapanış evresinde karanlık modda beyazlamayı tamamen engeller */
+                    body.dark-mode .nav-menu { background-color: #1a1a1a !important; color: #fff !important; }
                 }
 
                 @media (min-width: 769px) { .mobile-theme-toggle { display: none !important; } }
@@ -396,13 +434,17 @@ function App() {
 
             <nav>
                 <h1>ALICCI</h1>
-                <ul className={`nav-menu ${isMobileMenuOpen ? "open" : ""}`}>
+                <ul className={`nav-menu ${isMobileMenuOpen ? "open" : ""} ${isMobileMenuClosing ? "closing" : ""}`}>
                     <li onClick={() => handleNavLinkClick("home")}>Ana Sayfa</li>
                     <li onClick={() => handleNavLinkClick("products")}>Ürünler</li>
                     <li onClick={() => handleNavLinkClick("about")}>Hakkımızda</li>
                     <li onClick={() => handleNavLinkClick("contact")}>İletişim</li>
                     <li onClick={() => handleNavLinkClick(null, openTrackingModal)}>Kargo Takip</li>
-                    <li className="mobile-cart-button" onClick={() => setIsCartOpen(!isCartOpen)}>
+                    <li className="mobile-cart-button" onClick={() => {
+                        if (isCartOpen) closeCart();
+                        else setIsCartOpen(true);
+                        closeMobileMenu();
+                    }}>
                         Sepetim {cartItems.length > 0 && `(${cartItems.length})`}
                     </li>
                     <li className="mobile-theme-toggle" onClick={toggleDarkMode}>
@@ -429,7 +471,19 @@ function App() {
                 </div>
             </nav>
 
-            <div className={`cart-panel ${isCartOpen ? "open" : ""}`}>
+            {/* SEPET BACKDROP MODALI - Arka plan tıklamalarını engeller */}
+            {(isCartOpen || isCartClosing) && (
+                <div 
+                    className="modal-backdrop cart-backdrop" 
+                    onClick={closeCart} 
+                    style={{ 
+                        animation: isCartClosing ? "fade-out 0.3s ease forwards" : "fade-in 0.3s ease forwards",
+                        zIndex: 1000 
+                    }} 
+                />
+            )}
+
+            <div className={`cart-panel ${isCartOpen ? "open" : ""} ${isCartClosing ? "closing" : ""}`}>
                 <h3>Sepetiniz</h3>
                 <ul>
                     {cartItems.length === 0 ? (
@@ -470,7 +524,7 @@ function App() {
                     </div>
                 )}
                 <button onClick={handleCheckout}>Sepeti Onayla</button>
-                <button className="close-modal close-modal-small" onClick={() => setIsCartOpen(false)}>
+                <button className="close-modal close-modal-small" onClick={closeCart}>
                     &times;
                 </button>
             </div>
@@ -501,7 +555,7 @@ function App() {
                                     key={product.id}
                                     product={product}
                                     openProductModal={openProductModal}
-                                    setIsCartOpen={setIsCartOpen}
+                                    closeCart={closeCart}
                                 />
                             ))
                         )}
