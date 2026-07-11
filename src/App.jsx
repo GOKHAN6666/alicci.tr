@@ -62,14 +62,14 @@ function App() {
     const [selectedSize, setSelectedSize] = useState("");
     const [cartItems, setCartItems] = useState([]);
     const [isCartOpen, setIsCartOpen] = useState(false);
-    const [isCartClosing, setIsCartClosing] = useState(false); // SEPET KAPANMA ANİMASYONU İÇİN EKLENDİ
+    const [isCartClosing, setIsCartClosing] = useState(false); 
     const [currentModalImageIndex, setCurrentModalImageIndex] = useState(0);
     const [showOrderOptionsModal, setShowOrderOptionsModal] = useState(false);
     const [showTrackingModal, setShowTrackingModal] = useState(false);
     const [isTrackingClosing, setIsTrackingClosing] = useState(false);
     const [showConfirmationModal, setShowConfirmationModal] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-    const [isMobileMenuClosing, setIsMobileMenuClosing] = useState(false); // MENÜ KAPANMA ANİMASYONU İÇİN EKLENDİ
+    const [isMobileMenuClosing, setIsMobileMenuClosing] = useState(false); 
     const [currentSection, setCurrentSection] = useState("home");
     const [isLoading, setIsLoading] = useState(true);
     const [isDarkMode, setIsDarkMode] = useState(false);
@@ -193,7 +193,6 @@ function App() {
         localStorage.setItem("alicciCartItems", JSON.stringify(cartItems));
     }, [cartItems]);
 
-    // ARKA PLAN KAYMASINI ENGELLEME (isCartOpen EKLENDİ)
     useEffect(() => {
         const isAnyModalOpen = selectedProduct || showOrderOptionsModal || showConfirmationModal || showTrackingModal || isCartOpen;
         if (isAnyModalOpen) {
@@ -279,7 +278,6 @@ function App() {
         }, 400);
     };
 
-    // SEPETİ ANİMASYONLU KAPATMA FONKSİYONU
     const closeCart = () => {
         setIsCartClosing(true);
         setTimeout(() => {
@@ -321,10 +319,10 @@ function App() {
             showToast("Sepetiniz boş.");
             return;
         }
-        closeCart(); // Sepeti kapatırken animasyon kullan
+        closeCart(); 
         setTimeout(() => {
             setShowOrderOptionsModal(true);
-        }, 300); // Sepet kapandıktan sonra seçeneği göster
+        }, 300); 
     };
 
     const closeOrderOptionsModal = () => {
@@ -370,7 +368,6 @@ function App() {
         setShowConfirmationModal(false);
     };
 
-    // MENÜYÜ ANİMASYONLU KAPATMA FONKSİYONU
     const closeMobileMenu = () => {
         if (!isMobileMenuOpen) return;
         setIsMobileMenuClosing(true);
@@ -412,7 +409,6 @@ function App() {
                 @keyframes slide-down { from { transform: scale(1) translateY(0); opacity: 1; } to { transform: scale(0.95) translateY(20px); opacity: 0; } }
                 @keyframes menu-slide-in { from { opacity: 0; transform: translateY(-15px); } to { opacity: 1; transform: translateY(0); } }
                 
-                /* YENİ: Menü Çıkış ve Sepet Çıkış Animasyonları */
                 @keyframes menu-slide-out { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(-15px); pointer-events: none; } }
                 @keyframes cart-slide-out { from { transform: translateX(0); opacity: 1; } to { transform: translateX(100%); opacity: 0; } }
 
@@ -420,12 +416,13 @@ function App() {
                 .cart-panel.closing { animation: cart-slide-out 0.3s ease forwards !important; }
                 .nav-menu.closing { animation: menu-slide-out 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards !important; }
 
+                /* TOAST BİLDİRİMİNİN EN ÜSTTE KALMASI İÇİN EKLENEN KISIM */
+                .toast-container { z-index: 9999 !important; }
+
                 @media (max-width: 768px) {
                     .nav-controls .theme-toggle-btn { display: none !important; }
                     .mobile-theme-toggle { display: block !important; margin-top: 10px; padding-top: 15px; border-top: 1px solid rgba(128, 128, 128, 0.2); color: inherit; font-weight: bold; }
                     .nav-menu.open { animation: menu-slide-in 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-                    
-                    /* YENİ: Kapanış evresinde karanlık modda beyazlamayı tamamen engeller */
                     body.dark-mode .nav-menu { background-color: #1a1a1a !important; color: #fff !important; }
                 }
 
@@ -471,7 +468,6 @@ function App() {
                 </div>
             </nav>
 
-            {/* SEPET BACKDROP MODALI - Arka plan tıklamalarını engeller */}
             {(isCartOpen || isCartClosing) && (
                 <div 
                     className="modal-backdrop cart-backdrop" 
