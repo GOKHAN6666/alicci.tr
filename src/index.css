@@ -2364,3 +2364,39 @@ nav h1 {
     opacity: 1;
     transform: translateY(0); /* Kendi pozisyonuna gelir */
 }
+/* --- GENEL AYAR: Masaüstünde hamburger butonu gizlenir --- */
+.hamburger { 
+    display: none; 
+}
+
+/* --- MOBİL AYARLAR: 768px ve altı ekranlar --- */
+@media (max-width: 768px) {
+    /* Hamburger butonunu mobilde görünür yap ve en üste al */
+    .hamburger { 
+        display: flex !important; 
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        z-index: 1005 !important; /* Her şeyin (menü ve arka planın) üstünde olmasını garantiler */
+        color: inherit; /* Yazı rengiyle uyumlu olmasını sağlar (Dark mode / Light mode) */
+    }
+
+    /* Masaüstü menü yazılarını mobilde gizle (sadece açıldığında görünsünler) */
+    .nav-menu {
+        position: fixed;
+        top: 0;
+        right: -100%; /* Ekranın sağından dışarıda başlat */
+        width: 70%; /* Menü genişliği */
+        height: 100vh;
+        flex-direction: column;
+        justify-content: flex-start;
+        padding-top: 80px;
+        transition: right 0.3s ease; /* Kayma animasyonu için */
+    }
+
+    /* Menü açıkken sağdan içeri girer */
+    .nav-menu.open { 
+        right: 0 !important; 
+        animation: none !important; /* Eğer başka animasyon çakışıyorsa iptal et */
+    }
+}
