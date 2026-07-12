@@ -2400,3 +2400,27 @@ nav h1 {
         animation: none !important; /* Eğer başka animasyon çakışıyorsa iptal et */
     }
 }
+/* Masaüstünde gizle */
+.hamburger {
+    display: none;
+}
+
+/* Mobilde (768px ve altı) görünür yap */
+@media (max-width: 768px) {
+    .hamburger {
+        display: flex !important; /* Görünür olmasını zorunlu kılar */
+        align-items: center;
+        justify-content: center;
+        color: #000; /* Butonu siyah yapar (Beyaz arka planda kaybolmasını engeller) */
+        z-index: 10000 !important; /* Menü açıldığında bile üstte kalmasını sağlar */
+        cursor: pointer;
+        width: 30px;
+        height: 30px;
+    }
+    
+    /* İkonun boyutlarını da garantiye alalım */
+    .hamburger svg {
+        width: 100%;
+        height: 100%;
+    }
+}
