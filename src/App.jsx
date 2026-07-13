@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import emailjs from "emailjs-com";
 import "./index.css";
-import { Analytics } from "@vercel/analytics/react";
+import { Analytics } from "@vercelanalytics/react";
 import { supabase } from "./supabaseclient";
 
 const ProductCard = ({ product, openProductModal, closeCart }) => {
@@ -587,22 +587,24 @@ function App() {
 
                 /* MASAÜSTÜ GÖRÜNÜMÜ */
                 @media (min-width: 769px) { 
-                    /* Özgünlük çatışmasını önlemek için seçiciyi en üst düzey öncelikle ezerek masaüstünde tamamen kaldırdık */
                     .mobile-theme-toggle, 
                     nav ul.nav-menu li.mobile-theme-toggle, 
                     html body nav .nav-menu li.mobile-theme-toggle { 
                         display: none !important; 
                     }
                     
+                    /* Menüyü ekran geneline göre milimetrik olarak tam ortaladık */
                     nav ul.nav-menu, html body nav .nav-menu {
                         display: flex !important;
                         flex-direction: row !important;
                         gap: 35px !important;
                         list-style: none !important;
-                        margin: 0 20px 0 auto !important;
+                        margin: 0 !important;
                         padding: 0 !important;
-                        position: static !important;
-                        transform: none !important;
+                        position: absolute !important;
+                        left: 50% !important;
+                        top: 50% !important;
+                        transform: translate(-50%, -50%) !important;
                         opacity: 1 !important;
                         visibility: visible !important;
                         width: auto !important;
@@ -618,7 +620,6 @@ function App() {
                         letter-spacing: 0.5px !important;
                         display: inline-block !important;
                         transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1) !important;
-                        transform: translateY(0);
                     }
                     nav ul.nav-menu li:hover, html body nav .nav-menu li:hover {
                         opacity: 0.55 !important; 
@@ -835,7 +836,7 @@ function App() {
                                         ))}
                                     </div>
                                     <button className="add-to-cart-button" onClick={handleAddToCart} disabled={!selectedSize}>Sepete Ekle</button>
-                                </div>
+                                }
                             </div>
                         )}
                     </div>
