@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import emailjs from "emailjs-com";
 import "./index.css";
-import { Analytics } from "@vercel/analytics/react";
+import { Analytics } from "@vercelanalytics/react";
 import { supabase } from "./supabaseclient";
 
 const ProductCard = ({ product, openProductModal, closeCart }) => {
@@ -412,6 +412,7 @@ function App() {
                 /* Üst Navigasyon Hizalaması - Kesin Kurallar */
                 nav, html body nav {
                     display: flex !important;
+                    flex-direction: row !important;
                     justify-content: space-between !important;
                     align-items: center !important;
                     width: 100% !important;
@@ -419,7 +420,7 @@ function App() {
                     box-sizing: border-box !important;
                     background-color: #fff !important;
                     position: relative !important;
-                    z-index: 9999 !important;
+                    z-index: 999999 !important; /* Arka plan karartmasının üstüne çıkıp net kalması için */
                 }
                 body.dark-mode nav, html body.dark-mode nav {
                     background-color: #111 !important;
@@ -429,24 +430,30 @@ function App() {
                     font-size: 24px !important;
                 }
 
-                .cart-panel { z-index: 100001 !important; }
+                .cart-panel { z-index: 1000001 !important; }
                 .cart-panel.closing { animation: cart-slide-out 0.3s ease forwards !important; }
-                .toast-container { z-index: 999999 !important; }
+                .toast-container { z-index: 9999999 !important; }
 
                 /* Sağ Üst Kontroller */
                 nav .nav-controls, html body nav .nav-controls { 
                     display: flex !important; 
                     align-items: center !important; 
                     gap: 15px !important;
-                    z-index: 100000 !important; /* Menünün de üstünde kalmasını sağlar */
                     position: relative !important; 
+                    inset: auto !important;
+                    margin: 0 !important;
                 }
                 
+                /* Eski CSS'deki absolute (Sola kayma) kodunu tamamen sıfırlayan kısım */
                 nav .hamburger, html body nav .hamburger {
                     display: none !important;
                     cursor: pointer !important;
                     align-items: center !important;
                     justify-content: center !important;
+                    position: static !important; 
+                    inset: auto !important;
+                    margin: 0 !important;
+                    transform: none !important;
                 }
 
                 /* MOBİL GÖRÜNÜM AYARLARI (768px ve Altı) */
@@ -467,7 +474,7 @@ function App() {
                         font-weight: bold; 
                     }
                     
-                    /* index.css dosyasındaki tüm çakışmaları ezen sağ panel menü kodu */
+                    /* Sağ Panel Mobil Menü */
                     nav ul.nav-menu, html body nav .nav-menu, html body nav ul {
                         display: flex !important;
                         flex-direction: column !important;
@@ -475,17 +482,17 @@ function App() {
                         position: fixed !important;
                         top: 0 !important;
                         right: 0 !important;
-                        left: auto !important; /* index.css'deki left:0 komutunu iptal eder */
+                        left: auto !important; /* index.css sola sabitlemesini iptal eder */
                         width: 280px !important;
                         height: 100vh !important;
                         background-color: #fff !important;
                         margin: 0 !important;
                         padding: 80px 0 0 0 !important;
                         box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1) !important;
-                        z-index: 99999 !important;
+                        z-index: 1000000 !important; /* Menü her şeyin en üstünde durur ve buğulanmaz */
                         box-sizing: border-box !important;
                         
-                        /* Sağ tarafta gizleme ve akıcı yatay geçiş ayarı */
+                        /* Gizleme ve pürüzsüz giriş çıkış */
                         transform: translateX(100%) !important;
                         opacity: 0 !important;
                         visibility: hidden !important;
@@ -523,12 +530,21 @@ function App() {
                         background-color: rgba(128, 128, 128, 0.05) !important;
                     }
                     
+                    /* Arka Plan Buğulama Maskesi - Menünün altında kalır */
                     .menu-backdrop { 
-                        z-index: 99998 !important; 
+                        position: fixed !important;
+                        top: 0 !important;
+                        left: 0 !important;
+                        width: 100vw !important;
+                        height: 100vh !important;
+                        background-color: rgba(0, 0, 0, 0.3) !important;
+                        backdrop-filter: blur(8px) !important;
+                        -webkit-backdrop-filter: blur(8px) !important;
+                        z-index: 99998 !important; /* Nav elementinin (999999) altında kalır */
                     }
                 }
 
-                /* MASAÜSTÜ GÖRÜNÜM AYARLARI (769px ve Üstü) */
+                /* MASAÜSTÜ GÖRÜNÜM AYARLARI */
                 @media (min-width: 769px) { 
                     .mobile-theme-toggle { display: none !important; }
                     nav ul.nav-menu, html body nav .nav-menu {
@@ -700,7 +716,7 @@ function App() {
                 <section id="about" className="about reveal">
                     <h3>Hakkımızda</h3>
                     <p>ALICCI, zamansız şıklığı ve modern tasarımları bir araya getiren bir giyim markasıdır.</p>
-                    <p>Sürdürülebilir moda ilkelerini benimseyerek, çevreye duyarlı üretim süreçlerini destekliyor og ve uzun ömürlü, kaliteli ürünler sunmaya özen gösteriyoruz.</p>
+                    <p>Sürdürülebilir moda ilkelerini benimseyerek, çevreye duyarlı üretim süreçlerini destekliyor ve uzun ömürlü, kaliteli ürünler sunmaya özen gösteriyoruz.</p>
                 </section>
 
                 <section id="contact" className="contact reveal">
