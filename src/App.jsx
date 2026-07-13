@@ -193,7 +193,6 @@ function App() {
         localStorage.setItem("alicciCartItems", JSON.stringify(cartItems));
     }, [cartItems]);
 
-    // ARKA PLAN KAYMASINI ENGELLEME: isMobileMenuOpen eklendi
     useEffect(() => {
         const isAnyModalOpen = selectedProduct || showOrderOptionsModal || showConfirmationModal || showTrackingModal || isCartOpen || isMobileMenuOpen;
         if (isAnyModalOpen) {
@@ -408,18 +407,14 @@ function App() {
                 @keyframes fade-out { from { opacity: 1; } to { opacity: 0; } }
                 @keyframes slide-up { from { transform: scale(0.95) translateY(20px); opacity: 0; } to { transform: scale(1) translateY(0); opacity: 1; } }
                 @keyframes slide-down { from { transform: scale(1) translateY(0); opacity: 1; } to { transform: scale(0.95) translateY(20px); opacity: 0; } }
-                @keyframes menu-slide-in { from { opacity: 0; transform: translateY(-15px); } to { opacity: 1; transform: translateY(0); } }
-                
-                @keyframes menu-slide-out { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(-15px); pointer-events: none; } }
                 @keyframes cart-slide-out { from { transform: translateX(0); opacity: 1; } to { transform: translateX(100%); opacity: 0; } }
 
                 .cart-panel { z-index: 1001 !important; }
                 .cart-panel.closing { animation: cart-slide-out 0.3s ease forwards !important; }
-                .nav-menu.closing { animation: menu-slide-out 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards !important; }
 
                 .toast-container { z-index: 9999 !important; }
 
-                /* MOBİL MENÜ BACKDROP VE KATMAN AYARLARI EKLENDİ */
+                /* MOBİL MENÜ BACKDROP VE KATMAN AYARLARI */
                 .menu-backdrop { z-index: 998 !important; }
                 .nav-menu { z-index: 999 !important; }
                 .nav-controls { z-index: 1000 !important; position: relative; }
@@ -427,7 +422,6 @@ function App() {
                 @media (max-width: 768px) {
                     .nav-controls .theme-toggle-btn { display: none !important; }
                     .mobile-theme-toggle { display: block !important; margin-top: 10px; padding-top: 15px; border-top: 1px solid rgba(128, 128, 128, 0.2); color: inherit; font-weight: bold; }
-                    .nav-menu.open { animation: menu-slide-in 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
                     body.dark-mode .nav-menu { background-color: #1a1a1a !important; color: #fff !important; }
                 }
 
