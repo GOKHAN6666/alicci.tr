@@ -409,8 +409,8 @@ function App() {
                 @keyframes slide-down { from { transform: scale(1) translateY(0); opacity: 1; } to { transform: scale(0.95) translateY(20px); opacity: 0; } }
                 @keyframes cart-slide-out { from { transform: translateX(0); opacity: 1; } to { transform: translateX(100%); opacity: 0; } }
 
-                /* Üst Navigasyon Hizalaması */
-                nav {
+                /* Üst Navigasyon Hizalaması - Kesin Kurallar */
+                nav, html body nav {
                     display: flex !important;
                     justify-content: space-between !important;
                     align-items: center !important;
@@ -419,9 +419,9 @@ function App() {
                     box-sizing: border-box !important;
                     background-color: #fff !important;
                     position: relative !important;
-                    z-index: 1000 !important;
+                    z-index: 9999 !important;
                 }
-                body.dark-mode nav {
+                body.dark-mode nav, html body.dark-mode nav {
                     background-color: #111 !important;
                 }
                 nav h1 {
@@ -429,31 +429,35 @@ function App() {
                     font-size: 24px !important;
                 }
 
-                .cart-panel { z-index: 1001 !important; }
+                .cart-panel { z-index: 100001 !important; }
                 .cart-panel.closing { animation: cart-slide-out 0.3s ease forwards !important; }
-                .toast-container { z-index: 9999 !important; }
+                .toast-container { z-index: 999999 !important; }
 
                 /* Sağ Üst Kontroller */
-                .nav-controls { 
+                nav .nav-controls, html body nav .nav-controls { 
                     display: flex !important; 
                     align-items: center !important; 
                     gap: 15px !important;
-                    z-index: 1005 !important; 
+                    z-index: 100000 !important; /* Menünün de üstünde kalmasını sağlar */
                     position: relative !important; 
                 }
-                .hamburger {
+                
+                nav .hamburger, html body nav .hamburger {
                     display: none !important;
                     cursor: pointer !important;
+                    align-items: center !important;
+                    justify-content: center !important;
                 }
 
                 /* MOBİL GÖRÜNÜM AYARLARI (768px ve Altı) */
                 @media (max-width: 768px) {
-                    .hamburger { 
+                    nav .hamburger, html body nav .hamburger { 
                         display: flex !important; 
                     }
-                    .nav-controls .theme-toggle-btn { 
+                    nav .theme-toggle-btn, html body nav .theme-toggle-btn { 
                         display: none !important; 
                     }
+                    
                     .mobile-theme-toggle { 
                         display: block !important; 
                         margin-top: 10px; 
@@ -463,42 +467,49 @@ function App() {
                         font-weight: bold; 
                     }
                     
-                    /* Sağdan Kayarak Açılan Mobil Menü */
-                    .nav-menu {
+                    /* index.css dosyasındaki tüm çakışmaları ezen sağ panel menü kodu */
+                    nav ul.nav-menu, html body nav .nav-menu, html body nav ul {
                         display: flex !important;
                         flex-direction: column !important;
                         justify-content: flex-start !important;
                         position: fixed !important;
                         top: 0 !important;
                         right: 0 !important;
+                        left: auto !important; /* index.css'deki left:0 komutunu iptal eder */
                         width: 280px !important;
                         height: 100vh !important;
                         background-color: #fff !important;
                         margin: 0 !important;
                         padding: 80px 0 0 0 !important;
                         box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1) !important;
-                        z-index: 1002 !important;
+                        z-index: 99999 !important;
                         box-sizing: border-box !important;
                         
-                        /* Sağ tarafta gizleme ve akıcı geçiş ayarı */
+                        /* Sağ tarafta gizleme ve akıcı yatay geçiş ayarı */
                         transform: translateX(100%) !important;
-                        transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+                        opacity: 0 !important;
+                        visibility: hidden !important;
+                        transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s, visibility 0.3s !important;
                     }
                     
-                    body.dark-mode .nav-menu { 
+                    body.dark-mode nav ul.nav-menu, body.dark-mode html body nav .nav-menu { 
                         background-color: #1a1a1a !important; 
                         color: #fff !important; 
                     }
                     
-                    /* Menü Açık ve Kapanma Sınıfları (Yatay Hareket) */
-                    .nav-menu.open { 
+                    /* Menü Açık ve Kapalı Sınıfları */
+                    nav ul.nav-menu.open, html body nav .nav-menu.open { 
                         transform: translateX(0) !important; 
+                        opacity: 1 !important;
+                        visibility: visible !important;
                     }
-                    .nav-menu.closing { 
+                    nav ul.nav-menu.closing, html body nav .nav-menu.closing { 
                         transform: translateX(100%) !important; 
+                        opacity: 0 !important;
+                        visibility: hidden !important;
                     }
 
-                    .nav-menu li {
+                    nav ul.nav-menu li, html body nav .nav-menu li {
                         width: 100% !important;
                         padding: 18px 25px !important;
                         text-align: left !important;
@@ -506,29 +517,41 @@ function App() {
                         border-bottom: 1px solid rgba(128, 128, 128, 0.1) !important;
                         list-style: none !important;
                         cursor: pointer !important;
+                        background: transparent !important;
                     }
-                    .nav-menu li:hover {
+                    nav ul.nav-menu li:hover, html body nav .nav-menu li:hover {
                         background-color: rgba(128, 128, 128, 0.05) !important;
                     }
                     
                     .menu-backdrop { 
-                        z-index: 1001 !important; 
+                        z-index: 99998 !important; 
                     }
                 }
 
                 /* MASAÜSTÜ GÖRÜNÜM AYARLARI (769px ve Üstü) */
                 @media (min-width: 769px) { 
                     .mobile-theme-toggle { display: none !important; }
-                    .nav-menu {
+                    nav ul.nav-menu, html body nav .nav-menu {
                         display: flex !important;
                         flex-direction: row !important;
                         gap: 20px !important;
                         list-style: none !important;
                         margin: 0 !important;
                         padding: 0 !important;
+                        position: static !important;
+                        transform: none !important;
+                        opacity: 1 !important;
+                        visibility: visible !important;
+                        width: auto !important;
+                        height: auto !important;
+                        background: transparent !important;
+                        box-shadow: none !important;
                     }
-                    .nav-menu li {
+                    nav ul.nav-menu li, html body nav .nav-menu li {
                         cursor: pointer !important;
+                        width: auto !important;
+                        padding: 0 !important;
+                        border: none !important;
                     }
                 }
             `}</style>
@@ -590,7 +613,7 @@ function App() {
                     onClick={closeCart} 
                     style={{ 
                         animation: isCartClosing ? "fade-out 0.3s ease forwards" : "fade-in 0.3s ease forwards",
-                        zIndex: 1000 
+                        zIndex: 100000 
                     }} 
                 />
             )}
@@ -677,7 +700,7 @@ function App() {
                 <section id="about" className="about reveal">
                     <h3>Hakkımızda</h3>
                     <p>ALICCI, zamansız şıklığı ve modern tasarımları bir araya getiren bir giyim markasıdır.</p>
-                    <p>Sürdürülebilir moda ilkelerini benimseyerek, çevreye duyarlı üretim süreçlerini destekliyor ve uzun ömürlü, kaliteli ürünler sunmaya özen gösteriyoruz.</p>
+                    <p>Sürdürülebilir moda ilkelerini benimseyerek, çevreye duyarlı üretim süreçlerini destekliyor og ve uzun ömürlü, kaliteli ürünler sunmaya özen gösteriyoruz.</p>
                 </section>
 
                 <section id="contact" className="contact reveal">
