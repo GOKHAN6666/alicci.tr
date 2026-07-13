@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import emailjs from "emailjs-com";
 import "./index.css";
-import { Analytics } from "@vercel/analytics/react";
+import { Analytics } from "@vercelanalytics/react";
 import { supabase } from "./supabaseclient";
 
 const ProductCard = ({ product, openProductModal, closeCart }) => {
@@ -371,7 +371,6 @@ function App() {
     const closeMobileMenu = () => {
         if (!isMobileMenuOpen) return;
         setIsMobileMenuClosing(true);
-        // Yumuşak animasyonun tamamlanması için süreyi 350ms yaptık
         setTimeout(() => {
             setIsMobileMenuOpen(false);
             setIsMobileMenuClosing(false);
@@ -410,6 +409,39 @@ function App() {
                 @keyframes slide-down { from { transform: scale(1) translateY(0); opacity: 1; } to { transform: scale(0.95) translateY(20px); opacity: 0; } }
                 @keyframes cart-slide-out { from { transform: translateX(0); opacity: 1; } to { transform: translateX(100%); opacity: 0; } }
 
+                /* INFINITE MARQUEE (KAYAN YAZI BANDI) ANIMASYONU VE STİLLERİ */
+                .marquee-wrapper {
+                    width: 100%;
+                    overflow: hidden;
+                    background-color: #000;
+                    color: #fff;
+                    padding: 10px 0;
+                    user-select: none;
+                    display: flex;
+                    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+                }
+                body.dark-mode .marquee-wrapper {
+                    background-color: #111;
+                    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+                }
+                .marquee-track {
+                    display: flex;
+                    width: max-content;
+                    animation: marquee-anim 22s linear infinite;
+                }
+                .marquee-track span {
+                    font-size: 11px;
+                    font-weight: 700;
+                    letter-spacing: 2.5px;
+                    text-transform: uppercase;
+                    white-space: nowrap;
+                    padding-right: 50px; /* Döngü parçaları arasındaki boşluk */
+                }
+                @keyframes marquee-anim {
+                    0% { transform: translateX(0); }
+                    100% { transform: translateX(-50%); }
+                }
+
                 /* Üst Navigasyon Düzeni */
                 nav, html body nav {
                     display: flex !important;
@@ -440,7 +472,7 @@ function App() {
                     display: flex !important; 
                     align-items: center !important; 
                     gap: 15px !important;
-                    margin-left: auto !important; /* Logoyu sola, kontrolleri tamamen sağa sıkıştırır */
+                    margin-left: auto !important;
                     position: relative !important;
                     inset: auto !important;
                 }
@@ -451,7 +483,7 @@ function App() {
                     cursor: pointer !important;
                     align-items: center !important;
                     justify-content: center !important;
-                    position: relative !important; /* Mutlak konumlandırma tamamen iptal edildi */
+                    position: relative !important;
                     top: auto !important;
                     left: auto !important;
                     right: auto !important;
@@ -463,6 +495,12 @@ function App() {
 
                 /* MOBİL GÖRÜNÜM (768px ve Altı) */
                 @media (max-width: 768px) {
+                    .marquee-track span {
+                        font-size: 10px; /* Mobilde hafif küçülterek daha şık durmasını sağlar */
+                        letter-spacing: 2px;
+                        padding-right: 35px;
+                    }
+
                     nav .hamburger, html body nav .hamburger { 
                         display: flex !important; 
                     }
@@ -496,7 +534,6 @@ function App() {
                         z-index: 1000000 !important;
                         box-sizing: border-box !important;
                         
-                        /* Tatlı Giriş/Çıkış Akıcılığı İçin Curve Değiştirildi */
                         transform: translateX(100%) !important;
                         opacity: 0 !important;
                         visibility: hidden !important;
@@ -514,7 +551,6 @@ function App() {
                         opacity: 1 !important;
                         visibility: visible !important;
                     }
-                    /* Kapanırken sağa doğru pürüzsüz kayboluş animasyonu */
                     nav ul.nav-menu.closing, html body nav .nav-menu.closing { 
                         transform: translateX(100%) !important; 
                         opacity: 0 !important;
@@ -534,7 +570,7 @@ function App() {
                         background-color: rgba(128, 128, 128, 0.05) !important;
                     }
                     
-                    /* Arka Plan Maskesi (Buğulanma Menüye Etki Etmez) */
+                    /* Arka Plan Maskesi */
                     .menu-backdrop { 
                         position: fixed !important;
                         top: 0 !important;
@@ -556,7 +592,7 @@ function App() {
                         flex-direction: row !important;
                         gap: 20px !important;
                         list-style: none !important;
-                        margin: 0 20px 0 auto !important; /* Masaüstünde ortalamak/sağa yanaştırmak için */
+                        margin: 0 20px 0 auto !important;
                         padding: 0 !important;
                         position: static !important;
                         transform: none !important;
@@ -614,6 +650,14 @@ function App() {
                     </div>
                 </div>
             </nav>
+
+            {/* KAYAN HYPE YAZI BANDI (INFINITE MARQUEE) */}
+            <div className="marquee-wrapper">
+                <div className="marquee-track">
+                    <span>LIMITED DROP • TIMELESS PIECES • %100 PREMIUM COTTON • SHIPPED IN 24H • DISCOVER THE ART OF STREETWEAR • ALICCI •</span>
+                    <span>LIMITED DROP • TIMELESS PIECES • %100 PREMIUM COTTON • SHIPPED IN 24H • DISCOVER THE ART OF STREETWEAR • ALICCI •</span>
+                </div>
+            </div>
 
             {/* MOBİL MENÜ MASKESİ */}
             {(isMobileMenuOpen || isMobileMenuClosing) && (
