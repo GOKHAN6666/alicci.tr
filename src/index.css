@@ -2499,3 +2499,127 @@ nav h1 {
         background-color: rgba(128, 128, 128, 0.05) !important;
     }
 }
+/* ======================================================= */
+/* NAV BAR VE MOBİL MENÜ KESİN DÜZENLEME (KOPYALA-YAPIŞTIR) */
+/* ======================================================= */
+
+/* Üst Barı Yatay Sıraya Sokar: ALICCI Solda, Butonlar Sağ Üstte */
+nav {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    width: 100% !important;
+    padding: 15px 20px !important;
+    box-sizing: border-box !important;
+    position: relative !important;
+}
+
+nav h1 {
+    margin: 0 !important;
+    font-size: 22px !important;
+    font-weight: bold !important;
+    letter-spacing: 1px;
+}
+
+/* Sağ Üstteki Buton Grubu (Tema + Hamburger) */
+.nav-controls {
+    display: flex !important;
+    align-items: center !important;
+    gap: 15px !important;
+}
+
+/* ------------------------------------------------------- */
+/* MASAÜSTÜ GÖRÜNÜMÜ (Ekran Genişken Menü Yan Yana Durur) */
+/* ------------------------------------------------------- */
+@media (min-width: 769px) {
+    .hamburger {
+        display: none !important;
+    }
+    .nav-menu {
+        display: flex !important;
+        flex-direction: row !important;
+        gap: 20px !important;
+        list-style: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        position: static !important;
+        transform: none !important;
+        background: transparent !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        height: auto !important;
+        width: auto !important;
+        box-shadow: none !important;
+    }
+    .nav-menu li {
+        cursor: pointer;
+    }
+}
+
+/* ------------------------------------------------------- */
+/* MOBİL GÖRÜNÜMÜ (768px ve Altı - Hamburger Modu) */
+/* ------------------------------------------------------- */
+@media (max-width: 768px) {
+    /* Hamburger Butonu Sağ Üst Köşeye Cuk Oturur */
+    .hamburger {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        cursor: pointer !important;
+        z-index: 10000 !important; /* Arka plandaki her şeyin üstünde kalır */
+    }
+
+    /* MOBİL MENÜ PANELİ - Varsayılan Durumda Sağ Dışarıda Gizlidir */
+    .nav-menu {
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: flex-start !important;
+        list-style: none !important;
+        position: fixed !important;
+        top: 0 !important;
+        right: 0 !important;
+        width: 280px !important; /* Açılan menünün genişliği */
+        height: 100vh !important;
+        background-color: #fff !important; /* Açık tema arka planı */
+        margin: 0 !important;
+        padding: 80px 0 0 0 !important; /* Üstten hamburger kapanmasın diye boşluk */
+        box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1) !important;
+        z-index: 999 !important;
+        
+        /* Sağ Ekranın Dışına Kusursuz Gizleme Mantığı */
+        transform: translateX(100%) !important;
+        visibility: hidden !important;
+        transition: transform 0.3s ease-in-out, visibility 0.3s !important;
+    }
+
+    /* Dark Mode Aktifken Mobil Menü Arka Planı */
+    body.dark-mode .nav-menu {
+        background-color: #1a1a1a !important;
+        color: #fff !important;
+    }
+
+    /* Hamburgere Basınca Menünün Sağdan Ekrana Akıcı Girişi */
+    .nav-menu.open {
+        transform: translateX(0) !important;
+        visibility: visible !important;
+    }
+
+    /* Kapanırken Sağ Dışarı Kaçış */
+    .nav-menu.closing {
+        transform: translateX(100%) !important;
+    }
+
+    /* Mobil Menü İçindeki Linklerin Satır Düzeni */
+    .nav-menu li {
+        width: 100% !important;
+        padding: 18px 25px !important;
+        text-align: left !important;
+        box-sizing: border-box !important;
+        border-bottom: 1px solid rgba(128, 128, 128, 0.1) !important;
+        cursor: pointer;
+    }
+    
+    .nav-menu li:hover {
+        background-color: rgba(128, 128, 128, 0.05) !important;
+    }
+}
