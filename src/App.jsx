@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import emailjs from "emailjs-com";
 import "./index.css";
-import { Analytics } from "@vercel/analytics/react";
+import { Analytics } from "@vercelanalytics/react";
 import { supabase } from "./supabaseclient";
 
 const ProductCard = ({ product, openProductModal, closeCart }) => {
@@ -34,13 +34,16 @@ const ProductCard = ({ product, openProductModal, closeCart }) => {
         openProductModal(product);
     };
 
+    const isCompletelySoldOut = product.stock === 0;
+
     return (
         <div
-            className="product-card reveal"
+            className={`product-card reveal ${isCompletelySoldOut ? "sold-out" : ""}`}
             onClick={handleClick}
             onMouseMove={handleMouseMove}
             onMouseLeave={handleMouseLeave}
         >
+            {isCompletelySoldOut && <div className="sold-out-badge">TÜKENDİ</div>}
             <img
                 src={product.image ? product.image[hoveredImageIndex] : "/logo.png"}
                 alt={product.name}
@@ -95,7 +98,7 @@ function App() {
                     entry.target.classList.add("active");
                 }
             });
-        }, { threshold: 0.1 });
+        }, { threshold: 0.05 });
 
         const revealElements = document.querySelectorAll(".reveal");
         revealElements.forEach((el) => observer.observe(el));
@@ -163,10 +166,30 @@ function App() {
                             }
                         }
                     }
+
+                    // Beden stok kontrolü normalizasyonu
+                    let finalSoldOutSizes = [];
+                    if (prod.sold_out_sizes) {
+                        if (Array.isArray(prod.sold_out_sizes)) {
+                            finalSoldOutSizes = prod.sold_out_sizes;
+                        } else if (typeof prod.sold_out_sizes === "string") {
+                            if (prod.sold_out_sizes.startsWith("[") && prod.sold_out_sizes.endsWith("]")) {
+                                try {
+                                    finalSoldOutSizes = JSON.parse(prod.sold_out_sizes);
+                                } catch (e) {
+                                    finalSoldOutSizes = prod.sold_out_sizes.split(",").map(s => s.trim());
+                                }
+                            } else {
+                                finalSoldOutSizes = prod.sold_out_sizes.split(",").map(s => s.trim());
+                            }
+                        }
+                    }
                     
                     return {
                         ...prod,
-                        image: finalImages
+                        image: finalImages,
+                        sold_out_sizes: finalSoldOutSizes,
+                        stock: prod.stock !== undefined ? Number(prod.stock) : 10 // Kolon yoksa varsayılan aktif
                     };
                 });
                 setProducts(normalizedData);
@@ -244,6 +267,12 @@ function App() {
             return;
         }
         if (selectedProduct) {
+            const isSizeSoldOut = selectedProduct.sold_out_sizes?.includes(selectedSize);
+            if (selectedProduct.stock === 0 || isSizeSoldOut) {
+                showToast("Bu ürün veya beden maalesef tükendi.");
+                return;
+            }
+
             const existingItemIndex = cartItems.findIndex(
                 (item) => item.id === selectedProduct.id && item.size === selectedSize
             );
@@ -408,6 +437,49 @@ function App() {
                 @keyframes slide-up { from { transform: scale(0.95) translateY(20px); opacity: 0; } to { transform: scale(1) translateY(0); opacity: 1; } }
                 @keyframes slide-down { from { transform: scale(1) translateY(0); opacity: 1; } to { transform: scale(0.95) translateY(20px); opacity: 0; } }
                 @keyframes cart-slide-out { from { transform: translateX(0); opacity: 1; } to { transform: translateX(100%); opacity: 0; } }
+
+                /* PREMIUM SMOOTH REVEAL ANIMASYONU */
+                .product-card.reveal {
+                    opacity: 0;
+                    transform: translateY(40px) scale(0.98);
+                    transition: opacity 0.85s cubic-bezier(0.16, 1, 0.3, 1), 
+                                transform 0.85s cubic-bezier(0.16, 1, 0.3, 1);
+                    position: relative;
+                }
+                .product-card.reveal.active {
+                    opacity: 1;
+                    transform: translateY(0) scale(1);
+                }
+
+                /* STOK KONTROL TASARIMLARI */
+                .product-card.sold-out {
+                    opacity: 0.55;
+                }
+                .sold-out-badge {
+                    position: absolute;
+                    top: 12px;
+                    left: 12px;
+                    background-color: #ff3b30;
+                    color: #fff;
+                    font-size: 10px;
+                    font-weight: 800;
+                    padding: 5px 10px;
+                    letter-spacing: 1.5px;
+                    text-transform: uppercase;
+                    z-index: 10;
+                    border-radius: 2px;
+                    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+                }
+                .size-select button.size-sold-out {
+                    opacity: 0.35;
+                    text-decoration: line-through;
+                    position: relative;
+                    cursor: not-allowed;
+                    background-color: rgba(0,0,0,0.05);
+                }
+                body.dark-mode .size-select button.size-sold-out {
+                    background-color: rgba(255,255,255,0.05);
+                }
 
                 /* INFINITE MARQUEE (KAYAN YAZI BANDI) - SIFIR BOŞLUKLU SEAMLESS DÖNGÜ */
                 .marquee-wrapper {
@@ -593,7 +665,6 @@ function App() {
                         display: none !important; 
                     }
                     
-                    /* Menüyü ekran geneline göre milimetrik olarak tam ortaladık */
                     nav ul.nav-menu, html body nav .nav-menu {
                         display: flex !important;
                         flex-direction: row !important;
@@ -829,13 +900,36 @@ function App() {
                                 <div className="product-info-mobile-order">
                                     <h2>{selectedProduct.name}</h2>
                                     <p className="desc">{selectedProduct.description || "Bu ürün ALICCI koleksiyonunun zarif parçalarındandır."}</p>
+                                    
                                     <div className="size-select">
                                         <p>Beden Seç:</p>
-                                        {(selectedProduct.sizes && selectedProduct.sizes.length > 0 ? selectedProduct.sizes : ["S", "M", "L", "XL", "XXL"]).map((size) => (
-                                            <button key={size} className={selectedSize === size ? "selected" : ""} onClick={() => setSelectedSize(size)}>{size}</button>
-                                        ))}
+                                        {(selectedProduct.sizes && selectedProduct.sizes.length > 0 ? selectedProduct.sizes : ["S", "M", "L", "XL", "XXL"]).map((size) => {
+                                            const isSizeSoldOut = selectedProduct.sold_out_sizes?.includes(size);
+                                            return (
+                                                <button 
+                                                    key={size} 
+                                                    className={`${selectedSize === size ? "selected" : ""} ${isSizeSoldOut ? "size-sold-out" : ""}`} 
+                                                    onClick={() => !isSizeSoldOut && setSelectedSize(size)}
+                                                    disabled={isSizeSoldOut || selectedProduct.stock === 0}
+                                                >
+                                                    {size} {isSizeSoldOut && "(Tükendi)"}
+                                                </button>
+                                            );
+                                        })}
                                     </div>
-                                    <button className="add-to-cart-button" onClick={handleAddToCart} disabled={!selectedSize}>Sepete Ekle</button>
+
+                                    <button 
+                                        className="add-to-cart-button" 
+                                        onClick={handleAddToCart} 
+                                        disabled={!selectedSize || selectedProduct.stock === 0 || selectedProduct.sold_out_sizes?.includes(selectedSize)}
+                                    >
+                                        {selectedProduct.stock === 0 
+                                            ? "TÜKENDİ" 
+                                            : selectedSize && selectedProduct.sold_out_sizes?.includes(selectedSize)
+                                                ? "Seçilen Beden Tükendi"
+                                                : "Sepete Ekle"
+                                        }
+                                    </button>
                                 </div>
                             </div>
                         )}
