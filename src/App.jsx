@@ -409,7 +409,7 @@ function App() {
                 @keyframes slide-down { from { transform: scale(1) translateY(0); opacity: 1; } to { transform: scale(0.95) translateY(20px); opacity: 0; } }
                 @keyframes cart-slide-out { from { transform: translateX(0); opacity: 1; } to { transform: translateX(100%); opacity: 0; } }
 
-                /* INFINITE MARQUEE (KAYAN YAZI BANDI) ANIMASYONU VE STİLLERİ */
+                /* INFINITE MARQUEE (KAYAN YAZI BANDI) - SIFIR BOŞLUKLU SEAMLESS DÖNGÜ */
                 .marquee-wrapper {
                     width: 100%;
                     overflow: hidden;
@@ -427,7 +427,7 @@ function App() {
                 .marquee-track {
                     display: flex;
                     width: max-content;
-                    animation: marquee-anim 22s linear infinite;
+                    animation: marquee-anim 25s linear infinite;
                 }
                 .marquee-track span {
                     font-size: 11px;
@@ -435,11 +435,12 @@ function App() {
                     letter-spacing: 2.5px;
                     text-transform: uppercase;
                     white-space: nowrap;
-                    padding-right: 50px; /* Döngü parçaları arasındaki boşluk */
+                    padding-right: 40px; /* Metinler arası kusursuz boşluk */
+                    flex-shrink: 0; /* Tarayıcının yazıları daraltmasını engeller */
                 }
                 @keyframes marquee-anim {
                     0% { transform: translateX(0); }
-                    100% { transform: translateX(-50%); }
+                    100% { transform: translateX(-50%); } /* Tam yarıda milisaniyelik sıfırlama ile sonsuz akış */
                 }
 
                 /* Üst Navigasyon Düzeni */
@@ -496,9 +497,9 @@ function App() {
                 /* MOBİL GÖRÜNÜM (768px ve Altı) */
                 @media (max-width: 768px) {
                     .marquee-track span {
-                        font-size: 10px; /* Mobilde hafif küçülterek daha şık durmasını sağlar */
+                        font-size: 10px;
                         letter-spacing: 2px;
-                        padding-right: 35px;
+                        padding-right: 30px; /* Mobilde de kayma mesafesiyle senkronize boşluk */
                     }
 
                     nav .hamburger, html body nav .hamburger { 
@@ -651,11 +652,11 @@ function App() {
                 </div>
             </nav>
 
-            {/* KAYAN HYPE YAZI BANDI (INFINITE MARQUEE) */}
+            {/* KAYAN HYPE YAZI BANDI (INFINITE MARQUEE) - DUPLICATED FOR SEAMLESS LOOP */}
             <div className="marquee-wrapper">
                 <div className="marquee-track">
-                    <span>LIMITED DROP • TIMELESS PIECES • %100 PREMIUM COTTON • SHIPPED IN 24H • DISCOVER THE ART OF STREETWEAR • ALICCI •</span>
-                    <span>LIMITED DROP • TIMELESS PIECES • %100 PREMIUM COTTON • SHIPPED IN 24H • DISCOVER THE ART OF STREETWEAR • ALICCI •</span>
+                    <span>LIMITED DROP • TIMELESS PIECES • %100 PREMIUM COTTON • SHIPPED IN 24H • DISCOVER THE ART OF STREETWEAR • ALICCI • LIMITED DROP • TIMELESS PIECES • %100 PREMIUM COTTON • SHIPPED IN 24H • DISCOVER THE ART OF STREETWEAR • ALICCI •</span>
+                    <span>LIMITED DROP • TIMELESS PIECES • %100 PREMIUM COTTON • SHIPPED IN 24H • DISCOVER THE ART OF STREETWEAR • ALICCI • LIMITED DROP • TIMELESS PIECES • %100 PREMIUM COTTON • SHIPPED IN 24H • DISCOVER THE ART OF STREETWEAR • ALICCI •</span>
                 </div>
             </div>
 
