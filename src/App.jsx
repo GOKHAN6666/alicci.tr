@@ -836,7 +836,7 @@ function App() {
                                         ))}
                                     </div>
                                     <button className="add-to-cart-button" onClick={handleAddToCart} disabled={!selectedSize}>Sepete Ekle</button>
-                                }
+                                </div>
                             </div>
                         )}
                     </div>
