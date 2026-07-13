@@ -585,7 +585,7 @@ function App() {
                     }
                 }
 
-                /* MASAÜSTÜ GÖRÜNÜMÜ - HOVER GEÇİŞLERİ ULTRA YUMUŞAK HALE GETİRİLDİ */
+                /* MASAÜSTÜ GÖRÜNÜMÜ - GARANTİLİ VE PREMİUM HOVER ANİMASYONU */
                 @media (min-width: 769px) { 
                     .mobile-theme-toggle { display: none !important; }
                     nav ul.nav-menu, html body nav .nav-menu {
@@ -610,11 +610,14 @@ function App() {
                         padding: 0 !important;
                         border: none !important;
                         letter-spacing: 0.5px !important;
-                        /* Giriş ve çıkış animasyonunu kusursuzlaştıran özel cubic-bezier eklendi */
-                        transition: opacity 0.35s cubic-bezier(0.25, 1, 0.5, 1) !important;
+                        display: inline-block !important;
+                        /* 'all' ekleyerek index.css'ten gelebilecek diğer stilleri de kapsadık */
+                        transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1) !important;
+                        transform: translateY(0);
                     }
                     nav ul.nav-menu li:hover, html body nav .nav-menu li:hover {
-                        opacity: 0.55; /* Zarif, sakin bir solma efekti */
+                        opacity: 0.55 !important; 
+                        transform: translateY(-1px) !important; /* Animasyonu hissettiren çok zarif mikro yükselme */
                     }
                 }
             `}</style>
