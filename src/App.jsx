@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import emailjs from "emailjs-com";
 import "./index.css";
-import { Analytics } from "@vercel/analytics/react";
+import { Analytics } from "@vercelanalytics/react";
 import { supabase } from "./supabaseclient";
 
 const ProductCard = ({ product, openProductModal, closeCart }) => {
@@ -585,9 +585,15 @@ function App() {
                     }
                 }
 
-                /* MASAÜSTÜ GÖRÜNÜMÜ - GARANTİLİ VE PREMİUM HOVER ANİMASYONU */
+                /* MASAÜSTÜ GÖRÜNÜMÜ */
                 @media (min-width: 769px) { 
-                    .mobile-theme-toggle { display: none !important; }
+                    /* Özgünlük çatışmasını önlemek için seçiciyi en üst düzey öncelikle ezerek masaüstünde tamamen kaldırdık */
+                    .mobile-theme-toggle, 
+                    nav ul.nav-menu li.mobile-theme-toggle, 
+                    html body nav .nav-menu li.mobile-theme-toggle { 
+                        display: none !important; 
+                    }
+                    
                     nav ul.nav-menu, html body nav .nav-menu {
                         display: flex !important;
                         flex-direction: row !important;
@@ -611,13 +617,12 @@ function App() {
                         border: none !important;
                         letter-spacing: 0.5px !important;
                         display: inline-block !important;
-                        /* 'all' ekleyerek index.css'ten gelebilecek diğer stilleri de kapsadık */
                         transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1) !important;
                         transform: translateY(0);
                     }
                     nav ul.nav-menu li:hover, html body nav .nav-menu li:hover {
                         opacity: 0.55 !important; 
-                        transform: translateY(-1px) !important; /* Animasyonu hissettiren çok zarif mikro yükselme */
+                        transform: translateY(-1px) !important; 
                     }
                 }
             `}</style>
