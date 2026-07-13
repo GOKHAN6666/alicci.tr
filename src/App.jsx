@@ -371,10 +371,11 @@ function App() {
     const closeMobileMenu = () => {
         if (!isMobileMenuOpen) return;
         setIsMobileMenuClosing(true);
+        // Yumuşak animasyonun tamamlanması için süreyi 350ms yaptık
         setTimeout(() => {
             setIsMobileMenuOpen(false);
             setIsMobileMenuClosing(false);
-        }, 300);
+        }, 350);
     };
 
     const toggleMobileMenu = () => {
@@ -409,7 +410,7 @@ function App() {
                 @keyframes slide-down { from { transform: scale(1) translateY(0); opacity: 1; } to { transform: scale(0.95) translateY(20px); opacity: 0; } }
                 @keyframes cart-slide-out { from { transform: translateX(0); opacity: 1; } to { transform: translateX(100%); opacity: 0; } }
 
-                /* Üst Navigasyon Hizalaması - Kesin Kurallar */
+                /* Üst Navigasyon Düzeni */
                 nav, html body nav {
                     display: flex !important;
                     flex-direction: row !important;
@@ -420,7 +421,7 @@ function App() {
                     box-sizing: border-box !important;
                     background-color: #fff !important;
                     position: relative !important;
-                    z-index: 999999 !important; /* Arka plan karartmasının üstüne çıkıp net kalması için */
+                    z-index: 999999 !important;
                 }
                 body.dark-mode nav, html body.dark-mode nav {
                     background-color: #111 !important;
@@ -434,29 +435,33 @@ function App() {
                 .cart-panel.closing { animation: cart-slide-out 0.3s ease forwards !important; }
                 .toast-container { z-index: 9999999 !important; }
 
-                /* Sağ Üst Kontroller */
+                /* Sağ Kontrol Alanı (Butonları Sağa İter) */
                 nav .nav-controls, html body nav .nav-controls { 
                     display: flex !important; 
                     align-items: center !important; 
                     gap: 15px !important;
-                    position: relative !important; 
+                    margin-left: auto !important; /* Logoyu sola, kontrolleri tamamen sağa sıkıştırır */
+                    position: relative !important;
                     inset: auto !important;
-                    margin: 0 !important;
                 }
                 
-                /* Eski CSS'deki absolute (Sola kayma) kodunu tamamen sıfırlayan kısım */
-                nav .hamburger, html body nav .hamburger {
+                /* Hamburger Butonu Sağ Taraf Sabitlemesi ve Temizliği */
+                .hamburger, nav .hamburger, html body nav .hamburger {
                     display: none !important;
                     cursor: pointer !important;
                     align-items: center !important;
                     justify-content: center !important;
-                    position: static !important; 
-                    inset: auto !important;
+                    position: relative !important; /* Mutlak konumlandırma tamamen iptal edildi */
+                    top: auto !important;
+                    left: auto !important;
+                    right: auto !important;
+                    bottom: auto !important;
                     margin: 0 !important;
                     transform: none !important;
+                    z-index: 5 !important;
                 }
 
-                /* MOBİL GÖRÜNÜM AYARLARI (768px ve Altı) */
+                /* MOBİL GÖRÜNÜM (768px ve Altı) */
                 @media (max-width: 768px) {
                     nav .hamburger, html body nav .hamburger { 
                         display: flex !important; 
@@ -474,7 +479,7 @@ function App() {
                         font-weight: bold; 
                     }
                     
-                    /* Sağ Panel Mobil Menü */
+                    /* Sağ Panel Mobil Yan Menü */
                     nav ul.nav-menu, html body nav .nav-menu, html body nav ul {
                         display: flex !important;
                         flex-direction: column !important;
@@ -482,21 +487,20 @@ function App() {
                         position: fixed !important;
                         top: 0 !important;
                         right: 0 !important;
-                        left: auto !important; /* index.css sola sabitlemesini iptal eder */
                         width: 280px !important;
                         height: 100vh !important;
                         background-color: #fff !important;
                         margin: 0 !important;
                         padding: 80px 0 0 0 !important;
                         box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1) !important;
-                        z-index: 1000000 !important; /* Menü her şeyin en üstünde durur ve buğulanmaz */
+                        z-index: 1000000 !important;
                         box-sizing: border-box !important;
                         
-                        /* Gizleme ve pürüzsüz giriş çıkış */
+                        /* Tatlı Giriş/Çıkış Akıcılığı İçin Curve Değiştirildi */
                         transform: translateX(100%) !important;
                         opacity: 0 !important;
                         visibility: hidden !important;
-                        transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s, visibility 0.3s !important;
+                        transition: transform 0.35s cubic-bezier(0.32, 0.94, 0.6, 1), opacity 0.3s ease, visibility 0.35s !important;
                     }
                     
                     body.dark-mode nav ul.nav-menu, body.dark-mode html body nav .nav-menu { 
@@ -504,16 +508,17 @@ function App() {
                         color: #fff !important; 
                     }
                     
-                    /* Menü Açık ve Kapalı Sınıfları */
+                    /* Menü Durum Sınıfları */
                     nav ul.nav-menu.open, html body nav .nav-menu.open { 
                         transform: translateX(0) !important; 
                         opacity: 1 !important;
                         visibility: visible !important;
                     }
+                    /* Kapanırken sağa doğru pürüzsüz kayboluş animasyonu */
                     nav ul.nav-menu.closing, html body nav .nav-menu.closing { 
                         transform: translateX(100%) !important; 
                         opacity: 0 !important;
-                        visibility: hidden !important;
+                        transition: transform 0.35s cubic-bezier(0.4, 0, 1, 1), opacity 0.3s ease !important;
                     }
 
                     nav ul.nav-menu li, html body nav .nav-menu li {
@@ -524,27 +529,26 @@ function App() {
                         border-bottom: 1px solid rgba(128, 128, 128, 0.1) !important;
                         list-style: none !important;
                         cursor: pointer !important;
-                        background: transparent !important;
                     }
                     nav ul.nav-menu li:hover, html body nav .nav-menu li:hover {
                         background-color: rgba(128, 128, 128, 0.05) !important;
                     }
                     
-                    /* Arka Plan Buğulama Maskesi - Menünün altında kalır */
+                    /* Arka Plan Maskesi (Buğulanma Menüye Etki Etmez) */
                     .menu-backdrop { 
                         position: fixed !important;
                         top: 0 !important;
                         left: 0 !important;
                         width: 100vw !important;
                         height: 100vh !important;
-                        background-color: rgba(0, 0, 0, 0.3) !important;
+                        background-color: rgba(0, 0, 0, 0.25) !important;
                         backdrop-filter: blur(8px) !important;
                         -webkit-backdrop-filter: blur(8px) !important;
-                        z-index: 99998 !important; /* Nav elementinin (999999) altında kalır */
+                        z-index: 99998 !important;
                     }
                 }
 
-                /* MASAÜSTÜ GÖRÜNÜM AYARLARI */
+                /* MASAÜSTÜ GÖRÜNÜMÜ */
                 @media (min-width: 769px) { 
                     .mobile-theme-toggle { display: none !important; }
                     nav ul.nav-menu, html body nav .nav-menu {
@@ -552,7 +556,7 @@ function App() {
                         flex-direction: row !important;
                         gap: 20px !important;
                         list-style: none !important;
-                        margin: 0 !important;
+                        margin: 0 20px 0 auto !important; /* Masaüstünde ortalamak/sağa yanaştırmak için */
                         padding: 0 !important;
                         position: static !important;
                         transform: none !important;
@@ -611,7 +615,7 @@ function App() {
                 </div>
             </nav>
 
-            {/* MOBİL MENÜ BACKDROP */}
+            {/* MOBİL MENÜ MASKESİ */}
             {(isMobileMenuOpen || isMobileMenuClosing) && (
                 <div 
                     className="modal-backdrop menu-backdrop" 
@@ -622,7 +626,7 @@ function App() {
                 />
             )}
 
-            {/* SEPET BACKDROP */}
+            {/* SEPET MASKESİ */}
             {(isCartOpen || isCartClosing) && (
                 <div 
                     className="modal-backdrop cart-backdrop" 
@@ -716,7 +720,7 @@ function App() {
                 <section id="about" className="about reveal">
                     <h3>Hakkımızda</h3>
                     <p>ALICCI, zamansız şıklığı ve modern tasarımları bir araya getiren bir giyim markasıdır.</p>
-                    <p>Sürdürülebilir moda ilkelerini benimseyerek, çevreye duyarlı üretim süreçlerini destekliyor ve uzun ömürlü, kaliteli ürünler sunmaya özen gösteriyoruz.</p>
+                    <p>Sürdürülebilir moda ilkelerini benimseyerek, çevreye duyarlı üretim süreçlerini destekliyor ve uzun ömürlü, kaliteli ürünler sunmaya özen profesyonelliğindeyiz.</p>
                 </section>
 
                 <section id="contact" className="contact reveal">
