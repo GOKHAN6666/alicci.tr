@@ -371,6 +371,7 @@ function App() {
     const closeMobileMenu = () => {
         if (!isMobileMenuOpen) return;
         setIsMobileMenuClosing(true);
+        // Yumuşak animasyonun tamamlanması için süreyi 350ms yaptık
         setTimeout(() => {
             setIsMobileMenuOpen(false);
             setIsMobileMenuClosing(false);
@@ -403,34 +404,6 @@ function App() {
     return (
         <>
             <style>{`
-                /* Premium Font Paketlerinin Google Fonts'tan Yüklenmesi */
-                @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap');
-
-                /* Genel Font Yapılandırması (Modern ve Okunabilir Montserrat) */
-                * {
-                    font-family: 'Montserrat', sans-serif;
-                }
-
-                /* Lüks Giyim Markası Havası Veren Serif Başlık Kuralları */
-                nav h1, 
-                .hero h2, 
-                section h3, 
-                .product-card .info h4, 
-                .product-modal h2,
-                .order-options-modal h2,
-                .tracking-modal-content h2,
-                .order-confirmation h2 {
-                    font-family: 'Playfair Display', serif !important;
-                    font-weight: 700 !important;
-                    letter-spacing: 0.5px;
-                }
-
-                /* Hero Alanındaki Başlığı Büyütme ve İtalik Dokunuşu */
-                .hero h2 {
-                    font-size: 2.8rem !important;
-                    font-style: italic;
-                }
-
                 @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
                 @keyframes fade-out { from { opacity: 1; } to { opacity: 0; } }
                 @keyframes slide-up { from { transform: scale(0.95) translateY(20px); opacity: 0; } to { transform: scale(1) translateY(0); opacity: 1; } }
@@ -467,7 +440,7 @@ function App() {
                     display: flex !important; 
                     align-items: center !important; 
                     gap: 15px !important;
-                    margin-left: auto !important;
+                    margin-left: auto !important; /* Logoyu sola, kontrolleri tamamen sağa sıkıştırır */
                     position: relative !important;
                     inset: auto !important;
                 }
@@ -478,7 +451,7 @@ function App() {
                     cursor: pointer !important;
                     align-items: center !important;
                     justify-content: center !important;
-                    position: relative !important;
+                    position: relative !important; /* Mutlak konumlandırma tamamen iptal edildi */
                     top: auto !important;
                     left: auto !important;
                     right: auto !important;
@@ -523,6 +496,7 @@ function App() {
                         z-index: 1000000 !important;
                         box-sizing: border-box !important;
                         
+                        /* Tatlı Giriş/Çıkış Akıcılığı İçin Curve Değiştirildi */
                         transform: translateX(100%) !important;
                         opacity: 0 !important;
                         visibility: hidden !important;
@@ -540,6 +514,7 @@ function App() {
                         opacity: 1 !important;
                         visibility: visible !important;
                     }
+                    /* Kapanırken sağa doğru pürüzsüz kayboluş animasyonu */
                     nav ul.nav-menu.closing, html body nav .nav-menu.closing { 
                         transform: translateX(100%) !important; 
                         opacity: 0 !important;
@@ -559,7 +534,7 @@ function App() {
                         background-color: rgba(128, 128, 128, 0.05) !important;
                     }
                     
-                    /* Arka Plan Maskesi */
+                    /* Arka Plan Maskesi (Buğulanma Menüye Etki Etmez) */
                     .menu-backdrop { 
                         position: fixed !important;
                         top: 0 !important;
@@ -581,7 +556,7 @@ function App() {
                         flex-direction: row !important;
                         gap: 20px !important;
                         list-style: none !important;
-                        margin: 0 20px 0 auto !important;
+                        margin: 0 20px 0 auto !important; /* Masaüstünde ortalamak/sağa yanaştırmak için */
                         padding: 0 !important;
                         position: static !important;
                         transform: none !important;
