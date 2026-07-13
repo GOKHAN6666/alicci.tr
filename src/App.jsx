@@ -435,12 +435,12 @@ function App() {
                     letter-spacing: 2.5px;
                     text-transform: uppercase;
                     white-space: nowrap;
-                    padding-right: 40px; /* Metinler arası kusursuz boşluk */
-                    flex-shrink: 0; /* Tarayıcının yazıları daraltmasını engeller */
+                    padding-right: 40px;
+                    flex-shrink: 0;
                 }
                 @keyframes marquee-anim {
                     0% { transform: translateX(0); }
-                    100% { transform: translateX(-50%); } /* Tam yarıda milisaniyelik sıfırlama ile sonsuz akış */
+                    100% { transform: translateX(-50%); }
                 }
 
                 /* Üst Navigasyon Düzeni */
@@ -499,7 +499,7 @@ function App() {
                     .marquee-track span {
                         font-size: 10px;
                         letter-spacing: 2px;
-                        padding-right: 30px; /* Mobilde de kayma mesafesiyle senkronize boşluk */
+                        padding-right: 30px;
                     }
 
                     nav .hamburger, html body nav .hamburger { 
@@ -585,13 +585,13 @@ function App() {
                     }
                 }
 
-                /* MASAÜSTÜ GÖRÜNÜMÜ */
+                /* MASAÜSTÜ GÖRÜNÜMÜ - ARALIKLAR VE HARF GENİŞLİĞİ PREMIUM SEVİYEYE ÇEKİLDİ */
                 @media (min-width: 769px) { 
                     .mobile-theme-toggle { display: none !important; }
                     nav ul.nav-menu, html body nav .nav-menu {
                         display: flex !important;
                         flex-direction: row !important;
-                        gap: 20px !important;
+                        gap: 35px !important; /* Butonların arası 20px'ten 35px'e çıkarılarak ferahlatıldı */
                         list-style: none !important;
                         margin: 0 20px 0 auto !important;
                         padding: 0 !important;
@@ -609,6 +609,11 @@ function App() {
                         width: auto !important;
                         padding: 0 !important;
                         border: none !important;
+                        letter-spacing: 0.5px !important; /* Minimal ve asil bir duruş için harf araları hafifçe açıldı */
+                        transition: opacity 0.2s ease;
+                    }
+                    nav ul.nav-menu li:hover, html body nav .nav-menu li:hover {
+                        opacity: 0.7; /* Zarif bir hover efekti */
                     }
                 }
             `}</style>
@@ -652,7 +657,7 @@ function App() {
                 </div>
             </nav>
 
-            {/* KAYAN HYPE YAZI BANDI (INFINITE MARQUEE) - DUPLICATED FOR SEAMLESS LOOP */}
+            {/* KAYAN HYPE YAZI BANDI */}
             <div className="marquee-wrapper">
                 <div className="marquee-track">
                     <span>LIMITED DROP • TIMELESS PIECES • %100 PREMIUM COTTON • SHIPPED IN 24H • DISCOVER THE ART OF STREETWEAR • ALICCI • LIMITED DROP • TIMELESS PIECES • %100 PREMIUM COTTON • SHIPPED IN 24H • DISCOVER THE ART OF STREETWEAR • ALICCI •</span>
