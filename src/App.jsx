@@ -585,13 +585,13 @@ function App() {
                     }
                 }
 
-                /* MASAÜSTÜ GÖRÜNÜMÜ - ARALIKLAR VE HARF GENİŞLİĞİ PREMIUM SEVİYEYE ÇEKİLDİ */
+                /* MASAÜSTÜ GÖRÜNÜMÜ - HOVER GEÇİŞLERİ ULTRA YUMUŞAK HALE GETİRİLDİ */
                 @media (min-width: 769px) { 
                     .mobile-theme-toggle { display: none !important; }
                     nav ul.nav-menu, html body nav .nav-menu {
                         display: flex !important;
                         flex-direction: row !important;
-                        gap: 35px !important; /* Butonların arası 20px'ten 35px'e çıkarılarak ferahlatıldı */
+                        gap: 35px !important;
                         list-style: none !important;
                         margin: 0 20px 0 auto !important;
                         padding: 0 !important;
@@ -609,11 +609,12 @@ function App() {
                         width: auto !important;
                         padding: 0 !important;
                         border: none !important;
-                        letter-spacing: 0.5px !important; /* Minimal ve asil bir duruş için harf araları hafifçe açıldı */
-                        transition: opacity 0.2s ease;
+                        letter-spacing: 0.5px !important;
+                        /* Giriş ve çıkış animasyonunu kusursuzlaştıran özel cubic-bezier eklendi */
+                        transition: opacity 0.35s cubic-bezier(0.25, 1, 0.5, 1) !important;
                     }
                     nav ul.nav-menu li:hover, html body nav .nav-menu li:hover {
-                        opacity: 0.7; /* Zarif bir hover efekti */
+                        opacity: 0.55; /* Zarif, sakin bir solma efekti */
                     }
                 }
             `}</style>
