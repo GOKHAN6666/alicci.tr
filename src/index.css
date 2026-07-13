@@ -2424,3 +2424,78 @@ nav h1 {
         height: 100%;
     }
 }
+/* ======================================================= */
+/* MOBİL HAMBURGER MENÜ KESİN ÇÖZÜMÜ */
+/* ======================================================= */
+
+/* Masaüstü Ekran Ayarları */
+@media (min-width: 769px) {
+    .hamburger { display: none !important; }
+    nav ul.nav-menu { 
+        display: flex !important; 
+        flex-direction: row !important; 
+        position: static !important; 
+        transform: none !important; 
+        background: transparent !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+}
+
+/* Mobil Ekran Ayarları (768px ve altı) */
+@media (max-width: 768px) {
+    /* Hamburger Butonu Üst Katman Ayarı */
+    .hamburger {
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+        z-index: 10000 !important;
+        cursor: pointer;
+    }
+
+    /* Menü Kapalı Durumu (Sağda Gizli) */
+    nav ul.nav-menu {
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: flex-start !important;
+        position: fixed !important;
+        top: 0 !important;
+        right: -100% !important; /* Ekranın sağ dışarısında bekler */
+        width: 70% !important;
+        max-width: 300px;
+        height: 100vh !important;
+        background-color: var(--nav-bg, #fff) !important;
+        padding: 80px 0 0 0 !important;
+        box-shadow: -5px 0 15px rgba(0,0,0,0.1) !important;
+        transition: right 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important; /* Akıcı kayma efekti */
+        z-index: 999 !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+        transform: none !important;
+        margin: 0 !important;
+    }
+
+    /* Menü Açık Durumu */
+    nav ul.nav-menu.open {
+        right: 0 !important; /* Ekrana giriş yapar */
+    }
+
+    /* Menü Kapanırken Tetiklenen Durum */
+    nav ul.nav-menu.closing {
+        right: -100% !important;
+    }
+
+    /* Menü Link Listesi Düzenlemesi */
+    nav ul.nav-menu li {
+        width: 100% !important;
+        padding: 15px 30px !important;
+        text-align: left !important;
+        border-bottom: 1px solid rgba(128, 128, 128, 0.1) !important;
+        border-radius: 0 !important;
+    }
+    
+    /* Mobil Link Üzerine Gelme/Dokunma Efekti */
+    nav ul.nav-menu li:hover {
+        background-color: rgba(128, 128, 128, 0.05) !important;
+    }
+}
