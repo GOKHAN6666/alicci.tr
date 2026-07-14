@@ -365,7 +365,6 @@ function App() {
     const openTrackingModal = () => {
         setShowTrackingModal(true);
         setIsTrackingClosing(false);
-        // Modal açıldığında eski sorguyu temizlemek istersen:
         setSearchedOrder(null);
         setTrackingCodeInput("");
         setTrackingError("");
@@ -625,7 +624,7 @@ function App() {
                 .tracking-search-box input {
                     flex: 1 !important;
                     width: 100% !important;
-                    min-width: 120px !important; /* Ezilmeyi önleyen kritik kural */
+                    min-width: 120px !important;
                     padding: 12px !important;
                     border: 1px solid #ccc !important;
                     border-radius: 4px !important;
@@ -637,7 +636,7 @@ function App() {
                     box-sizing: border-box !important;
                 }
                 .tracking-search-box button {
-                    width: auto !important; /* Global %100 kuralını ezen kritik kural */
+                    width: auto !important;
                     padding: 12px 25px !important;
                     background: #000 !important;
                     color: #fff !important;
@@ -676,7 +675,7 @@ function App() {
                 body.dark-mode .animated-truck-road::before {
                     background: repeating-linear-gradient(90deg, #555, #555 10px, transparent 10px, transparent 20px);
                 }
-                /* Hareket eden kamyon kapsayıcısı */
+                /* Hareket eden kamyon (Kargoda) */
                 .animated-truck {
                     position: absolute;
                     bottom: 10px;
@@ -685,9 +684,18 @@ function App() {
                     display: flex;
                     align-items: center;
                 }
+                /* Rölantide bekleyen kamyon (Onay Bekliyor) */
+                .animated-truck.waiting {
+                    left: 20px !important; /* Yolda sabit duracak */
+                    animation: none !important;
+                }
                 /* Sola-Sağa / Aşağı-Yukarı titreşim */
                 .animated-truck svg {
                     animation: truck-bounce 0.4s ease-in-out infinite alternate;
+                }
+                /* Onay Bekliyor için rölanti titreşimi */
+                .animated-truck.waiting svg {
+                    animation: truck-idle 0.25s ease-in-out infinite alternate;
                 }
                 @keyframes truck-drive {
                     0% { left: -50px; }
@@ -696,6 +704,10 @@ function App() {
                 @keyframes truck-bounce {
                     0% { transform: translateY(0) rotate(0deg); }
                     100% { transform: translateY(-2px) rotate(1deg); }
+                }
+                @keyframes truck-idle {
+                    0% { transform: translateY(0); }
+                    100% { transform: translateY(-1.5px); }
                 }
 
                 nav .nav-controls, html body nav .nav-controls { 
@@ -1141,11 +1153,11 @@ function App() {
                                 <p><strong>Kargo Takip No:</strong> {searchedOrder.cargo_tracker_code || '-'}</p>
                                 <p><strong>Toplam Tutar:</strong> {searchedOrder.total_price} TL</p>
 
-                                {/* Dinamik Animasyon: Eğer durum "Kargoda" ise canlanan kargo kamyonu */}
-                                {searchedOrder.status === "Kargoda" && (
+                                {/* Dinamik Animasyon Alanı */}
+                                {searchedOrder.status === "Kargoda" ? (
                                     <div className="animated-truck-road">
                                         <div className="animated-truck">
-                                            {/* Minimalist SVG Kamyon İkonu */}
+                                            {/* Minimalist SVG Kamyon İkonu (Kargoda - Hareket ediyor) */}
                                             <svg xmlns="http://www.w3.org/2000/svg" width="28" height="20" viewBox="0 0 24 24" fill="none" stroke={isDarkMode ? "#fff" : "#000"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                                 <rect x="1" y="3" width="15" height="13"></rect>
                                                 <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
@@ -1154,7 +1166,19 @@ function App() {
                                             </svg>
                                         </div>
                                     </div>
-                                )}
+                                ) : searchedOrder.status === "Onay Bekliyor" ? (
+                                    <div className="animated-truck-road">
+                                        <div className="animated-truck waiting">
+                                            {/* Rölantide bekleyen Kamyon İkonu (Onay Bekliyor) */}
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="20" viewBox="0 0 24 24" fill="none" stroke="#ff9500" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                <rect x="1" y="3" width="15" height="13"></rect>
+                                                <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
+                                                <circle cx="5.5" cy="18.5" r="2.5"></circle>
+                                                <circle cx="18.5" cy="18.5" r="2.5"></circle>
+                                            </svg>
+                                        </div>
+                                    </div>
+                                ) : null}
                             </div>
                         )}
 
