@@ -4,18 +4,19 @@ import "./index.css";
 import { Analytics } from "@vercel/analytics/react";
 import { supabase } from "./supabaseclient";
 
-// Streetwear Odaklı Beden Hesaplama Algoritması
+// Markanın Gerçek Ölçülerine Göre Güncellenmiş Beden Algoritması
+// (M Beden = 48 cm Göğüs / 70 cm Boy baz alınmıştır)
 const getRecommendedSize = (height, weight, fitPreference) => {
     let baseSize = "M";
 
     if (height < 168 && weight < 55) {
-        baseSize = "S";
+        baseSize = "S"; // ~46cm Göğüs / 68cm Boy
     } else if (height <= 176 && weight <= 68) {
-        baseSize = "M";
+        baseSize = "M"; // 48cm Göğüs / 70cm Boy
     } else if (height <= 184 && weight <= 82) {
-        baseSize = "L";
+        baseSize = "L"; // ~51cm Göğüs / 72cm Boy
     } else {
-        baseSize = "XL";
+        baseSize = "XL"; // ~54cm Göğüs / 74cm Boy
     }
 
     if (fitPreference === "oversize") {
@@ -592,6 +593,9 @@ function App() {
 
     return (
         <>
+            {/* Google Fonts Poppins Bağlantısı */}
+            <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+
             <style>{`
                 @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
                 @keyframes fade-out { from { opacity: 1; } to { opacity: 0; } }
@@ -811,6 +815,11 @@ function App() {
                     margin: 0 !important;
                     transform: none !important;
                     z-index: 5 !important;
+                }
+
+                /* Yeni Eklenen veya Güncellenen Sınıflar İçin Poppins Entegrasyonu */
+                .find-my-size-btn, .size-disclaimer, .size-calc-modal-title, .size-calc-result-box {
+                    font-family: 'Poppins', sans-serif !important;
                 }
 
                 @media (max-width: 768px) {
@@ -1090,7 +1099,7 @@ function App() {
                 <section id="about" className="about reveal">
                     <h3>Hakkımızda</h3>
                     <p>ALICCI, zamansız şıklığı ve modern tasarımları bir araya getiren bir giyim markasıdır.</p>
-                    <p>Sürdürülebilir moda ilkelerini benimseyerek, çevreye duyarlı üretim süreçlerini destekliyor ve uzun ömürlü, kaliteli ürünler sunmaya özen gösteriyoruz.</p>
+                    <p>Sürdürülebilir moda ilkelerini benimseyerek, çevreye duyarlı üretim süreçlerini destekliyor und uzun ömürlü, kaliteli ürünler sunmaya özen gösteriyoruz.</p>
                 </section>
 
                 <section id="contact" className="contact reveal">
@@ -1136,31 +1145,35 @@ function App() {
                                         </div>
                                     )}
                                 </div>
-                                <div className="product-info-mobile-order">
+                                <div className="product-info-mobile-order" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
                                     <h2>{selectedProduct.name}</h2>
                                     <p className="desc">{selectedProduct.description || "Bu ürün ALICCI koleksiyonunun zarif parçalarındandır."}</p>
                                     
-                                    <div className="size-select">
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                                            <p style={{ margin: 0 }}>Beden Seç:</p>
+                                    <div className="size-select" style={{ marginBottom: '15px' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                                            <p style={{ margin: 0, fontSize: '13px', fontWeight: '600' }}>Beden Seç:</p>
+                                            
+                                            {/* TAMAMEN SARI RENKTEN ARINDIRILMIŞ POPPINS FONTLU BEDENİMİ BUL BUTONU */}
                                             <button 
                                                 type="button"
                                                 onClick={() => {
                                                     setShowSizeCalcModal(true);
                                                     setCalcResult(null);
                                                 }}
+                                                className="find-my-size-btn"
                                                 style={{
                                                     background: 'none',
                                                     border: 'none',
-                                                    color: '#ff9500',
+                                                    color: isDarkMode ? '#bbb' : '#333',
                                                     cursor: 'pointer',
                                                     fontSize: '12px',
-                                                    fontWeight: 'bold',
+                                                    fontWeight: '600',
                                                     textDecoration: 'underline',
-                                                    padding: 0
+                                                    padding: 0,
+                                                    letterSpacing: '0.5px'
                                                 }}
                                             >
-                                                Bedenimi Bul 📐
+                                                📐 Bedenimi Bul
                                             </button>
                                         </div>
                                         {(selectedProduct.sizes && selectedProduct.sizes.length > 0 ? selectedProduct.sizes : ["S", "M", "L", "XL", "XXL"]).map((size) => {
@@ -1182,6 +1195,7 @@ function App() {
                                         className="add-to-cart-button" 
                                         onClick={handleAddToCart} 
                                         disabled={!selectedSize || selectedProduct.stock === 0 || selectedProduct.sold_out_sizes?.includes(selectedSize)}
+                                        style={{ marginBottom: '20px' }}
                                     >
                                         {selectedProduct.stock === 0 
                                             ? "TÜKENDİ" 
@@ -1190,6 +1204,22 @@ function App() {
                                                 : "Sepete Ekle"
                                         }
                                     </button>
+
+                                    {/* MODALIN EN ALTINA EKLENEN YANLIŞ OLABİLİR UYARI METNİ */}
+                                    <div 
+                                        className="size-disclaimer" 
+                                        style={{ 
+                                            marginTop: 'auto', 
+                                            padding: '10px 0', 
+                                            borderTop: isDarkMode ? '1px solid #2d2d2d' : '1px solid #f0f0f0',
+                                            fontSize: '11px', 
+                                            lineHeight: '1.4',
+                                            opacity: 0.6,
+                                            textAlign: 'left'
+                                        }}
+                                    >
+                                        * Kalıplar kumaş esnekliğine ve kesim tarzına bağlı olarak değişiklik gösterebilir. Ölçümler el yapımı olduğu için küçük sapmalar yaşanabilir. Tarzınıza en uygun bedeni seçtiğinizden emin olun.
+                                    </div>
                                 </div>
                             </div>
                         )}
@@ -1197,7 +1227,7 @@ function App() {
                 </div>
             )}
 
-            {/* INTERAKTIF BEDEN SIHIRBAZI POP-UP MODAL */}
+            {/* İNTERAKTİF BEDEN SİHİRBAZI POP-UP MODAL (SARISIZ - MINIMALIST GRİ) */}
             {showSizeCalcModal && (
                 <div 
                     className="modal-backdrop" 
@@ -1225,21 +1255,21 @@ function App() {
                             &times;
                         </button>
                         
-                        <h3 style={{ margin: '0 0 5px 0', fontSize: '16px', fontWeight: '800', color: '#ff9500', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                        <h3 className="size-calc-modal-title" style={{ margin: '0 0 5px 0', fontSize: '15px', fontWeight: '800', color: isDarkMode ? '#fff' : '#000', textTransform: 'uppercase', letterSpacing: '1px' }}>
                             ALICCI Beden Sihirbazı
                         </h3>
-                        <p style={{ fontSize: '11px', opacity: 0.7, margin: '0 0 20px 0' }}>En doğru streetwear kalıbını bulmak için bilgileri girin.</p>
+                        <p style={{ fontSize: '11px', opacity: 0.6, margin: '0 0 20px 0' }}>En doğru streetwear kalıbını bulmak için bilgileri girin.</p>
                         
                         {/* Boy Slider */}
                         <div style={{ marginBottom: '15px' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '5px', fontWeight: '500' }}>
                                 <span>Boy</span>
-                                <span style={{ color: '#ff9500', fontWeight: 'bold' }}>{calcHeight} cm</span>
+                                <span style={{ color: isDarkMode ? '#fff' : '#000', fontWeight: 'bold' }}>{calcHeight} cm</span>
                             </div>
                             <input 
                                 type="range" min="150" max="210" value={calcHeight} 
                                 onChange={(e) => setCalcHeight(Number(e.target.value))}
-                                style={{ width: '100%', accentColor: '#ff9500', cursor: 'pointer' }}
+                                style={{ width: '100%', accentColor: isDarkMode ? '#fff' : '#000', cursor: 'pointer' }}
                             />
                         </div>
 
@@ -1247,12 +1277,12 @@ function App() {
                         <div style={{ marginBottom: '20px' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '5px', fontWeight: '500' }}>
                                 <span>Kilo</span>
-                                <span style={{ color: '#ff9500', fontWeight: 'bold' }}>{calcWeight} kg</span>
+                                <span style={{ color: isDarkMode ? '#fff' : '#000', fontWeight: 'bold' }}>{calcWeight} kg</span>
                             </div>
                             <input 
                                 type="range" min="40" max="120" value={calcWeight} 
                                 onChange={(e) => setCalcWeight(Number(e.target.value))}
-                                style={{ width: '100%', accentColor: '#ff9500', cursor: 'pointer' }}
+                                style={{ width: '100%', accentColor: isDarkMode ? '#fff' : '#000', cursor: 'pointer' }}
                             />
                         </div>
 
@@ -1265,9 +1295,9 @@ function App() {
                                     onClick={() => setCalcFit('regular')}
                                     style={{
                                         padding: '10px', fontSize: '11px', fontWeight: '600', border: '1px solid', borderRadius: '4px', cursor: 'pointer', transition: 'all 0.2s',
-                                        borderColor: calcFit === 'regular' ? '#ff9500' : (isDarkMode ? '#444' : '#ccc'),
-                                        backgroundColor: calcFit === 'regular' ? 'rgba(255,149,0,0.1)' : 'transparent',
-                                        color: calcFit === 'regular' ? '#ff9500' : 'inherit'
+                                        borderColor: calcFit === 'regular' ? (isDarkMode ? '#fff' : '#000') : (isDarkMode ? '#444' : '#ccc'),
+                                        backgroundColor: calcFit === 'regular' ? (isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)') : 'transparent',
+                                        color: 'inherit'
                                     }}
                                 >
                                     Tam Otursun (Regular)
@@ -1277,9 +1307,9 @@ function App() {
                                     onClick={() => setCalcFit('oversize')}
                                     style={{
                                         padding: '10px', fontSize: '11px', fontWeight: '600', border: '1px solid', borderRadius: '4px', cursor: 'pointer', transition: 'all 0.2s',
-                                        borderColor: calcFit === 'oversize' ? '#ff9500' : (isDarkMode ? '#444' : '#ccc'),
-                                        backgroundColor: calcFit === 'oversize' ? 'rgba(255,149,0,0.1)' : 'transparent',
-                                        color: calcFit === 'oversize' ? '#ff9500' : 'inherit'
+                                        borderColor: calcFit === 'oversize' ? (isDarkMode ? '#fff' : '#000') : (isDarkMode ? '#444' : '#ccc'),
+                                        backgroundColor: calcFit === 'oversize' ? (isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)') : 'transparent',
+                                        color: 'inherit'
                                     }}
                                 >
                                     Sokak Tarzı (Oversize)
@@ -1314,18 +1344,19 @@ function App() {
                         {/* Sonuç Gösterim Alanı */}
                         {calcResult && (
                             <div 
+                                className="size-calc-result-box"
                                 style={{ 
                                     marginTop: '20px', 
                                     padding: '15px', 
-                                    background: isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)', 
-                                    border: '1px dashed #ff9500', 
+                                    background: isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.02)', 
+                                    border: isDarkMode ? '1px dashed #555' : '1px dashed #bbb', 
                                     borderRadius: '4px', 
                                     textAlign: 'center',
                                     animation: 'fade-in 0.3s ease'
                                 }}
                             >
                                 <p style={{ fontSize: '11px', margin: 0, opacity: 0.7 }}>Sizin için ideal ALICCI kalıbı:</p>
-                                <p style={{ fontSize: '24px', fontWeight: '900', color: '#ff9500', margin: '5px 0 12px 0', letterSpacing: '1px' }}>{calcResult}</p>
+                                <p style={{ fontSize: '24px', fontWeight: '900', color: isDarkMode ? '#fff' : '#000', margin: '5px 0 12px 0', letterSpacing: '1px' }}>{calcResult}</p>
                                 <button
                                     type="button"
                                     onClick={() => {
@@ -1339,13 +1370,13 @@ function App() {
                                         }
                                     }}
                                     style={{ 
-                                        background: '#ff9500', 
-                                        color: '#000000', 
+                                        background: isDarkMode ? '#fff' : '#000', 
+                                        color: isDarkMode ? '#000' : '#fff', 
                                         border: 'none', 
                                         padding: '8px 16px', 
                                         borderRadius: '4px', 
                                         fontSize: '11px', 
-                                        fontWeight: '800', 
+                                        fontWeight: '700', 
                                         cursor: 'pointer',
                                         textTransform: 'uppercase'
                                     }}
@@ -1377,7 +1408,7 @@ function App() {
                 </div>
             )}
 
-            {/* HAREKETLİ KAMYON ANİMASYONLU YENİ KARGO TAKİP MODAL */}
+            {/* HAREKETLİ KAMYON ANİMASYONLU KARGO TAKİP MODAL */}
             {showTrackingModal && (
                 <div className="modal-backdrop" style={{ animation: isTrackingClosing ? "fade-out 0.3s ease forwards" : "fade-in 0.3s ease forwards" }} onClick={closeTrackingModal}>
                     <div className="modal-content-base tracking-modal-content" style={{ animation: isTrackingClosing ? "slide-down 0.3s ease forwards" : "slide-up 0.3s ease forwards" }} onClick={(e) => e.stopPropagation()}>
