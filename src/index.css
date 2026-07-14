@@ -2644,3 +2644,52 @@ body.dark-mode .spinner { border-top: 2px solid #000; }
 .tracking-result-wrapper { 
     animation: fade-in-content 0.4s ease-out; 
 }
+/* Google Fonts'tan modern Poppins fontunu çekiyoruz */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap');
+
+.size-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.find-my-size-btn {
+  /* İstediğin fontu buraya tanımladık */
+  font-family: 'Poppins', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  
+  /* Sarı tamamen gitti; şık, net bir füme/siyah tonu geldi */
+  color: #1a202c; 
+  background: none;
+  border: none;
+  
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  text-decoration: underline; /* Link görünümü vererek tıklanabilir olduğunu belirttik */
+  padding: 0;
+  transition: color 0.2s ease;
+}
+
+/* Üzerine gelindiğinde hafifçe renk değiştirerek etkileşimi artırır */
+.find-my-size-btn:hover {
+  color: #4a5568;
+}
+
+/* Beden kutuları için genel hizalama */
+.size-options {
+  display: flex;
+  gap: 10px;
+}
+.size-box {
+  font-family: 'Poppins', sans-serif;
+  width: 45px;
+  height: 45px;
+  border: 1px solid #e2e8f0;
+  background: #fff;
+  cursor: pointer;
+  font-weight: 600;
+}
