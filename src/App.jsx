@@ -375,12 +375,12 @@ function App() {
         }, 300);
     };
 
-    // YENİ: Sipariş Kodu Oluşturma Fonksiyonu
+    // Sipariş Kodu Oluşturma Fonksiyonu
     const generateOrderCode = () => {
         return `ALC-${Math.floor(100000 + Math.random() * 900000)}`;
     };
 
-    // YENİ: Siparişi Supabase'e Kaydetme ve Yönlendirme
+    // Siparişi Supabase'e Kaydetme ve Yönlendirme
     const handleCreateOrder = async (platform) => {
         if (cartItems.length === 0) return;
 
@@ -420,7 +420,7 @@ function App() {
         openConfirmationModal();
     };
 
-    // YENİ: Kargo Sorgulama Fonksiyonu
+    // Kargo Sorgulama Fonksiyonu
     const handleTrackOrder = async () => {
         if (!trackingCodeInput.trim()) {
             setTrackingError("Lütfen sipariş kodunuzu girin.");
@@ -607,6 +607,13 @@ function App() {
                 .cart-panel { z-index: 1000001 !important; }
                 .cart-panel.closing { animation: cart-slide-out 0.3s ease forwards !important; }
                 .toast-container { z-index: 9999999 !important; }
+
+                /* Kargo Takip Giriş Alanı Seçim Çakışması Engelleme */
+                .tracking-modal-content input {
+                    user-select: text !important;
+                    -webkit-user-select: text !important;
+                    pointer-events: auto !important;
+                }
 
                 nav .nav-controls, html body nav .nav-controls { 
                     display: flex !important; 
@@ -995,7 +1002,7 @@ function App() {
                 </div>
             )}
 
-            {/* GÜNCELLENMİŞ SİPARİŞ TAMAMLAMA MODALI */}
+            {/* SİPARİŞ TAMAMLAMA MODALI */}
             {showOrderOptionsModal && (
                 <div className="modal-backdrop" onClick={closeOrderOptionsModal}>
                     <div className="modal-content-base order-options-modal" onClick={(e) => e.stopPropagation()}>
@@ -1014,7 +1021,7 @@ function App() {
                 </div>
             )}
 
-            {/* GÜNCELLENMİŞ KARGO TAKİP MODALI */}
+            {/* GÜNCELLENMİŞ VE SEÇİM HATASI DÜZELTİLMİŞ KARGO TAKİP MODALI */}
             {showTrackingModal && (
                 <div className="modal-backdrop" style={{ animation: isTrackingClosing ? "fade-out 0.3s ease forwards" : "fade-in 0.3s ease forwards" }} onClick={closeTrackingModal}>
                     <div className="modal-content-base tracking-modal-content" style={{ animation: isTrackingClosing ? "slide-down 0.3s ease forwards" : "slide-up 0.3s ease forwards" }} onClick={(e) => e.stopPropagation()}>
@@ -1028,7 +1035,16 @@ function App() {
                                 placeholder="Örn: ALC-123456" 
                                 value={trackingCodeInput}
                                 onChange={(e) => setTrackingCodeInput(e.target.value)}
-                                style={{ flex: 1, padding: '10px', borderRadius: '4px', border: '1px solid #ccc', color: '#000' }}
+                                style={{ 
+                                    flex: 1, 
+                                    padding: '10px', 
+                                    borderRadius: '4px', 
+                                    border: '1px solid #ccc', 
+                                    color: '#000',
+                                    backgroundColor: '#fff',
+                                    userSelect: 'text',
+                                    pointerEvents: 'auto'
+                                }}
                             />
                             <button onClick={handleTrackOrder} style={{ padding: '10px 20px', background: '#000', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>Sorgula</button>
                         </div>
@@ -1038,7 +1054,16 @@ function App() {
                         {searchedOrder && (
                             <div className="tracking-result" style={{ background: 'rgba(128,128,128,0.1)', padding: '15px', borderRadius: '4px', textAlign: 'left', marginTop: '15px' }}>
                                 <p><strong>Sipariş Kodu:</strong> {searchedOrder.order_code}</p>
-                                <p><strong>Durum:</strong> <span style={{ color: searchedOrder.status === 'Kargoda' || searchedOrder.status === 'Teslim Edildi' ? '#34c759' : '#ff9500', fontWeight: 'bold' }}>{searchedOrder.status}</span></p>
+                                <p><strong>Durum:</strong> 
+                                    <span style={{ 
+                                        color: searchedOrder.status === 'Kargoda' || searchedOrder.status === 'Teslim Edildi' ? '#34c759' : 
+                                               searchedOrder.status === 'İptal Edildi' ? '#ff3b30' : '#ff9500', 
+                                        fontWeight: 'bold',
+                                        marginLeft: '5px'
+                                    }}>
+                                        {searchedOrder.status}
+                                    </span>
+                                </p>
                                 <p><strong>Kargo Firması:</strong> {searchedOrder.cargo_company || '-'}</p>
                                 <p><strong>Kargo Takip No:</strong> {searchedOrder.cargo_tracker_code || '-'}</p>
                                 <p><strong>Toplam Tutar:</strong> {searchedOrder.total_price} TL</p>
