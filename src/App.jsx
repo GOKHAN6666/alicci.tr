@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import emailjs from "emailjs-com";
 import "./index.css";
-import { Analytics } from "@vercel/analytics/react";
+import { Analytics } from "@vercelanalytics/react";
 import { supabase } from "./supabaseclient";
 
 const getRecommendedSize = (height, weight, fitPreference) => {
@@ -634,6 +634,41 @@ function App() {
                 @keyframes slide-down { from { transform: scale(1) translateY(0); opacity: 1; } to { transform: scale(0.95) translateY(20px); opacity: 0; } }
                 @keyframes cart-slide-out { from { transform: translateX(0); opacity: 1; } to { transform: translateX(100%); opacity: 0; } }
 
+                /* KARAKTER İÇİN CANLI IDLE (BEKLEME) ANIMASYONLARI */
+                @keyframes avatar-breathe {
+                    0%, 100% { transform: scaleY(1); }
+                    50% { transform: scaleY(1.025) scaleX(0.985); }
+                }
+                @keyframes avatar-head-bob {
+                    0%, 100% { transform: translateY(0); }
+                    50% { transform: translateY(-0.8px); }
+                }
+                @keyframes avatar-arm-sway-left {
+                    0%, 100% { transform: rotate(0deg); }
+                    50% { transform: rotate(-2.5deg); }
+                }
+                @keyframes avatar-arm-sway-right {
+                    0%, 100% { transform: rotate(0deg); }
+                    50% { transform: rotate(2.5deg); }
+                }
+
+                .avatar-breathing-layer {
+                    animation: avatar-breathe 2.6s ease-in-out infinite;
+                    transform-origin: bottom center;
+                }
+                .avatar-head {
+                    animation: avatar-head-bob 2.6s ease-in-out infinite;
+                    transform-origin: 18px 11px;
+                }
+                .avatar-arm-left {
+                    animation: avatar-arm-sway-left 2.6s ease-in-out infinite;
+                    transform-origin: 8.5px 22.5px;
+                }
+                .avatar-arm-right {
+                    animation: avatar-arm-sway-right 2.6s ease-in-out infinite;
+                    transform-origin: 27.5px 22.5px;
+                }
+
                 .product-card.reveal {
                     opacity: 0;
                     transform: translateY(40px) scale(0.98);
@@ -1260,7 +1295,7 @@ function App() {
                 </div>
             )}
 
-            {/* BEDEN SİHİRBAZI MODALI (Canlı Değişen Esnek Karakter Entegre Edildi) */}
+            {/* BEDEN SİHİRBAZI MODALI (Canlı Hareketli ve Esnek Karakter) */}
             {(showSizeCalcModal || isSizeCalcClosing) && (
                 <div 
                     className="modal-backdrop" 
@@ -1329,42 +1364,49 @@ function App() {
                             />
                         </div>
 
-                        {/* DİNAMİK CANLI ETKİLEŞİMLİ MİNİMALİST KARAKTER ALANI */}
+                        {/* HAREKETLİ VE ETKİLEŞİMLİ MİNİMALİST AVATAR ALANI */}
                         <div style={{ 
                             display: 'flex', 
                             justifyContent: 'center', 
                             alignItems: 'flex-end', 
-                            height: '95px', 
+                            height: '105px', 
                             marginBottom: '20px',
                             background: isDarkMode ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.01)',
                             borderBottom: isDarkMode ? '1px dashed #333' : '1px dashed #ddd',
-                            paddingBottom: '2px',
+                            paddingBottom: '4px',
                             overflow: 'hidden',
                             borderRadius: '4px'
                         }}>
+                            {/* Dış Katman: Slider Değerlerine Göre Esnek Ölçeklenme Matrisi */}
                             <div style={{
-                                // Boy (150-210) ve Kilo (40-120) oranlarına göre esnek ölçeklendirme matrisi
                                 transform: `scaleX(${0.65 + ((calcWeight - 40) / 80) * 0.7}) scaleY(${0.72 + ((calcHeight - 150) / 60) * 0.55})`,
                                 transformOrigin: 'bottom center',
-                                // Akıcı ve tatlı bir esneme hissi veren elastik cubic-bezier geçişi
-                                transition: 'transform 0.16s cubic-bezier(0.175, 0.885, 0.32, 1.2)', 
+                                transition: 'transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)', 
                                 color: isDarkMode ? '#ffffff' : '#000000',
                                 display: 'flex',
                                 flexDirection: 'column',
                                 alignItems: 'center'
                             }}>
-                                <svg width="36" height="75" viewBox="0 0 36 75" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    {/* Baş */}
-                                    <circle cx="18" cy="11" r="6.5" fill="currentColor" />
-                                    {/* Gövde */}
-                                    <rect x="10" y="21" width="16" height="30" rx="5" fill="currentColor" />
-                                    {/* Bacaklar */}
-                                    <rect x="12" y="53" width="4.5" height="20" rx="1.5" fill="currentColor" />
-                                    <rect x="19.5" y="53" width="4.5" height="20" rx="1.5" fill="currentColor" />
-                                    {/* Kollar */}
-                                    <rect x="4.5" y="22.5" width="4" height="22" rx="1.5" fill="currentColor" />
-                                    <rect x="27.5" y="22.5" width="4" height="22" rx="1.5" fill="currentColor" />
-                                </svg>
+                                {/* İç Katman: Sürekli Nefes Alan ve Oynayan Canlı Katman */}
+                                <div className="avatar-breathing-layer">
+                                    <svg width="36" height="75" viewBox="0 0 36 75" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        {/* Kafa (Bobbing/Yukarı-Aşağı Animasyonlu) */}
+                                        <circle className="avatar-head" cx="18" cy="11" r="6.5" fill="currentColor" />
+                                        
+                                        {/* Gövde */}
+                                        <rect x="10" y="21" width="16" height="30" rx="5" fill="currentColor" />
+                                        
+                                        {/* Bacaklar */}
+                                        <rect x="12" y="53" width="4.5" height="20" rx="1.5" fill="currentColor" />
+                                        <rect x="19.5" y="53" width="4.5" height="20" rx="1.5" fill="currentColor" />
+                                        
+                                        {/* Sol Kol (Sallanma Animasyonlu) */}
+                                        <rect className="avatar-arm-left" x="4.5" y="22.5" width="4" height="22" rx="1.5" fill="currentColor" />
+                                        
+                                        {/* Sağ Kol (Sallanma Animasyonlu) */}
+                                        <rect className="avatar-arm-right" x="27.5" y="22.5" width="4" height="22" rx="1.5" fill="currentColor" />
+                                    </svg>
+                                </div>
                             </div>
                         </div>
 
