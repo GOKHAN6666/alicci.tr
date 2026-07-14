@@ -81,6 +81,11 @@ function App() {
     const [toast, setToast] = useState(null);
     const [removingId, setRemovingId] = useState(null);
 
+    // Kargo takip state'leri
+    const [trackingCodeInput, setTrackingCodeInput] = useState("");
+    const [searchedOrder, setSearchedOrder] = useState(null);
+    const [trackingError, setTrackingError] = useState("");
+
     const form = useRef();
 
     const WHATSAPP_NUMBER = "905511903118";
@@ -167,7 +172,6 @@ function App() {
                         }
                     }
 
-                    // Beden stok kontrolü normalizasyonu
                     let finalSoldOutSizes = [];
                     if (prod.sold_out_sizes) {
                         if (Array.isArray(prod.sold_out_sizes)) {
@@ -189,7 +193,7 @@ function App() {
                         ...prod,
                         image: finalImages,
                         sold_out_sizes: finalSoldOutSizes,
-                        stock: prod.stock !== undefined ? Number(prod.stock) : 10 // Kolon yoksa varsayılan aktif
+                        stock: prod.stock !== undefined ? Number(prod.stock) : 10
                     };
                 });
                 setProducts(normalizedData);
@@ -371,6 +375,74 @@ function App() {
         }, 300);
     };
 
+    // YENİ: Sipariş Kodu Oluşturma Fonksiyonu
+    const generateOrderCode = () => {
+        return `ALC-${Math.floor(100000 + Math.random() * 900000)}`;
+    };
+
+    // YENİ: Siparişi Supabase'e Kaydetme ve Yönlendirme
+    const handleCreateOrder = async (platform) => {
+        if (cartItems.length === 0) return;
+
+        const orderCode = generateOrderCode();
+        const totalPrice = getTotalPrice();
+
+        const { error } = await supabase.from("orders").insert([
+            {
+                order_code: orderCode,
+                cart_items: cartItems,
+                total_price: totalPrice,
+                status: "Onay Bekliyor"
+            }
+        ]);
+
+        if (error) {
+            console.error("Sipariş kaydedilirken hata oluştu:", error);
+            showToast("Bir hata oluştu, lütfen tekrar deneyin.");
+            return;
+        }
+
+        if (platform === "whatsapp") {
+            const message = `Merhaba, ${orderCode} kodlu siparişimi onaylamak istiyorum:\n\n` +
+                `${cartItems.map(item => `- ${item.name} (${item.size}) x${item.quantity}`).join('\n')}\n\n` +
+                `Toplam: ${totalPrice} TL`;
+            
+            window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`, '_blank');
+        } else {
+            navigator.clipboard.writeText(orderCode);
+            showToast(`Sipariş kodunuz (${orderCode}) kopyalandı! DM'den bize iletebilirsiniz.`);
+            setTimeout(() => {
+                window.open(`https://www.instagram.com/${INSTAGRAM_USERNAME}`, '_blank');
+            }, 1500);
+        }
+
+        setShowOrderOptionsModal(false);
+        openConfirmationModal();
+    };
+
+    // YENİ: Kargo Sorgulama Fonksiyonu
+    const handleTrackOrder = async () => {
+        if (!trackingCodeInput.trim()) {
+            setTrackingError("Lütfen sipariş kodunuzu girin.");
+            return;
+        }
+        
+        setTrackingError("");
+        setSearchedOrder(null);
+
+        const { data, error } = await supabase
+            .from("orders")
+            .select("*")
+            .eq("order_code", trackingCodeInput.trim().toUpperCase());
+
+        if (error || !data || data.length === 0) {
+            setTrackingError("Sipariş bulunamadı. Lütfen kodu kontrol edin (Örn: ALC-123456).");
+            return;
+        }
+
+        setSearchedOrder(data[0]);
+    };
+
     const handleContactFormSubmit = async (e) => {
         e.preventDefault();
 
@@ -438,7 +510,6 @@ function App() {
                 @keyframes slide-down { from { transform: scale(1) translateY(0); opacity: 1; } to { transform: scale(0.95) translateY(20px); opacity: 0; } }
                 @keyframes cart-slide-out { from { transform: translateX(0); opacity: 1; } to { transform: translateX(100%); opacity: 0; } }
 
-                /* PREMIUM SMOOTH REVEAL ANIMASYONU */
                 .product-card.reveal {
                     opacity: 0;
                     transform: translateY(40px) scale(0.98);
@@ -451,7 +522,6 @@ function App() {
                     transform: translateY(0) scale(1);
                 }
 
-                /* STOK KONTROL TASARIMLARI */
                 .product-card.sold-out {
                     opacity: 0.55;
                 }
@@ -481,7 +551,6 @@ function App() {
                     background-color: rgba(255,255,255,0.05);
                 }
 
-                /* INFINITE MARQUEE (KAYAN YAZI BANDI) - SIFIR BOŞLUKLU SEAMLESS DÖNGÜ */
                 .marquee-wrapper {
                     width: 100%;
                     overflow: hidden;
@@ -515,7 +584,6 @@ function App() {
                     100% { transform: translateX(-50%); }
                 }
 
-                /* Üst Navigasyon Düzeni */
                 nav, html body nav {
                     display: flex !important;
                     flex-direction: row !important;
@@ -540,7 +608,6 @@ function App() {
                 .cart-panel.closing { animation: cart-slide-out 0.3s ease forwards !important; }
                 .toast-container { z-index: 9999999 !important; }
 
-                /* Sağ Kontrol Alanı (Butonları Sağa İter) */
                 nav .nav-controls, html body nav .nav-controls { 
                     display: flex !important; 
                     align-items: center !important; 
@@ -550,7 +617,6 @@ function App() {
                     inset: auto !important;
                 }
                 
-                /* Hamburger Butonu Sağ Taraf Sabitlemesi ve Temizliği */
                 .hamburger, nav .hamburger, html body nav .hamburger {
                     display: none !important;
                     cursor: pointer !important;
@@ -566,7 +632,6 @@ function App() {
                     z-index: 5 !important;
                 }
 
-                /* MOBİL GÖRÜNÜM (768px ve Altı) */
                 @media (max-width: 768px) {
                     .marquee-track span {
                         font-size: 10px;
@@ -590,7 +655,6 @@ function App() {
                         font-weight: bold; 
                     }
                     
-                    /* Sağ Panel Mobil Yan Menü */
                     nav ul.nav-menu, html body nav .nav-menu, html body nav ul {
                         display: flex !important;
                         flex-direction: column !important;
@@ -618,7 +682,6 @@ function App() {
                         color: #fff !important; 
                     }
                     
-                    /* Menü Durum Sınıfları */
                     nav ul.nav-menu.open, html body nav .nav-menu.open { 
                         transform: translateX(0) !important; 
                         opacity: 1 !important;
@@ -643,7 +706,6 @@ function App() {
                         background-color: rgba(128, 128, 128, 0.05) !important;
                     }
                     
-                    /* Arka Plan Maskesi */
                     .menu-backdrop { 
                         position: fixed !important;
                         top: 0 !important;
@@ -657,7 +719,6 @@ function App() {
                     }
                 }
 
-                /* MASAÜSTÜ GÖRÜNÜMÜ */
                 @media (min-width: 769px) { 
                     .mobile-theme-toggle, 
                     nav ul.nav-menu li.mobile-theme-toggle, 
@@ -738,7 +799,6 @@ function App() {
                 </div>
             </nav>
 
-            {/* KAYAN HYPE YAZI BANDI */}
             <div className="marquee-wrapper">
                 <div className="marquee-track">
                     <span>LIMITED DROP • TIMELESS PIECES • %100 PREMIUM COTTON • SHIPPED IN 24H • DISCOVER THE ART OF STREETWEAR • ALICCI • LIMITED DROP • TIMELESS PIECES • %100 PREMIUM COTTON • SHIPPED IN 24H • DISCOVER THE ART OF STREETWEAR • ALICCI •</span>
@@ -746,7 +806,6 @@ function App() {
                 </div>
             </div>
 
-            {/* MOBİL MENÜ MASKESİ */}
             {(isMobileMenuOpen || isMobileMenuClosing) && (
                 <div 
                     className="modal-backdrop menu-backdrop" 
@@ -757,7 +816,6 @@ function App() {
                 />
             )}
 
-            {/* SEPET MASKESİ */}
             {(isCartOpen || isCartClosing) && (
                 <div 
                     className="modal-backdrop cart-backdrop" 
@@ -851,7 +909,7 @@ function App() {
                 <section id="about" className="about reveal">
                     <h3>Hakkımızda</h3>
                     <p>ALICCI, zamansız şıklığı ve modern tasarımları bir araya getiren bir giyim markasıdır.</p>
-                    <p>Sürdürülebilir moda ilkelerini benimseyerek, çevreye duyarlı üretim süreçlerini destekliyor ve uzun ömürlü, kaliteli ürünler sunmaya özen profesyonelliğindeyiz.</p>
+                    <p>Sürdürülebilir moda ilkelerini benimseyerek, çevreye duyarlı üretim süreçlerini destekliyor ve uzun ömürlü, kaliteli ürünler sunmaya özen gösteriyoruz.</p>
                 </section>
 
                 <section id="contact" className="contact reveal">
@@ -937,6 +995,7 @@ function App() {
                 </div>
             )}
 
+            {/* GÜNCELLENMİŞ SİPARİŞ TAMAMLAMA MODALI */}
             {showOrderOptionsModal && (
                 <div className="modal-backdrop" onClick={closeOrderOptionsModal}>
                     <div className="modal-content-base order-options-modal" onClick={(e) => e.stopPropagation()}>
@@ -944,30 +1003,51 @@ function App() {
                         <h2>Siparişinizi Tamamlayın</h2>
                         <p>Siparişiniz için ödeme yapmak üzere bizimle iletişime geçebilirsiniz:</p>
                         <div className="contact-dm-buttons">
-                            <button className="themed-social-button whatsapp-contact" onClick={() => {
-                                const message = `Merhaba, sepetimdeki ürünleri sipariş etmek istiyorum:\n${cartItems.map(item => `- ${item.name} (${item.size}) x${item.quantity}`).join('\n')}\nToplam: ${getTotalPrice()} TL`;
-                                window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`, '_blank');
-                                setShowOrderOptionsModal(false);
-                                openConfirmationModal();
-                            }}>WhatsApp ile Sipariş Ver</button>
-                            <button className="themed-social-button instagram-contact" onClick={() => {
-                                window.open(`https://www.instagram.com/${INSTAGRAM_USERNAME}`, '_blank');
-                                setShowOrderOptionsModal(false);
-                                openConfirmationModal();
-                            }}>Instagram DM ile Sipariş Ver</button>
+                            <button className="themed-social-button whatsapp-contact" onClick={() => handleCreateOrder("whatsapp")}>
+                                WhatsApp ile Sipariş Ver
+                            </button>
+                            <button className="themed-social-button instagram-contact" onClick={() => handleCreateOrder("instagram")}>
+                                Instagram DM ile Sipariş Ver
+                            </button>
                         </div>
                     </div>
                 </div>
             )}
 
+            {/* GÜNCELLENMİŞ KARGO TAKİP MODALI */}
             {showTrackingModal && (
                 <div className="modal-backdrop" style={{ animation: isTrackingClosing ? "fade-out 0.3s ease forwards" : "fade-in 0.3s ease forwards" }} onClick={closeTrackingModal}>
                     <div className="modal-content-base tracking-modal-content" style={{ animation: isTrackingClosing ? "slide-down 0.3s ease forwards" : "slide-up 0.3s ease forwards" }} onClick={(e) => e.stopPropagation()}>
                         <button className="close-modal close-modal-small" onClick={closeTrackingModal}>&times;</button>
-                        <h2>Kargo Takip Bilgisi İçin İletişime Geçin</h2>
-                        <div className="contact-dm-buttons tracking-dm-buttons">
+                        <h2>Kargo Takip Paneli</h2>
+                        <p style={{ fontSize: '13px', marginBottom: '15px', opacity: 0.8 }}>Sipariş verirken size verilen ALC ile başlayan sipariş kodunu giriniz.</p>
+                        
+                        <div className="tracking-search-box" style={{ display: 'flex', gap: '10px', marginBottom: '15px' }}>
+                            <input 
+                                type="text" 
+                                placeholder="Örn: ALC-123456" 
+                                value={trackingCodeInput}
+                                onChange={(e) => setTrackingCodeInput(e.target.value)}
+                                style={{ flex: 1, padding: '10px', borderRadius: '4px', border: '1px solid #ccc', color: '#000' }}
+                            />
+                            <button onClick={handleTrackOrder} style={{ padding: '10px 20px', background: '#000', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>Sorgula</button>
+                        </div>
+
+                        {trackingError && <p style={{ color: 'red', fontSize: '13px' }}>{trackingError}</p>}
+
+                        {searchedOrder && (
+                            <div className="tracking-result" style={{ background: 'rgba(128,128,128,0.1)', padding: '15px', borderRadius: '4px', textAlign: 'left', marginTop: '15px' }}>
+                                <p><strong>Sipariş Kodu:</strong> {searchedOrder.order_code}</p>
+                                <p><strong>Durum:</strong> <span style={{ color: searchedOrder.status === 'Kargoda' || searchedOrder.status === 'Teslim Edildi' ? '#34c759' : '#ff9500', fontWeight: 'bold' }}>{searchedOrder.status}</span></p>
+                                <p><strong>Kargo Firması:</strong> {searchedOrder.cargo_company || '-'}</p>
+                                <p><strong>Kargo Takip No:</strong> {searchedOrder.cargo_tracker_code || '-'}</p>
+                                <p><strong>Toplam Tutar:</strong> {searchedOrder.total_price} TL</p>
+                            </div>
+                        )}
+
+                        <div className="contact-dm-buttons tracking-dm-buttons" style={{ marginTop: '20px', borderTop: '1px solid rgba(128,128,128,0.2)', paddingTop: '15px' }}>
+                            <p style={{ fontSize: '12px', marginBottom: '10px' }}>Sorun mu yaşıyorsunuz? Doğrudan destek alın:</p>
                             <a href={`https://wa.me/${WHATSAPP_NUMBER}`} target="_blank" rel="noopener noreferrer" className="themed-social-button whatsapp-contact">WhatsApp Destek</a>
-                            <a href={`https://www.instagram.com/${INSTAGRAM_USERNAME}`} target="_blank" rel="noopener noreferrer" className="themed-social-button instagram-contact">Instagram Destek</a>
                         </div>
                     </div>
                 </div>
