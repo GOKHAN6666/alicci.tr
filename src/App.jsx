@@ -4,6 +4,30 @@ import "./index.css";
 import { Analytics } from "@vercel/analytics/react";
 import { supabase } from "./supabaseclient";
 
+// Streetwear Odaklı Beden Hesaplama Algoritması
+const getRecommendedSize = (height, weight, fitPreference) => {
+    let baseSize = "M";
+
+    if (height < 168 && weight < 55) {
+        baseSize = "S";
+    } else if (height <= 176 && weight <= 68) {
+        baseSize = "M";
+    } else if (height <= 184 && weight <= 82) {
+        baseSize = "L";
+    } else {
+        baseSize = "XL";
+    }
+
+    if (fitPreference === "oversize") {
+        if (baseSize === "S") return "M";
+        if (baseSize === "M") return "L";
+        if (baseSize === "L") return "XL";
+        return "XXL";
+    }
+
+    return baseSize;
+};
+
 const ProductCard = ({ product, openProductModal, closeCart }) => {
     const [hoveredImageIndex, setHoveredImageIndex] = useState(0);
 
@@ -77,10 +101,17 @@ function App() {
     const [isLoading, setIsLoading] = useState(true);
     const [isDarkMode, setIsDarkMode] = useState(false);
     
+    // Beden Sihirbazı Pop-up State'leri
+    const [showSizeCalcModal, setShowSizeCalcModal] = useState(false);
+    const [calcHeight, setCalcHeight] = useState(170);
+    const [calcWeight, setCalcWeight] = useState(65);
+    const [calcFit, setCalcFit] = useState("oversize");
+    const [calcResult, setCalcResult] = useState(null);
+    
     // Kupon State'leri
     const [couponInput, setCouponInput] = useState("");
     const [discount, setDiscount] = useState(0);
-    const [appliedCouponCode, setAppliedCouponCode] = useState(""); // Uygulanan kuponun kodunu saklar
+    const [appliedCouponCode, setAppliedCouponCode] = useState(""); 
     
     const [toast, setToast] = useState(null);
     const [removingId, setRemovingId] = useState(null);
@@ -118,7 +149,6 @@ function App() {
         };
     }, [products, isLoading]);
 
-    // Sepet değiştiğinde kupon verilerini sıfırla
     useEffect(() => {
         setDiscount(0);
         setCouponInput("");
@@ -228,7 +258,7 @@ function App() {
     }, [cartItems]);
 
     useEffect(() => {
-        const isAnyModalOpen = selectedProduct || showOrderOptionsModal || showConfirmationModal || showTrackingModal || isCartOpen || isMobileMenuOpen;
+        const isAnyModalOpen = selectedProduct || showOrderOptionsModal || showConfirmationModal || showTrackingModal || isCartOpen || isMobileMenuOpen || showSizeCalcModal;
         if (isAnyModalOpen) {
             document.body.classList.add('no-scroll');
         } else {
@@ -237,7 +267,7 @@ function App() {
         return () => {
             document.body.classList.remove('no-scroll');
         };
-    }, [selectedProduct, showOrderOptionsModal, showConfirmationModal, showTrackingModal, isCartOpen, isMobileMenuOpen]);
+    }, [selectedProduct, showOrderOptionsModal, showConfirmationModal, showTrackingModal, isCartOpen, isMobileMenuOpen, showSizeCalcModal]);
 
     const openProductModal = (product) => {
         setSelectedProduct(product);
@@ -326,14 +356,12 @@ function App() {
         }, 300);
     };
 
-    // YENİLENMİŞ KUPON UYGULAMA FONKSİYONU
     const handleApplyCoupon = async () => {
         const cleanInput = couponInput.trim(); 
         if (!cleanInput) return;
 
         const today = new Date().toISOString().split('T')[0]; 
 
-        // Veritabanından büyük/küçük harf duyarsız olarak kodu çekiyoruz
         const { data, error } = await supabase
             .from("coupons")
             .select("*")
@@ -348,7 +376,6 @@ function App() {
 
         const coupon = data[0];
 
-        // 1. Kontrol: Genel Aktiflik Durumu
         if (!coupon.is_active) {
             setDiscount(0);
             setAppliedCouponCode("");
@@ -356,7 +383,6 @@ function App() {
             return;
         }
 
-        // 2. Kontrol: Kullanılmış mı? (Tek seferlik kupon kontrolü)
         if (coupon.is_used) {
             setDiscount(0);
             setAppliedCouponCode("");
@@ -364,7 +390,6 @@ function App() {
             return;
         }
 
-        // 3. Kontrol: Süresi geçmiş mi? (Veritabanındaki expiry_date boş değilse kontrol edilir)
         if (coupon.expiry_date && coupon.expiry_date < today) {
             setDiscount(0);
             setAppliedCouponCode("");
@@ -372,7 +397,6 @@ function App() {
             return;
         }
 
-        // Tüm kontroller geçildiyse indirimi uygula ve kupon kodunu sakla
         const discountValue = coupon.discount_percentage / 100;
         setDiscount(discountValue);
         setAppliedCouponCode(coupon.code);
@@ -416,12 +440,10 @@ function App() {
         }, 300);
     };
 
-    // Sipariş Kodu Oluşturma Fonksiyonu
     const generateOrderCode = () => {
         return `ALC-${Math.floor(100000 + Math.random() * 900000)}`;
     };
 
-    // Siparişi Supabase'e Kaydetme, Kuponu Tüketme ve Yönlendirme
     const handleCreateOrder = async (platform) => {
         if (cartItems.length === 0) return;
 
@@ -443,7 +465,6 @@ function App() {
             return;
         }
 
-        // EĞER SİPARİŞ BAŞARILIYSA VE KUPON KULLANILDIYSA: Kuponu kapatıyoruz
         if (appliedCouponCode) {
             const { error: couponError } = await supabase
                 .from('coupons')
@@ -476,22 +497,18 @@ function App() {
         openConfirmationModal();
     };
 
-    // Kargo Sorgulama Fonksiyonu (Sanitization, Loading ve "Onay Bekleniyor" Düzeltmeleri ile)
     const handleTrackOrder = async () => {
         if (!trackingCodeInput.trim()) {
             setTrackingError("Lütfen sipariş kodunuzu girin.");
             return;
         }
         
-        // Boşlukları kaldır, büyük harfe çevir ve tire işaretlerini geçici olarak temizle
         let cleanCode = trackingCodeInput.replace(/\s+/g, '').toUpperCase().replace(/-/g, '');
         
-        // Eğer başında ALC yoksa ekle
         if (!cleanCode.startsWith('ALC')) {
             cleanCode = 'ALC' + cleanCode;
         }
         
-        // ALC123456 formatını ALC-123456 haline getir
         if (cleanCode.length > 3 && cleanCode[3] !== '-') {
             cleanCode = cleanCode.slice(0, 3) + '-' + cleanCode.slice(3);
         }
@@ -680,7 +697,6 @@ function App() {
                 .cart-panel.closing { animation: cart-slide-out 0.3s ease forwards !important; }
                 .toast-container { z-index: 9999999 !important; }
 
-                /* === KARGO TAKİP ARAMA KUTUSU KESİN ÇÖZÜMÜ === */
                 .tracking-search-box {
                     display: flex !important;
                     flex-direction: row !important;
@@ -721,7 +737,6 @@ function App() {
                     color: #000 !important;
                 }
 
-                /* === HAREKETLİ KAMYON ANİMASYON STİLLERİ === */
                 .animated-truck-road {
                     position: relative;
                     width: 100%;
@@ -731,7 +746,6 @@ function App() {
                     margin-top: 15px;
                     overflow: hidden;
                 }
-                /* Yol çizgisi */
                 .animated-truck-road::before {
                     content: "";
                     position: absolute;
@@ -744,7 +758,6 @@ function App() {
                 body.dark-mode .animated-truck-road::before {
                     background: repeating-linear-gradient(90deg, #555, #555 10px, transparent 10px, transparent 20px);
                 }
-                /* Hareket eden kamyon (Kargoda) */
                 .animated-truck {
                     position: absolute;
                     bottom: 10px;
@@ -753,16 +766,13 @@ function App() {
                     display: flex;
                     align-items: center;
                 }
-                /* Rölantide bekleyen kamyon (Onay Bekleniyor) */
                 .animated-truck.waiting {
-                    left: 20px !important; /* Yolda sabit duracak */
+                    left: 20px !important; 
                     animation: none !important;
                 }
-                /* Sola-Sağa / Aşağı-Yukarı titreşim */
                 .animated-truck svg {
                     animation: truck-bounce 0.4s ease-in-out infinite alternate;
                 }
-                /* Onay Bekleniyor için rölanti titreşimi */
                 .animated-truck.waiting svg {
                     animation: truck-idle 0.25s ease-in-out infinite alternate;
                 }
@@ -1131,7 +1141,28 @@ function App() {
                                     <p className="desc">{selectedProduct.description || "Bu ürün ALICCI koleksiyonunun zarif parçalarındandır."}</p>
                                     
                                     <div className="size-select">
-                                        <p>Beden Seç:</p>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                                            <p style={{ margin: 0 }}>Beden Seç:</p>
+                                            <button 
+                                                type="button"
+                                                onClick={() => {
+                                                    setShowSizeCalcModal(true);
+                                                    setCalcResult(null);
+                                                }}
+                                                style={{
+                                                    background: 'none',
+                                                    border: 'none',
+                                                    color: '#ff9500',
+                                                    cursor: 'pointer',
+                                                    fontSize: '12px',
+                                                    fontWeight: 'bold',
+                                                    textDecoration: 'underline',
+                                                    padding: 0
+                                                }}
+                                            >
+                                                Bedenimi Bul 📐
+                                            </button>
+                                        </div>
                                         {(selectedProduct.sizes && selectedProduct.sizes.length > 0 ? selectedProduct.sizes : ["S", "M", "L", "XL", "XXL"]).map((size) => {
                                             const isSizeSoldOut = selectedProduct.sold_out_sizes?.includes(size);
                                             return (
@@ -1160,6 +1191,167 @@ function App() {
                                         }
                                     </button>
                                 </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
+
+            {/* INTERAKTIF BEDEN SIHIRBAZI POP-UP MODAL */}
+            {showSizeCalcModal && (
+                <div 
+                    className="modal-backdrop" 
+                    onClick={() => setShowSizeCalcModal(false)}
+                    style={{ zIndex: 1000005, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                >
+                    <div 
+                        className="modal-content-base size-calc-modal" 
+                        onClick={(e) => e.stopPropagation()} 
+                        style={{ 
+                            maxWidth: '360px', 
+                            padding: '25px', 
+                            borderRadius: '8px',
+                            backgroundColor: isDarkMode ? '#1a1a1a' : '#ffffff',
+                            color: isDarkMode ? '#ffffff' : '#000000',
+                            boxShadow: '0 10px 30px rgba(0,0,0,0.3)',
+                            border: isDarkMode ? '1px solid #333' : '1px solid #eee'
+                        }}
+                    >
+                        <button 
+                            className="close-modal close-modal-small" 
+                            onClick={() => setShowSizeCalcModal(false)}
+                            style={{ color: isDarkMode ? '#fff' : '#000' }}
+                        >
+                            &times;
+                        </button>
+                        
+                        <h3 style={{ margin: '0 0 5px 0', fontSize: '16px', fontWeight: '800', color: '#ff9500', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                            ALICCI Beden Sihirbazı
+                        </h3>
+                        <p style={{ fontSize: '11px', opacity: 0.7, margin: '0 0 20px 0' }}>En doğru streetwear kalıbını bulmak için bilgileri girin.</p>
+                        
+                        {/* Boy Slider */}
+                        <div style={{ marginBottom: '15px' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '5px', fontWeight: '500' }}>
+                                <span>Boy</span>
+                                <span style={{ color: '#ff9500', fontWeight: 'bold' }}>{calcHeight} cm</span>
+                            </div>
+                            <input 
+                                type="range" min="150" max="210" value={calcHeight} 
+                                onChange={(e) => setCalcHeight(Number(e.target.value))}
+                                style={{ width: '100%', accentColor: '#ff9500', cursor: 'pointer' }}
+                            />
+                        </div>
+
+                        {/* Kilo Slider */}
+                        <div style={{ marginBottom: '20px' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '5px', fontWeight: '500' }}>
+                                <span>Kilo</span>
+                                <span style={{ color: '#ff9500', fontWeight: 'bold' }}>{calcWeight} kg</span>
+                            </div>
+                            <input 
+                                type="range" min="40" max="120" value={calcWeight} 
+                                onChange={(e) => setCalcWeight(Number(e.target.value))}
+                                style={{ width: '100%', accentColor: '#ff9500', cursor: 'pointer' }}
+                            />
+                        </div>
+
+                        {/* Kalıp Tarz Seçimi */}
+                        <div style={{ marginBottom: '20px' }}>
+                            <span style={{ fontSize: '12px', display: 'block', marginBottom: '8px', fontWeight: '500' }}>Giyim Tarzı</span>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                                <button 
+                                    type="button"
+                                    onClick={() => setCalcFit('regular')}
+                                    style={{
+                                        padding: '10px', fontSize: '11px', fontWeight: '600', border: '1px solid', borderRadius: '4px', cursor: 'pointer', transition: 'all 0.2s',
+                                        borderColor: calcFit === 'regular' ? '#ff9500' : (isDarkMode ? '#444' : '#ccc'),
+                                        backgroundColor: calcFit === 'regular' ? 'rgba(255,149,0,0.1)' : 'transparent',
+                                        color: calcFit === 'regular' ? '#ff9500' : 'inherit'
+                                    }}
+                                >
+                                    Tam Otursun (Regular)
+                                </button>
+                                <button 
+                                    type="button"
+                                    onClick={() => setCalcFit('oversize')}
+                                    style={{
+                                        padding: '10px', fontSize: '11px', fontWeight: '600', border: '1px solid', borderRadius: '4px', cursor: 'pointer', transition: 'all 0.2s',
+                                        borderColor: calcFit === 'oversize' ? '#ff9500' : (isDarkMode ? '#444' : '#ccc'),
+                                        backgroundColor: calcFit === 'oversize' ? 'rgba(255,149,0,0.1)' : 'transparent',
+                                        color: calcFit === 'oversize' ? '#ff9500' : 'inherit'
+                                    }}
+                                >
+                                    Sokak Tarzı (Oversize)
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Hesapla Butonu */}
+                        <button 
+                            type="button"
+                            onClick={() => {
+                                const recommended = getRecommendedSize(calcHeight, calcWeight, calcFit);
+                                setCalcResult(recommended);
+                            }}
+                            style={{ 
+                                width: '100%', 
+                                padding: '12px', 
+                                backgroundColor: isDarkMode ? '#ffffff' : '#000000', 
+                                color: isDarkMode ? '#000000' : '#ffffff', 
+                                border: 'none', 
+                                borderRadius: '4px', 
+                                fontWeight: 'bold', 
+                                fontSize: '12px', 
+                                cursor: 'pointer', 
+                                textTransform: 'uppercase', 
+                                letterSpacing: '1px' 
+                            }}
+                        >
+                            Önerilen Bedeni Gör
+                        </button>
+
+                        {/* Sonuç Gösterim Alanı */}
+                        {calcResult && (
+                            <div 
+                                style={{ 
+                                    marginTop: '20px', 
+                                    padding: '15px', 
+                                    background: isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)', 
+                                    border: '1px dashed #ff9500', 
+                                    borderRadius: '4px', 
+                                    textAlign: 'center',
+                                    animation: 'fade-in 0.3s ease'
+                                }}
+                            >
+                                <p style={{ fontSize: '11px', margin: 0, opacity: 0.7 }}>Sizin için ideal ALICCI kalıbı:</p>
+                                <p style={{ fontSize: '24px', fontWeight: '900', color: '#ff9500', margin: '5px 0 12px 0', letterSpacing: '1px' }}>{calcResult}</p>
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        const isSizeSoldOut = selectedProduct?.sold_out_sizes?.includes(calcResult);
+                                        if (isSizeSoldOut) {
+                                            showToast(`Önerilen beden (${calcResult}) maalesef tükendi.`);
+                                        } else {
+                                            setSelectedSize(calcResult);
+                                            showToast(`Beden olarak ${calcResult} seçildi!`);
+                                            setShowSizeCalcModal(false);
+                                        }
+                                    }}
+                                    style={{ 
+                                        background: '#ff9500', 
+                                        color: '#000000', 
+                                        border: 'none', 
+                                        padding: '8px 16px', 
+                                        borderRadius: '4px', 
+                                        fontSize: '11px', 
+                                        fontWeight: '800', 
+                                        cursor: 'pointer',
+                                        textTransform: 'uppercase'
+                                    }}
+                                >
+                                    Bu Bedeni Uygula
+                                </button>
                             </div>
                         )}
                     </div>
@@ -1228,11 +1420,9 @@ function App() {
                                 <p><strong>Kargo Takip No:</strong> {searchedOrder.cargo_tracker_code || '-'}</p>
                                 <p><strong>Toplam Tutar:</strong> {searchedOrder.total_price} TL</p>
 
-                                {/* Dinamik Animasyon Alanı */}
                                 {searchedOrder.status === "Kargoda" ? (
                                     <div className="animated-truck-road">
                                         <div className="animated-truck">
-                                            {/* Minimalist SVG Kamyon İkonu (Kargoda - Hareket ediyor) */}
                                             <svg xmlns="http://www.w3.org/2000/svg" width="28" height="20" viewBox="0 0 24 24" fill="none" stroke={isDarkMode ? "#fff" : "#000"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                                 <rect x="1" y="3" width="15" height="13"></rect>
                                                 <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
@@ -1244,7 +1434,6 @@ function App() {
                                 ) : searchedOrder.status === "Onay Bekleniyor" ? (
                                     <div className="animated-truck-road">
                                         <div className="animated-truck waiting">
-                                            {/* Rölantide bekleyen Kamyon İkonu (Onay Bekleniyor) */}
                                             <svg xmlns="http://www.w3.org/2000/svg" width="28" height="20" viewBox="0 0 24 24" fill="none" stroke="#ff9500" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                                 <rect x="1" y="3" width="15" height="13"></rect>
                                                 <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
