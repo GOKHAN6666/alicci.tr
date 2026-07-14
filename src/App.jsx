@@ -365,6 +365,10 @@ function App() {
     const openTrackingModal = () => {
         setShowTrackingModal(true);
         setIsTrackingClosing(false);
+        // Modal açıldığında eski sorguyu temizlemek istersen:
+        setSearchedOrder(null);
+        setTrackingCodeInput("");
+        setTrackingError("");
     };
 
     const closeTrackingModal = () => {
@@ -647,6 +651,51 @@ function App() {
                 body.dark-mode .tracking-search-box button {
                     background: #fff !important;
                     color: #000 !important;
+                }
+
+                /* === HAREKETLİ KAMYON ANİMASYON STİLLERİ === */
+                .animated-truck-road {
+                    position: relative;
+                    width: 100%;
+                    height: 40px;
+                    background: rgba(128, 128, 128, 0.08);
+                    border-radius: 6px;
+                    margin-top: 15px;
+                    overflow: hidden;
+                }
+                /* Yol çizgisi */
+                .animated-truck-road::before {
+                    content: "";
+                    position: absolute;
+                    bottom: 8px;
+                    left: 0;
+                    width: 100%;
+                    height: 2px;
+                    background: repeating-linear-gradient(90deg, #ccc, #ccc 10px, transparent 10px, transparent 20px);
+                }
+                body.dark-mode .animated-truck-road::before {
+                    background: repeating-linear-gradient(90deg, #555, #555 10px, transparent 10px, transparent 20px);
+                }
+                /* Hareket eden kamyon kapsayıcısı */
+                .animated-truck {
+                    position: absolute;
+                    bottom: 10px;
+                    left: -50px;
+                    animation: truck-drive 10s linear infinite;
+                    display: flex;
+                    align-items: center;
+                }
+                /* Sola-Sağa / Aşağı-Yukarı titreşim */
+                .animated-truck svg {
+                    animation: truck-bounce 0.4s ease-in-out infinite alternate;
+                }
+                @keyframes truck-drive {
+                    0% { left: -50px; }
+                    100% { left: 105%; }
+                }
+                @keyframes truck-bounce {
+                    0% { transform: translateY(0) rotate(0deg); }
+                    100% { transform: translateY(-2px) rotate(1deg); }
                 }
 
                 nav .nav-controls, html body nav .nav-controls { 
@@ -1055,7 +1104,7 @@ function App() {
                 </div>
             )}
 
-            {/* TASARIM HATASI TAMAMEN TEMİZLENMİŞ KARGO TAKİP MODAL */}
+            {/* HARAKETLİ KAMYON ANİMASYONLU YENİ KARGO TAKİP MODAL */}
             {showTrackingModal && (
                 <div className="modal-backdrop" style={{ animation: isTrackingClosing ? "fade-out 0.3s ease forwards" : "fade-in 0.3s ease forwards" }} onClick={closeTrackingModal}>
                     <div className="modal-content-base tracking-modal-content" style={{ animation: isTrackingClosing ? "slide-down 0.3s ease forwards" : "slide-up 0.3s ease forwards" }} onClick={(e) => e.stopPropagation()}>
@@ -1063,7 +1112,6 @@ function App() {
                         <h2>Kargo Takip Paneli</h2>
                         <p style={{ fontSize: '13px', marginBottom: '15px', opacity: 0.8 }}>Sipariş verirken size verilen ALC ile başlayan sipariş kodunu giriniz.</p>
                         
-                        {/* Tüm inline hatalı stillerden arındırılmış temiz flexbox yapısı */}
                         <div className="tracking-search-box">
                             <input 
                                 type="text" 
@@ -1092,6 +1140,21 @@ function App() {
                                 <p><strong>Kargo Firması:</strong> {searchedOrder.cargo_company || '-'}</p>
                                 <p><strong>Kargo Takip No:</strong> {searchedOrder.cargo_tracker_code || '-'}</p>
                                 <p><strong>Toplam Tutar:</strong> {searchedOrder.total_price} TL</p>
+
+                                {/* Dinamik Animasyon: Eğer durum "Kargoda" ise canlanan kargo kamyonu */}
+                                {searchedOrder.status === "Kargoda" && (
+                                    <div className="animated-truck-road">
+                                        <div className="animated-truck">
+                                            {/* Minimalist SVG Kamyon İkonu */}
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="20" viewBox="0 0 24 24" fill="none" stroke={isDarkMode ? "#fff" : "#000"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                <rect x="1" y="3" width="15" height="13"></rect>
+                                                <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
+                                                <circle cx="5.5" cy="18.5" r="2.5"></circle>
+                                                <circle cx="18.5" cy="18.5" r="2.5"></circle>
+                                            </svg>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         )}
 
