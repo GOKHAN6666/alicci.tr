@@ -608,11 +608,45 @@ function App() {
                 .cart-panel.closing { animation: cart-slide-out 0.3s ease forwards !important; }
                 .toast-container { z-index: 9999999 !important; }
 
-                /* Kargo Takip Giriş Alanı Seçim Çakışması Engelleme */
-                .tracking-modal-content input {
+                /* === KARGO TAKİP ARAMA KUTUSU KESİN ÇÖZÜMÜ === */
+                .tracking-search-box {
+                    display: flex !important;
+                    flex-direction: row !important;
+                    align-items: center !important;
+                    gap: 10px !important;
+                    width: 100% !important;
+                    margin-bottom: 15px !important;
+                    box-sizing: border-box !important;
+                }
+                .tracking-search-box input {
+                    flex: 1 !important;
+                    width: 100% !important;
+                    min-width: 120px !important; /* Ezilmeyi önleyen kritik kural */
+                    padding: 12px !important;
+                    border: 1px solid #ccc !important;
+                    border-radius: 4px !important;
+                    color: #000 !important;
+                    background-color: #fff !important;
                     user-select: text !important;
                     -webkit-user-select: text !important;
                     pointer-events: auto !important;
+                    box-sizing: border-box !important;
+                }
+                .tracking-search-box button {
+                    width: auto !important; /* Global %100 kuralını ezen kritik kural */
+                    padding: 12px 25px !important;
+                    background: #000 !important;
+                    color: #fff !important;
+                    border: none !important;
+                    border-radius: 4px !important;
+                    cursor: pointer !important;
+                    white-space: nowrap !important;
+                    flex-shrink: 0 !important;
+                    box-sizing: border-box !important;
+                }
+                body.dark-mode .tracking-search-box button {
+                    background: #fff !important;
+                    color: #000 !important;
                 }
 
                 nav .nav-controls, html body nav .nav-controls { 
@@ -1002,7 +1036,7 @@ function App() {
                 </div>
             )}
 
-            {/* SİPARİŞ TAMAMLAMA MODALI */}
+            {/* SİPARİŞ TAMAMLAMA MODAL */}
             {showOrderOptionsModal && (
                 <div className="modal-backdrop" onClick={closeOrderOptionsModal}>
                     <div className="modal-content-base order-options-modal" onClick={(e) => e.stopPropagation()}>
@@ -1021,7 +1055,7 @@ function App() {
                 </div>
             )}
 
-            {/* GÜNCELLENMİŞ VE SEÇİM HATASI DÜZELTİLMİŞ KARGO TAKİP MODALI */}
+            {/* TASARIM HATASI TAMAMEN TEMİZLENMİŞ KARGO TAKİP MODAL */}
             {showTrackingModal && (
                 <div className="modal-backdrop" style={{ animation: isTrackingClosing ? "fade-out 0.3s ease forwards" : "fade-in 0.3s ease forwards" }} onClick={closeTrackingModal}>
                     <div className="modal-content-base tracking-modal-content" style={{ animation: isTrackingClosing ? "slide-down 0.3s ease forwards" : "slide-up 0.3s ease forwards" }} onClick={(e) => e.stopPropagation()}>
@@ -1029,24 +1063,15 @@ function App() {
                         <h2>Kargo Takip Paneli</h2>
                         <p style={{ fontSize: '13px', marginBottom: '15px', opacity: 0.8 }}>Sipariş verirken size verilen ALC ile başlayan sipariş kodunu giriniz.</p>
                         
-                        <div className="tracking-search-box" style={{ display: 'flex', gap: '10px', marginBottom: '15px' }}>
+                        {/* Tüm inline hatalı stillerden arındırılmış temiz flexbox yapısı */}
+                        <div className="tracking-search-box">
                             <input 
                                 type="text" 
                                 placeholder="Örn: ALC-123456" 
                                 value={trackingCodeInput}
                                 onChange={(e) => setTrackingCodeInput(e.target.value)}
-                                style={{ 
-                                    flex: 1, 
-                                    padding: '10px', 
-                                    borderRadius: '4px', 
-                                    border: '1px solid #ccc', 
-                                    color: '#000',
-                                    backgroundColor: '#fff',
-                                    userSelect: 'text',
-                                    pointerEvents: 'auto'
-                                }}
                             />
-                            <button onClick={handleTrackOrder} style={{ padding: '10px 20px', background: '#000', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>Sorgula</button>
+                            <button onClick={handleTrackOrder}>Sorgula</button>
                         </div>
 
                         {trackingError && <p style={{ color: 'red', fontSize: '13px' }}>{trackingError}</p>}
