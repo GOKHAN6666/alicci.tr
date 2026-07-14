@@ -7,7 +7,8 @@ import { supabase } from "./supabaseclient";
 const getRecommendedSize = (height, weight, fitPreference) => {
     let baseSize = "M";
 
-    if (height < 168 && weight < 55) {
+    // Yenilenen beden geçiş eşikleri
+    if (height <= 168 && weight <= 54) {
         baseSize = "S"; 
     } else if (height <= 176 && weight <= 68) {
         baseSize = "M"; 
