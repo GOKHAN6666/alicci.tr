@@ -76,8 +76,12 @@ function App() {
     const [currentSection, setCurrentSection] = useState("home");
     const [isLoading, setIsLoading] = useState(true);
     const [isDarkMode, setIsDarkMode] = useState(false);
+    
+    // Kupon State'leri
     const [couponInput, setCouponInput] = useState("");
     const [discount, setDiscount] = useState(0);
+    const [appliedCouponCode, setAppliedCouponCode] = useState(""); // Uygulanan kuponun kodunu saklar
+    
     const [toast, setToast] = useState(null);
     const [removingId, setRemovingId] = useState(null);
 
@@ -114,9 +118,11 @@ function App() {
         };
     }, [products, isLoading]);
 
+    // Sepet değiştiğinde kupon verilerini sıfırla
     useEffect(() => {
         setDiscount(0);
         setCouponInput("");
+        setAppliedCouponCode("");
     }, [cartItems]);
 
     useEffect(() => {
@@ -320,25 +326,56 @@ function App() {
         }, 300);
     };
 
+    // YENİLENMİŞ KUPON UYGULAMA FONKSİYONU
     const handleApplyCoupon = async () => {
         const cleanInput = couponInput.trim(); 
         if (!cleanInput) return;
 
+        const today = new Date().toISOString().split('T')[0]; 
+
+        // Veritabanından büyük/küçük harf duyarsız olarak kodu çekiyoruz
         const { data, error } = await supabase
             .from("coupons")
             .select("*")
-            .ilike("code", cleanInput) 
-            .eq("is_active", true);
+            .ilike("code", cleanInput);
 
         if (error || !data || data.length === 0) {
             setDiscount(0);
-            showToast("Kupon bulunamadı.");
+            setAppliedCouponCode("");
+            showToast("Geçersiz kupon kodu!");
             return;
         }
 
         const coupon = data[0];
+
+        // 1. Kontrol: Genel Aktiflik Durumu
+        if (!coupon.is_active) {
+            setDiscount(0);
+            setAppliedCouponCode("");
+            showToast("Bu kupon artık geçerli değil!");
+            return;
+        }
+
+        // 2. Kontrol: Kullanılmış mı? (Tek seferlik kupon kontrolü)
+        if (coupon.is_used) {
+            setDiscount(0);
+            setAppliedCouponCode("");
+            showToast("Bu kupon kodu daha önce kullanılmış!");
+            return;
+        }
+
+        // 3. Kontrol: Süresi geçmiş mi? (Veritabanındaki expiry_date boş değilse kontrol edilir)
+        if (coupon.expiry_date && coupon.expiry_date < today) {
+            setDiscount(0);
+            setAppliedCouponCode("");
+            showToast("Bu kuponun son kullanma tarihi geçmiş!");
+            return;
+        }
+
+        // Tüm kontroller geçildiyse indirimi uygula ve kupon kodunu sakla
         const discountValue = coupon.discount_percentage / 100;
         setDiscount(discountValue);
+        setAppliedCouponCode(coupon.code);
         showToast(`Kupon başarıyla uygulandı! %${coupon.discount_percentage} İndirim kazandınız.`);
     };
     
@@ -384,7 +421,7 @@ function App() {
         return `ALC-${Math.floor(100000 + Math.random() * 900000)}`;
     };
 
-    // Siparişi Supabase'e Kaydetme ve Yönlendirme
+    // Siparişi Supabase'e Kaydetme, Kuponu Tüketme ve Yönlendirme
     const handleCreateOrder = async (platform) => {
         if (cartItems.length === 0) return;
 
@@ -404,6 +441,21 @@ function App() {
             console.error("Sipariş kaydedilirken hata oluştu:", error);
             showToast("Bir hata oluştu, lütfen tekrar deneyin.");
             return;
+        }
+
+        // EĞER SİPARİŞ BAŞARILIYSA VE KUPON KULLANILDIYSA: Kuponu kapatıyoruz
+        if (appliedCouponCode) {
+            const { error: couponError } = await supabase
+                .from('coupons')
+                .update({ 
+                    is_used: true, 
+                    used_at: new Date().toISOString()
+                })
+                .eq('code', appliedCouponCode);
+
+            if (couponError) {
+                console.error("Kupon güncellenirken bir hata oluştu:", couponError);
+            }
         }
 
         if (platform === "whatsapp") {
@@ -1133,7 +1185,7 @@ function App() {
                 </div>
             )}
 
-            {/* HARAKETLİ KAMYON ANİMASYONLU YENİ KARGO TAKİP MODAL */}
+            {/* HAREKETLİ KAMYON ANİMASYONLU YENİ KARGO TAKİP MODAL */}
             {showTrackingModal && (
                 <div className="modal-backdrop" style={{ animation: isTrackingClosing ? "fade-out 0.3s ease forwards" : "fade-in 0.3s ease forwards" }} onClick={closeTrackingModal}>
                     <div className="modal-content-base tracking-modal-content" style={{ animation: isTrackingClosing ? "slide-down 0.3s ease forwards" : "slide-up 0.3s ease forwards" }} onClick={(e) => e.stopPropagation()}>
