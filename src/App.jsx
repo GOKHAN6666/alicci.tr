@@ -4,19 +4,17 @@ import "./index.css";
 import { Analytics } from "@vercel/analytics/react";
 import { supabase } from "./supabaseclient";
 
-// Markanın Gerçek Ölçülerine Göre Güncellenmiş Beden Algoritması
-// (M Beden = 48 cm Göğüs / 70 cm Boy baz alınmıştır)
 const getRecommendedSize = (height, weight, fitPreference) => {
     let baseSize = "M";
 
     if (height < 168 && weight < 55) {
-        baseSize = "S"; // ~46cm Göğüs / 68cm Boy
+        baseSize = "S"; 
     } else if (height <= 176 && weight <= 68) {
-        baseSize = "M"; // 48cm Göğüs / 70cm Boy
+        baseSize = "M"; 
     } else if (height <= 184 && weight <= 82) {
-        baseSize = "L"; // ~51cm Göğüs / 72cm Boy
+        baseSize = "L"; 
     } else {
-        baseSize = "XL"; // ~54cm Göğüs / 74cm Boy
+        baseSize = "XL"; 
     }
 
     if (fitPreference === "oversize") {
@@ -102,14 +100,12 @@ function App() {
     const [isLoading, setIsLoading] = useState(true);
     const [isDarkMode, setIsDarkMode] = useState(false);
     
-    // Beden Sihirbazı Pop-up State'leri
     const [showSizeCalcModal, setShowSizeCalcModal] = useState(false);
     const [calcHeight, setCalcHeight] = useState(170);
     const [calcWeight, setCalcWeight] = useState(65);
     const [calcFit, setCalcFit] = useState("oversize");
     const [calcResult, setCalcResult] = useState(null);
     
-    // Kupon State'leri
     const [couponInput, setCouponInput] = useState("");
     const [discount, setDiscount] = useState(0);
     const [appliedCouponCode, setAppliedCouponCode] = useState(""); 
@@ -117,7 +113,6 @@ function App() {
     const [toast, setToast] = useState(null);
     const [removingId, setRemovingId] = useState(null);
 
-    // Kargo takip state'leri
     const [trackingCodeInput, setTrackingCodeInput] = useState("");
     const [searchedOrder, setSearchedOrder] = useState(null);
     const [trackingError, setTrackingError] = useState("");
@@ -593,7 +588,6 @@ function App() {
 
     return (
         <>
-            {/* Google Fonts Poppins Bağlantısı */}
             <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
 
             <style>{`
@@ -817,7 +811,6 @@ function App() {
                     z-index: 5 !important;
                 }
 
-                /* Yeni Eklenen veya Güncellenen Sınıflar İçin Poppins Entegrasyonu */
                 .find-my-size-btn, .size-disclaimer, .size-calc-modal-title, .size-calc-result-box {
                     font-family: 'Poppins', sans-serif !important;
                 }
@@ -1149,46 +1142,52 @@ function App() {
                                     <h2>{selectedProduct.name}</h2>
                                     <p className="desc">{selectedProduct.description || "Bu ürün ALICCI koleksiyonunun zarif parçalarındandır."}</p>
                                     
-                                    <div className="size-select" style={{ marginBottom: '15px' }}>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-                                            <p style={{ margin: 0, fontSize: '13px', fontWeight: '600' }}>Beden Seç:</p>
-                                            
-                                            {/* TAMAMEN SARI RENKTEN ARINDIRILMIŞ POPPINS FONTLU BEDENİMİ BUL BUTONU */}
-                                            <button 
-                                                type="button"
-                                                onClick={() => {
-                                                    setShowSizeCalcModal(true);
-                                                    setCalcResult(null);
-                                                }}
-                                                className="find-my-size-btn"
-                                                style={{
-                                                    background: 'none',
-                                                    border: 'none',
-                                                    color: isDarkMode ? '#bbb' : '#333',
-                                                    cursor: 'pointer',
-                                                    fontSize: '12px',
-                                                    fontWeight: '600',
-                                                    textDecoration: 'underline',
-                                                    padding: 0,
-                                                    letterSpacing: '0.5px'
-                                                }}
-                                            >
-                                                📐 Bedenimi Bul
-                                            </button>
+                                    {/* 1. BEDEN KUTULARI ALANI (Kutular artık yan yana kusursuz hizalanıyor) */}
+                                    <div className="size-select" style={{ marginBottom: '10px' }}>
+                                        <p style={{ margin: '0 0 10px 0', fontSize: '13px', fontWeight: '600' }}>Beden Seç:</p>
+                                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                                            {(selectedProduct.sizes && selectedProduct.sizes.length > 0 ? selectedProduct.sizes : ["S", "M", "L", "XL", "XXL"]).map((size) => {
+                                                const isSizeSoldOut = selectedProduct.sold_out_sizes?.includes(size);
+                                                return (
+                                                    <button 
+                                                        key={size} 
+                                                        className={`${selectedSize === size ? "selected" : ""} ${isSizeSoldOut ? "size-sold-out" : ""}`} 
+                                                        onClick={() => !isSizeSoldOut && setSelectedSize(size)}
+                                                        disabled={isSizeSoldOut || selectedProduct.stock === 0}
+                                                    >
+                                                        {size} {isSizeSoldOut && "(Tükendi)"}
+                                                    </button>
+                                                );
+                                            })}
                                         </div>
-                                        {(selectedProduct.sizes && selectedProduct.sizes.length > 0 ? selectedProduct.sizes : ["S", "M", "L", "XL", "XXL"]).map((size) => {
-                                            const isSizeSoldOut = selectedProduct.sold_out_sizes?.includes(size);
-                                            return (
-                                                <button 
-                                                    key={size} 
-                                                    className={`${selectedSize === size ? "selected" : ""} ${isSizeSoldOut ? "size-sold-out" : ""}`} 
-                                                    onClick={() => !isSizeSoldOut && setSelectedSize(size)}
-                                                    disabled={isSizeSoldOut || selectedProduct.stock === 0}
-                                                >
-                                                    {size} {isSizeSoldOut && "(Tükendi)"}
-                                                </button>
-                                            );
-                                        })}
+                                    </div>
+
+                                    {/* 2. BEDENİMİ BUL ALANI (Tam kırmızı ile işaretlediğin konuma, yani butonların altına taşındı) */}
+                                    <div style={{ marginBottom: '20px', textAlign: 'left' }}>
+                                        <button 
+                                            type="button"
+                                            onClick={() => {
+                                                setShowSizeCalcModal(true);
+                                                setCalcResult(null);
+                                            }}
+                                            className="find-my-size-btn"
+                                            style={{
+                                                background: 'none',
+                                                border: 'none',
+                                                color: isDarkMode ? '#bbb' : '#333',
+                                                cursor: 'pointer',
+                                                fontSize: '12.5px',
+                                                fontWeight: '600',
+                                                textDecoration: 'underline',
+                                                padding: 0,
+                                                letterSpacing: '0.5px',
+                                                display: 'inline-flex',
+                                                alignItems: 'center',
+                                                gap: '4px'
+                                            }}
+                                        >
+                                            📐 Bedenimi Bul
+                                        </button>
                                     </div>
 
                                     <button 
@@ -1205,7 +1204,6 @@ function App() {
                                         }
                                     </button>
 
-                                    {/* MODALIN EN ALTINA EKLENEN YANLIŞ OLABİLİR UYARI METNİ */}
                                     <div 
                                         className="size-disclaimer" 
                                         style={{ 
@@ -1227,7 +1225,6 @@ function App() {
                 </div>
             )}
 
-            {/* İNTERAKTİF BEDEN SİHİRBAZI POP-UP MODAL (SARISIZ - MINIMALIST GRİ) */}
             {showSizeCalcModal && (
                 <div 
                     className="modal-backdrop" 
@@ -1260,7 +1257,6 @@ function App() {
                         </h3>
                         <p style={{ fontSize: '11px', opacity: 0.6, margin: '0 0 20px 0' }}>En doğru streetwear kalıbını bulmak için bilgileri girin.</p>
                         
-                        {/* Boy Slider */}
                         <div style={{ marginBottom: '15px' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '5px', fontWeight: '500' }}>
                                 <span>Boy</span>
@@ -1273,7 +1269,6 @@ function App() {
                             />
                         </div>
 
-                        {/* Kilo Slider */}
                         <div style={{ marginBottom: '20px' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '5px', fontWeight: '500' }}>
                                 <span>Kilo</span>
@@ -1286,7 +1281,6 @@ function App() {
                             />
                         </div>
 
-                        {/* Kalıp Tarz Seçimi */}
                         <div style={{ marginBottom: '20px' }}>
                             <span style={{ fontSize: '12px', display: 'block', marginBottom: '8px', fontWeight: '500' }}>Giyim Tarzı</span>
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
@@ -1317,7 +1311,6 @@ function App() {
                             </div>
                         </div>
 
-                        {/* Hesapla Butonu */}
                         <button 
                             type="button"
                             onClick={() => {
@@ -1341,7 +1334,6 @@ function App() {
                             Önerilen Bedeni Gör
                         </button>
 
-                        {/* Sonuç Gösterim Alanı */}
                         {calcResult && (
                             <div 
                                 className="size-calc-result-box"
@@ -1389,7 +1381,6 @@ function App() {
                 </div>
             )}
 
-            {/* SİPARİŞ TAMAMLAMA MODAL */}
             {showOrderOptionsModal && (
                 <div className="modal-backdrop" onClick={closeOrderOptionsModal}>
                     <div className="modal-content-base order-options-modal" onClick={(e) => e.stopPropagation()}>
@@ -1408,7 +1399,6 @@ function App() {
                 </div>
             )}
 
-            {/* HAREKETLİ KAMYON ANİMASYONLU KARGO TAKİP MODAL */}
             {showTrackingModal && (
                 <div className="modal-backdrop" style={{ animation: isTrackingClosing ? "fade-out 0.3s ease forwards" : "fade-in 0.3s ease forwards" }} onClick={closeTrackingModal}>
                     <div className="modal-content-base tracking-modal-content" style={{ animation: isTrackingClosing ? "slide-down 0.3s ease forwards" : "slide-up 0.3s ease forwards" }} onClick={(e) => e.stopPropagation()}>
