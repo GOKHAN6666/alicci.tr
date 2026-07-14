@@ -85,6 +85,7 @@ function App() {
     const [trackingCodeInput, setTrackingCodeInput] = useState("");
     const [searchedOrder, setSearchedOrder] = useState(null);
     const [trackingError, setTrackingError] = useState("");
+    const [isTrackingLoading, setIsTrackingLoading] = useState(false);
 
     const form = useRef();
 
@@ -395,7 +396,7 @@ function App() {
                 order_code: orderCode,
                 cart_items: cartItems,
                 total_price: totalPrice,
-                status: "Onay Bekliyor"
+                status: "Onay Bekleniyor"
             }
         ]);
 
@@ -423,20 +424,36 @@ function App() {
         openConfirmationModal();
     };
 
-    // Kargo Sorgulama Fonksiyonu
+    // Kargo Sorgulama Fonksiyonu (Sanitization, Loading ve "Onay Bekleniyor" Düzeltmeleri ile)
     const handleTrackOrder = async () => {
         if (!trackingCodeInput.trim()) {
             setTrackingError("Lütfen sipariş kodunuzu girin.");
             return;
         }
         
+        // Boşlukları kaldır, büyük harfe çevir ve tire işaretlerini geçici olarak temizle
+        let cleanCode = trackingCodeInput.replace(/\s+/g, '').toUpperCase().replace(/-/g, '');
+        
+        // Eğer başında ALC yoksa ekle
+        if (!cleanCode.startsWith('ALC')) {
+            cleanCode = 'ALC' + cleanCode;
+        }
+        
+        // ALC123456 formatını ALC-123456 haline getir
+        if (cleanCode.length > 3 && cleanCode[3] !== '-') {
+            cleanCode = cleanCode.slice(0, 3) + '-' + cleanCode.slice(3);
+        }
+
+        setIsTrackingLoading(true);
         setTrackingError("");
         setSearchedOrder(null);
 
         const { data, error } = await supabase
             .from("orders")
             .select("*")
-            .eq("order_code", trackingCodeInput.trim().toUpperCase());
+            .eq("order_code", cleanCode);
+
+        setIsTrackingLoading(false);
 
         if (error || !data || data.length === 0) {
             setTrackingError("Sipariş bulunamadı. Lütfen kodu kontrol edin (Örn: ALC-123456).");
@@ -684,7 +701,7 @@ function App() {
                     display: flex;
                     align-items: center;
                 }
-                /* Rölantide bekleyen kamyon (Onay Bekliyor) */
+                /* Rölantide bekleyen kamyon (Onay Bekleniyor) */
                 .animated-truck.waiting {
                     left: 20px !important; /* Yolda sabit duracak */
                     animation: none !important;
@@ -693,7 +710,7 @@ function App() {
                 .animated-truck svg {
                     animation: truck-bounce 0.4s ease-in-out infinite alternate;
                 }
-                /* Onay Bekliyor için rölanti titreşimi */
+                /* Onay Bekleniyor için rölanti titreşimi */
                 .animated-truck.waiting svg {
                     animation: truck-idle 0.25s ease-in-out infinite alternate;
                 }
@@ -1131,13 +1148,19 @@ function App() {
                                 value={trackingCodeInput}
                                 onChange={(e) => setTrackingCodeInput(e.target.value)}
                             />
-                            <button onClick={handleTrackOrder}>Sorgula</button>
+                            <button onClick={handleTrackOrder} disabled={isTrackingLoading}>
+                                {isTrackingLoading ? (
+                                    <><span className="spinner"></span> Sorgulanıyor...</>
+                                ) : (
+                                    "Sorgula"
+                                )}
+                            </button>
                         </div>
 
                         {trackingError && <p style={{ color: 'red', fontSize: '13px' }}>{trackingError}</p>}
 
                         {searchedOrder && (
-                            <div className="tracking-result" style={{ background: 'rgba(128,128,128,0.1)', padding: '15px', borderRadius: '4px', textAlign: 'left', marginTop: '15px' }}>
+                            <div className="tracking-result tracking-result-wrapper" style={{ background: 'rgba(128,128,128,0.1)', padding: '15px', borderRadius: '4px', textAlign: 'left', marginTop: '15px' }}>
                                 <p><strong>Sipariş Kodu:</strong> {searchedOrder.order_code}</p>
                                 <p><strong>Durum:</strong> 
                                     <span style={{ 
@@ -1166,10 +1189,10 @@ function App() {
                                             </svg>
                                         </div>
                                     </div>
-                                ) : searchedOrder.status === "Onay Bekliyor" ? (
+                                ) : searchedOrder.status === "Onay Bekleniyor" ? (
                                     <div className="animated-truck-road">
                                         <div className="animated-truck waiting">
-                                            {/* Rölantide bekleyen Kamyon İkonu (Onay Bekliyor) */}
+                                            {/* Rölantide bekleyen Kamyon İkonu (Onay Bekleniyor) */}
                                             <svg xmlns="http://www.w3.org/2000/svg" width="28" height="20" viewBox="0 0 24 24" fill="none" stroke="#ff9500" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                                 <rect x="1" y="3" width="15" height="13"></rect>
                                                 <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
