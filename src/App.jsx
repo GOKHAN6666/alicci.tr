@@ -301,7 +301,6 @@ function App() {
         const x = e.clientX - box.left - box.width / 2;
         const y = e.clientY - box.top - box.height / 2;
         
-        // Hassas ve akıcı bir eğim açısı limiti (Maksimum 6 derece)
         const rotateX = -(y / (box.height / 2)) * 6;
         const rotateY = (x / (box.width / 2)) * 6;
         
@@ -1261,7 +1260,7 @@ function App() {
                 </div>
             )}
 
-            {/* BEDEN SİHİRBAZI MODALI (Animasyonlar ve Mouse Etkileşimi Eklendi) */}
+            {/* BEDEN SİHİRBAZI MODALI (Canlı Değişen Esnek Karakter Entegre Edildi) */}
             {(showSizeCalcModal || isSizeCalcClosing) && (
                 <div 
                     className="modal-backdrop" 
@@ -1318,7 +1317,7 @@ function App() {
                             />
                         </div>
 
-                        <div style={{ marginBottom: '20px' }}>
+                        <div style={{ marginBottom: '15px' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '5px', fontWeight: '500' }}>
                                 <span>Kilo</span>
                                 <span style={{ color: isDarkMode ? '#fff' : '#000', fontWeight: 'bold' }}>{calcWeight} kg</span>
@@ -1328,6 +1327,45 @@ function App() {
                                 onChange={(e) => setCalcWeight(Number(e.target.value))}
                                 style={{ width: '100%', accentColor: isDarkMode ? '#fff' : '#000', cursor: 'pointer' }}
                             />
+                        </div>
+
+                        {/* DİNAMİK CANLI ETKİLEŞİMLİ MİNİMALİST KARAKTER ALANI */}
+                        <div style={{ 
+                            display: 'flex', 
+                            justifyContent: 'center', 
+                            alignItems: 'flex-end', 
+                            height: '95px', 
+                            marginBottom: '20px',
+                            background: isDarkMode ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.01)',
+                            borderBottom: isDarkMode ? '1px dashed #333' : '1px dashed #ddd',
+                            paddingBottom: '2px',
+                            overflow: 'hidden',
+                            borderRadius: '4px'
+                        }}>
+                            <div style={{
+                                // Boy (150-210) ve Kilo (40-120) oranlarına göre esnek ölçeklendirme matrisi
+                                transform: `scaleX(${0.65 + ((calcWeight - 40) / 80) * 0.7}) scaleY(${0.72 + ((calcHeight - 150) / 60) * 0.55})`,
+                                transformOrigin: 'bottom center',
+                                // Akıcı ve tatlı bir esneme hissi veren elastik cubic-bezier geçişi
+                                transition: 'transform 0.16s cubic-bezier(0.175, 0.885, 0.32, 1.2)', 
+                                color: isDarkMode ? '#ffffff' : '#000000',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'center'
+                            }}>
+                                <svg width="36" height="75" viewBox="0 0 36 75" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    {/* Baş */}
+                                    <circle cx="18" cy="11" r="6.5" fill="currentColor" />
+                                    {/* Gövde */}
+                                    <rect x="10" y="21" width="16" height="30" rx="5" fill="currentColor" />
+                                    {/* Bacaklar */}
+                                    <rect x="12" y="53" width="4.5" height="20" rx="1.5" fill="currentColor" />
+                                    <rect x="19.5" y="53" width="4.5" height="20" rx="1.5" fill="currentColor" />
+                                    {/* Kollar */}
+                                    <rect x="4.5" y="22.5" width="4" height="22" rx="1.5" fill="currentColor" />
+                                    <rect x="27.5" y="22.5" width="4" height="22" rx="1.5" fill="currentColor" />
+                                </svg>
+                            </div>
                         </div>
 
                         <div style={{ marginBottom: '20px' }}>
