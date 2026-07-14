@@ -100,7 +100,11 @@ function App() {
     const [isLoading, setIsLoading] = useState(true);
     const [isDarkMode, setIsDarkMode] = useState(false);
     
+    // Beden sihirbazı durum ve animasyon state'leri
     const [showSizeCalcModal, setShowSizeCalcModal] = useState(false);
+    const [isSizeCalcClosing, setIsSizeCalcClosing] = useState(false);
+    const [modalTiltStyle, setModalTiltStyle] = useState({});
+    
     const [calcHeight, setCalcHeight] = useState(170);
     const [calcWeight, setCalcWeight] = useState(65);
     const [calcFit, setCalcFit] = useState("oversize");
@@ -254,7 +258,7 @@ function App() {
     }, [cartItems]);
 
     useEffect(() => {
-        const isAnyModalOpen = selectedProduct || showOrderOptionsModal || showConfirmationModal || showTrackingModal || isCartOpen || isMobileMenuOpen || showSizeCalcModal;
+        const isAnyModalOpen = selectedProduct || showOrderOptionsModal || showConfirmationModal || showTrackingModal || isCartOpen || isMobileMenuOpen || showSizeCalcModal || isSizeCalcClosing;
         if (isAnyModalOpen) {
             document.body.classList.add('no-scroll');
         } else {
@@ -263,7 +267,7 @@ function App() {
         return () => {
             document.body.classList.remove('no-scroll');
         };
-    }, [selectedProduct, showOrderOptionsModal, showConfirmationModal, showTrackingModal, isCartOpen, isMobileMenuOpen, showSizeCalcModal]);
+    }, [selectedProduct, showOrderOptionsModal, showConfirmationModal, showTrackingModal, isCartOpen, isMobileMenuOpen, showSizeCalcModal, isSizeCalcClosing]);
 
     const openProductModal = (product) => {
         setSelectedProduct(product);
@@ -278,6 +282,40 @@ function App() {
             setSelectedProduct(null);
             setIsProductClosing(false);
         }, 300);
+    };
+
+    // Beden Sihirbazı Kapanma Akışı
+    const closeSizeCalcModal = () => {
+        setIsSizeCalcClosing(true);
+        setTimeout(() => {
+            setShowSizeCalcModal(false);
+            setIsSizeCalcClosing(false);
+            setModalTiltStyle({}); 
+        }, 300);
+    };
+
+    // Dinamik Fare İzleme / 3D Perspektif Eğilim Fonksiyonları
+    const handleModalMouseMove = (e) => {
+        const card = e.currentTarget;
+        const box = card.getBoundingClientRect();
+        const x = e.clientX - box.left - box.width / 2;
+        const y = e.clientY - box.top - box.height / 2;
+        
+        // Hassas ve akıcı bir eğim açısı limiti (Maksimum 6 derece)
+        const rotateX = -(y / (box.height / 2)) * 6;
+        const rotateY = (x / (box.width / 2)) * 6;
+        
+        setModalTiltStyle({
+            transform: `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.015)`,
+            transition: "transform 0.08s cubic-bezier(0.25, 1, 0.5, 1)"
+        });
+    };
+
+    const handleModalMouseLeave = () => {
+        setModalTiltStyle({
+            transform: "perspective(1000px) rotateX(0deg) rotateY(0deg) scale(1)",
+            transition: "transform 0.45s cubic-bezier(0.25, 1, 0.5, 1)"
+        });
     };
 
     const nextModalImage = (e) => {
@@ -1142,7 +1180,6 @@ function App() {
                                     <h2>{selectedProduct.name}</h2>
                                     <p className="desc">{selectedProduct.description || "Bu ürün ALICCI koleksiyonunun zarif parçalarındandır."}</p>
                                     
-                                    {/* 1. BEDEN KUTULARI ALANI (Kutular artık yan yana kusursuz hizalanıyor) */}
                                     <div className="size-select" style={{ marginBottom: '10px' }}>
                                         <p style={{ margin: '0 0 10px 0', fontSize: '13px', fontWeight: '600' }}>Beden Seç:</p>
                                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
@@ -1162,7 +1199,6 @@ function App() {
                                         </div>
                                     </div>
 
-                                    {/* 2. BEDENİMİ BUL ALANI (Tam kırmızı ile işaretlediğin konuma, yani butonların altına taşındı) */}
                                     <div style={{ marginBottom: '20px', textAlign: 'left' }}>
                                         <button 
                                             type="button"
@@ -1225,28 +1261,41 @@ function App() {
                 </div>
             )}
 
-            {showSizeCalcModal && (
+            {/* BEDEN SİHİRBAZI MODALI (Animasyonlar ve Mouse Etkileşimi Eklendi) */}
+            {(showSizeCalcModal || isSizeCalcClosing) && (
                 <div 
                     className="modal-backdrop" 
-                    onClick={() => setShowSizeCalcModal(false)}
-                    style={{ zIndex: 1000005, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                    onClick={closeSizeCalcModal}
+                    style={{ 
+                        zIndex: 1000005, 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        justifyContent: 'center',
+                        animation: isSizeCalcClosing ? "fade-out 0.3s ease forwards" : "fade-in 0.3s ease forwards"
+                    }}
                 >
                     <div 
                         className="modal-content-base size-calc-modal" 
                         onClick={(e) => e.stopPropagation()} 
+                        onMouseMove={handleModalMouseMove}
+                        onMouseLeave={handleModalMouseLeave}
                         style={{ 
                             maxWidth: '360px', 
                             padding: '25px', 
                             borderRadius: '8px',
                             backgroundColor: isDarkMode ? '#1a1a1a' : '#ffffff',
                             color: isDarkMode ? '#ffffff' : '#000000',
-                            boxShadow: '0 10px 30px rgba(0,0,0,0.3)',
-                            border: isDarkMode ? '1px solid #333' : '1px solid #eee'
+                            boxShadow: isDarkMode ? '0 20px 50px rgba(0,0,0,0.5)' : '0 20px 50px rgba(0,0,0,0.15)',
+                            border: isDarkMode ? '1px solid #333' : '1px solid #eee',
+                            animation: isSizeCalcClosing ? "slide-down 0.3s cubic-bezier(0.32, 0.94, 0.6, 1) forwards" : "slide-up 0.3s cubic-bezier(0.32, 0.94, 0.6, 1) forwards",
+                            transformStyle: "preserve-3d",
+                            willChange: "transform",
+                            ...modalTiltStyle
                         }}
                     >
                         <button 
                             className="close-modal close-modal-small" 
-                            onClick={() => setShowSizeCalcModal(false)}
+                            onClick={closeSizeCalcModal}
                             style={{ color: isDarkMode ? '#fff' : '#000' }}
                         >
                             &times;
@@ -1358,7 +1407,7 @@ function App() {
                                         } else {
                                             setSelectedSize(calcResult);
                                             showToast(`Beden olarak ${calcResult} seçildi!`);
-                                            setShowSizeCalcModal(false);
+                                            closeSizeCalcModal();
                                         }
                                     }}
                                     style={{ 
