@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import emailjs from "emailjs-com";
 import "./index.css";
-import { Analytics } from "@vercelanalytics/react";
+import { Analytics } from "@vercel/analytics/react"; // Paket import adresi düzeltildi
 import { supabase } from "./supabaseclient";
 
 const getRecommendedSize = (height, weight, fitPreference) => {
@@ -100,7 +100,6 @@ function App() {
     const [isLoading, setIsLoading] = useState(true);
     const [isDarkMode, setIsDarkMode] = useState(false);
     
-    // Beden sihirbazı durum ve animasyon state'leri
     const [showSizeCalcModal, setShowSizeCalcModal] = useState(false);
     const [isSizeCalcClosing, setIsSizeCalcClosing] = useState(false);
     const [modalTiltStyle, setModalTiltStyle] = useState({});
@@ -284,7 +283,6 @@ function App() {
         }, 300);
     };
 
-    // Beden Sihirbazı Kapanma Akışı
     const closeSizeCalcModal = () => {
         setIsSizeCalcClosing(true);
         setTimeout(() => {
@@ -294,7 +292,6 @@ function App() {
         }, 300);
     };
 
-    // Dinamik Fare İzleme / 3D Perspektif Eğilim Fonksiyonları
     const handleModalMouseMove = (e) => {
         const card = e.currentTarget;
         const box = card.getBoundingClientRect();
@@ -634,7 +631,6 @@ function App() {
                 @keyframes slide-down { from { transform: scale(1) translateY(0); opacity: 1; } to { transform: scale(0.95) translateY(20px); opacity: 0; } }
                 @keyframes cart-slide-out { from { transform: translateX(0); opacity: 1; } to { transform: translateX(100%); opacity: 0; } }
 
-                /* KARAKTER İÇİN CANLI IDLE (BEKLEME) ANIMASYONLARI */
                 @keyframes avatar-breathe {
                     0%, 100% { transform: scaleY(1); }
                     50% { transform: scaleY(1.025) scaleX(0.985); }
@@ -1163,7 +1159,7 @@ function App() {
 
                 <section id="about" className="about reveal">
                     <h3>Hakkımızda</h3>
-                    <p>ALICCI, zamansız şıklığı ve modern tasarımları bir araya getiren bir giyim markasıdır.</p>
+                    <p>ALICCI, zamansız şıklığı und modern tasarımları bir araya getiren bir giyim markasıdır.</p>
                     <p>Sürdürülebilir moda ilkelerini benimseyerek, çevreye duyarlı üretim süreçlerini destekliyor und uzun ömürlü, kaliteli ürünler sunmaya özen gösteriyoruz.</p>
                 </section>
 
@@ -1286,7 +1282,7 @@ function App() {
                                             textAlign: 'left'
                                         }}
                                     >
-                                        * Kalıplar kumaş esnekliğine ve kesim tarzına bağlı olarak değişiklik gösterebilir. Ölçümler el yapımı olduğu için küçük sapmalar yaşanabilir. Tarzınıza en uygun bedeni seçtiğinizden emin olun.
+                                        * Kalıplar kumaş esnekliğine und kesim tarzına bağlı olarak değişiklik gösterebilir. Ölçümler el yapımı olduğu için küçük sapmalar yaşanabilir. Tarzınıza en uygun bedeni seçtiğinizden emin olun.
                                     </div>
                                 </div>
                             </div>
@@ -1295,7 +1291,6 @@ function App() {
                 </div>
             )}
 
-            {/* BEDEN SİHİRBAZI MODALI (Canlı Hareketli ve Esnek Karakter) */}
             {(showSizeCalcModal || isSizeCalcClosing) && (
                 <div 
                     className="modal-backdrop" 
@@ -1364,7 +1359,6 @@ function App() {
                             />
                         </div>
 
-                        {/* HAREKETLİ VE ETKİLEŞİMLİ MİNİMALİST AVATAR ALANI */}
                         <div style={{ 
                             display: 'flex', 
                             justifyContent: 'center', 
@@ -1377,7 +1371,6 @@ function App() {
                             overflow: 'hidden',
                             borderRadius: '4px'
                         }}>
-                            {/* Dış Katman: Slider Değerlerine Göre Esnek Ölçeklenme Matrisi */}
                             <div style={{
                                 transform: `scaleX(${0.65 + ((calcWeight - 40) / 80) * 0.7}) scaleY(${0.72 + ((calcHeight - 150) / 60) * 0.55})`,
                                 transformOrigin: 'bottom center',
@@ -1387,23 +1380,13 @@ function App() {
                                 flexDirection: 'column',
                                 alignItems: 'center'
                             }}>
-                                {/* İç Katman: Sürekli Nefes Alan ve Oynayan Canlı Katman */}
                                 <div className="avatar-breathing-layer">
                                     <svg width="36" height="75" viewBox="0 0 36 75" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                        {/* Kafa (Bobbing/Yukarı-Aşağı Animasyonlu) */}
                                         <circle className="avatar-head" cx="18" cy="11" r="6.5" fill="currentColor" />
-                                        
-                                        {/* Gövde */}
                                         <rect x="10" y="21" width="16" height="30" rx="5" fill="currentColor" />
-                                        
-                                        {/* Bacaklar */}
                                         <rect x="12" y="53" width="4.5" height="20" rx="1.5" fill="currentColor" />
                                         <rect x="19.5" y="53" width="4.5" height="20" rx="1.5" fill="currentColor" />
-                                        
-                                        {/* Sol Kol (Sallanma Animasyonlu) */}
                                         <rect className="avatar-arm-left" x="4.5" y="22.5" width="4" height="22" rx="1.5" fill="currentColor" />
-                                        
-                                        {/* Sağ Kol (Sallanma Animasyonlu) */}
                                         <rect className="avatar-arm-right" x="27.5" y="22.5" width="4" height="22" rx="1.5" fill="currentColor" />
                                     </svg>
                                 </div>
