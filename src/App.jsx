@@ -633,36 +633,39 @@ function App() {
                 @keyframes cart-slide-out { from { transform: translateX(0); opacity: 1; } to { transform: translateX(100%); opacity: 0; } }
 
                 @keyframes avatar-breathe {
-                    0%, 100% { transform: scaleY(1); }
-                    50% { transform: scaleY(1.025) scaleX(0.985); }
+                    0%, 100% { transform: scale(1); }
+                    50% { transform: scale(1.04); }
                 }
+
                 @keyframes avatar-head-bob {
                     0%, 100% { transform: translateY(0); }
-                    50% { transform: translateY(-0.8px); }
+                    50% { transform: translateY(-2px); }
                 }
+
                 @keyframes avatar-arm-sway-left {
                     0%, 100% { transform: rotate(0deg); }
-                    50% { transform: rotate(-2.5deg); }
+                    50% { transform: rotate(-8deg); }
                 }
+
                 @keyframes avatar-arm-sway-right {
                     0%, 100% { transform: rotate(0deg); }
-                    50% { transform: rotate(2.5deg); }
+                    50% { transform: rotate(8deg); }
                 }
 
                 .avatar-breathing-layer {
-                    animation: avatar-breathe 2.6s ease-in-out infinite;
+                    animation: avatar-breathe 2s ease-in-out infinite;
                     transform-origin: bottom center;
                 }
                 .avatar-head {
-                    animation: avatar-head-bob 2.6s ease-in-out infinite;
+                    animation: avatar-head-bob 2s ease-in-out infinite;
                     transform-origin: 18px 11px;
                 }
                 .avatar-arm-left {
-                    animation: avatar-arm-sway-left 2.6s ease-in-out infinite;
+                    animation: avatar-arm-sway-left 2s ease-in-out infinite;
                     transform-origin: 8.5px 22.5px;
                 }
                 .avatar-arm-right {
-                    animation: avatar-arm-sway-right 2.6s ease-in-out infinite;
+                    animation: avatar-arm-sway-right 2s ease-in-out infinite;
                     transform-origin: 27.5px 22.5px;
                 }
 
