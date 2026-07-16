@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import emailjs from "emailjs-com";
 import "./index.css";
-import { Analytics } from "@vercel/analytics/react"; // Paket import adresi düzeltildi
+import { Analytics } from "@vercel/analytics/react"; 
 import { supabase } from "./supabaseclient";
 
 const getRecommendedSize = (height, weight, fitPreference) => {
@@ -1163,8 +1163,8 @@ function App() {
 
                 <section id="about" className="about reveal">
                     <h3>Hakkımızda</h3>
-                    <p>ALICCI, zamansız şıklığı und modern tasarımları bir araya getiren bir giyim markasıdır.</p>
-                    <p>Sürdürülebilir moda ilkelerini benimseyerek, çevreye duyarlı üretim süreçlerini destekliyor und uzun ömürlü, kaliteli ürünler sunmaya özen gösteriyoruz.</p>
+                    <p>ALICCI, zamansız şıklığı ve modern tasarımları bir araya getiren bir giyim markasıdır.</p>
+                    <p>Sürdürülebilir moda ilkelerini benimseyerek, çevreye duyarlı üretim süreçlerini destekliyor ve uzun ömürlü, kaliteli ürünler sunmaya özen gösteriyoruz.</p>
                 </section>
 
                 <section id="contact" className="contact reveal">
@@ -1183,7 +1183,7 @@ function App() {
             </main>
 
             <footer>
-                <p>&copy; 2025 ALICCI. Tüm Hakları Saklıdır.</p>
+                <p>&copy; 2026 ALICCI. Tüm Hakları Saklıdır.</p>
                 <div className="instagram">
                     <a href={`https://www.instagram.com/${INSTAGRAM_USERNAME}`} target="_blank" rel="noopener noreferrer">Instagram</a>
                 </div>
@@ -1286,7 +1286,7 @@ function App() {
                                             textAlign: 'left'
                                         }}
                                     >
-                                        * Kalıplar kumaş esnekliğine und kesim tarzına bağlı olarak değişiklik gösterebilir. Ölçümler el yapımı olduğu için küçük sapmalar yaşanabilir. Tarzınıza en uygun bedeni seçtiğinizden emin olun.
+                                        * Kalıplar kumaş esnekliğine ve kesim tarzına bağlı olarak değişiklik gösterebilir. Ölçümler el yapımı olduğu için küçük sapmalar yaşanabilir. Tarzınıza en uygun bedeni seçtiğinizden emin olun.
                                     </div>
                                 </div>
                             </div>
