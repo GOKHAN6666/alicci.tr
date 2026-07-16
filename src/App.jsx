@@ -122,6 +122,12 @@ function App() {
     const [trackingError, setTrackingError] = useState("");
     const [isTrackingLoading, setIsTrackingLoading] = useState(false);
 
+    // Iyzico Entegrasyon State'leri
+    const [showIyzicoModal, setShowIyzicoModal] = useState(false);
+    const [isIyzicoClosing, setIsIyzicoClosing] = useState(false);
+    const [isIyzicoLoading, setIsIyzicoLoading] = useState(false);
+    const [iyzicoFormHtml, setIyzicoFormHtml] = useState("");
+
     const form = useRef();
 
     const WHATSAPP_NUMBER = "905511903118";
@@ -258,7 +264,7 @@ function App() {
     }, [cartItems]);
 
     useEffect(() => {
-        const isAnyModalOpen = selectedProduct || showOrderOptionsModal || showConfirmationModal || showTrackingModal || isCartOpen || isMobileMenuOpen || showSizeCalcModal || isSizeCalcClosing;
+        const isAnyModalOpen = selectedProduct || showOrderOptionsModal || showConfirmationModal || showTrackingModal || isCartOpen || isMobileMenuOpen || showSizeCalcModal || isSizeCalcClosing || showIyzicoModal || isIyzicoClosing;
         if (isAnyModalOpen) {
             document.body.classList.add('no-scroll');
         } else {
@@ -267,7 +273,44 @@ function App() {
         return () => {
             document.body.classList.remove('no-scroll');
         };
-    }, [selectedProduct, showOrderOptionsModal, showConfirmationModal, showTrackingModal, isCartOpen, isMobileMenuOpen, showSizeCalcModal, isSizeCalcClosing]);
+    }, [selectedProduct, showOrderOptionsModal, showConfirmationModal, showTrackingModal, isCartOpen, isMobileMenuOpen, showSizeCalcModal, isSizeCalcClosing, showIyzicoModal, isIyzicoClosing]);
+
+    // Iyzico HTML içindeki <script> tag'lerini Regex ile ayrıştırıp manuel enjekte eden kritik useEffect
+    useEffect(() => {
+        if (!showIyzicoModal || !iyzicoFormHtml) return;
+
+        const scriptRegex = /<script\b[^>]*>([\s\S]*?)<\/script>/gi;
+        const srcRegex = /src=["'](.*?)["']/i;
+        let match;
+        const scriptsToAppend = [];
+
+        while ((match = scriptRegex.exec(iyzicoFormHtml)) !== null) {
+            const scriptEl = document.createElement("script");
+            scriptEl.type = "text/javascript";
+            
+            const srcMatch = match[0].match(srcRegex);
+            if (srcMatch && srcMatch[1]) {
+                scriptEl.src = srcMatch[1];
+            } else {
+                scriptEl.text = match[1];
+            }
+            scriptsToAppend.push(scriptEl);
+        }
+
+        // Script'leri sırayla DOM'a ekliyoruz
+        scriptsToAppend.forEach((script) => {
+            document.body.appendChild(script);
+        });
+
+        // Cleanup: Modal kapandığında bu dinamik scriptleri temizliyoruz
+        return () => {
+            scriptsToAppend.forEach((script) => {
+                if (document.body.contains(script)) {
+                    document.body.removeChild(script);
+                }
+            });
+        };
+    }, [iyzicoFormHtml, showIyzicoModal]);
 
     const openProductModal = (product) => {
         setSelectedProduct(product);
@@ -440,15 +483,60 @@ function App() {
         return Number.isInteger(finalTotal) ? finalTotal : finalTotal.toFixed(2);
     };
 
-    const handleCheckout = () => {
+    // Iyzico Checkout Akışını Başlatan handleCheckout Fonksiyonu
+    const handleCheckout = async () => {
         if (cartItems.length === 0) {
             showToast("Sepetiniz boş.");
             return;
         }
-        closeCart(); 
+
+        setIsIyzicoLoading(true);
+        setShowIyzicoModal(true);
+        setIsIyzicoClosing(false);
+        closeCart();
+
+        try {
+            // Vercel Serverless Backend'e sepet ve kupon bilgilerini iletiyoruz
+            const response = await fetch("/api/iyzico-checkout", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    cartItems,
+                    totalPrice: getTotalPrice(),
+                    discount,
+                    appliedCouponCode
+                }),
+            });
+
+            if (!response.ok) {
+                throw new Error("Ödeme oturumu başlatılamadı.");
+            }
+
+            const data = await response.json();
+            
+            if (data && data.checkoutFormContent) {
+                setIyzicoFormHtml(data.checkoutFormContent);
+            } else {
+                throw new Error("Ödeme form içeriği alınamadı.");
+            }
+        } catch (error) {
+            console.error("Iyzico hatası:", error);
+            showToast("Ödeme sistemi yüklenirken hata oluştu.");
+            setShowIyzicoModal(false);
+        } finally {
+            setIsIyzicoLoading(false);
+        }
+    };
+
+    const closeIyzicoModal = () => {
+        setIsIyzicoClosing(true);
         setTimeout(() => {
-            setShowOrderOptionsModal(true);
-        }, 300); 
+            setShowIyzicoModal(false);
+            setIsIyzicoClosing(false);
+            setIyzicoFormHtml("");
+        }, 300);
     };
 
     const closeOrderOptionsModal = () => {
@@ -741,6 +829,12 @@ function App() {
                 @keyframes marquee-anim {
                     0% { transform: translateX(0); }
                     100% { transform: translateX(-50%); }
+                }
+
+                /* CSS Fallback rule for Tailwind's backdrop blur */
+                .backdrop-blur-sm {
+                    backdrop-filter: blur(4px) !important;
+                    -webkit-backdrop-filter: blur(4px) !important;
                 }
 
                 nav, html body nav {
@@ -1122,6 +1216,7 @@ function App() {
                         {discount > 0 && <span className="discount-label"> (%{(discount * 100)} İndirim Uygulandı)</span>}
                     </div>
                 )}
+                {/* Güncellenen Ödeme Butonu */}
                 <button onClick={handleCheckout}>Sepeti Onayla</button>
                 <button className="close-modal close-modal-small" onClick={closeCart}>
                     &times;
@@ -1598,6 +1693,53 @@ function App() {
                         <h2>Yönlendiriliyorsunuz...</h2>
                         <p>Siparişinizi tamamlamak için lütfen açılan uygulamada mesajı <strong>göndermeyi unutmayın.</strong></p>
                         <button onClick={closeConfirmationModal}>Anladım</button>
+                    </div>
+                </div>
+            )}
+
+            {/* Yeni Eklenen Dinamik ve Responsive Iyzico Ödeme Modalı */}
+            {(showIyzicoModal || isIyzicoClosing) && (
+                <div 
+                    className="fixed inset-0 z-[1000010] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm transition-opacity duration-300"
+                    style={{ 
+                        animation: isIyzicoClosing ? "fade-out 0.3s ease forwards" : "fade-in 0.3s ease forwards"
+                    }}
+                    onClick={closeIyzicoModal}
+                >
+                    <div 
+                        className="relative w-full max-w-[550px] max-h-[90vh] overflow-y-auto bg-white dark:bg-[#1a1a1a] rounded-lg p-6 shadow-2xl border border-gray-100 dark:border-[#333] transition-all duration-300"
+                        style={{ 
+                            animation: isIyzicoClosing ? "slide-down 0.3s cubic-bezier(0.32, 0.94, 0.6, 1) forwards" : "slide-up 0.3s cubic-bezier(0.32, 0.94, 0.6, 1) forwards"
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <button 
+                            className="absolute top-4 right-4 text-2xl font-bold cursor-pointer hover:opacity-70 dark:text-white text-black bg-transparent border-none outline-none"
+                            onClick={closeIyzicoModal}
+                        >
+                            &times;
+                        </button>
+                        
+                        <h3 className="text-lg font-extrabold uppercase tracking-wider mb-1 dark:text-white text-black font-sans">
+                            ALICCI GÜVENLİ ÖDEME
+                        </h3>
+                        <p className="text-xs opacity-60 mb-6 dark:text-gray-400 text-gray-600 font-sans">
+                            256-bit SSL korumalı Iyzico altyapısıyla ödemenizi güvenle tamamlayın.
+                        </p>
+
+                        {isIyzicoLoading ? (
+                            <div className="flex flex-col items-center justify-center py-16 gap-4">
+                                <div className="w-8 h-8 border-4 border-black dark:border-white border-t-transparent rounded-full animate-spin"></div>
+                                <p className="text-sm font-semibold opacity-75 font-sans">Ödeme formu hazırlanıyor, lütfen bekleyin...</p>
+                            </div>
+                        ) : (
+                            /* Iyzico Form Container */
+                            <div 
+                                id="iyzipay-checkout-form" 
+                                className="responsive w-full min-h-[300px]"
+                                dangerouslySetInnerHTML={{ __html: iyzicoFormHtml }}
+                            />
+                        )}
                     </div>
                 </div>
             )}
