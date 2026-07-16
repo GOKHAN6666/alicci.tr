@@ -4,6 +4,13 @@ import "./index.css";
 import { Analytics } from "@vercel/analytics/react"; 
 import { supabase } from "./supabaseclient";
 
+// ==========================================
+// ⚠️ KENDİ BACKEND SUNUCUNUN ADRESİNİ BURAYA YAZ
+// Örn: "https://alicci-backend.onrender.com"
+// Eğer frontend ve backend aynı yerdeyse boş bırakabilirsin: ""
+const BACKEND_URL = "https://alicci-backend.onrender.com"; 
+// ==========================================
+
 const getRecommendedSize = (height, weight, fitPreference) => {
     let baseSize = "M";
 
@@ -496,8 +503,8 @@ function App() {
         closeCart();
 
         try {
-            // Vercel Serverless Backend'e sepet ve kupon bilgilerini iletiyoruz
-            const response = await fetch("/api/iyzico-checkout", {
+            // Express Backend sunucusuna sepet ve kupon bilgilerini iletiyoruz
+            const response = await fetch(`${BACKEND_URL}/api/iyzico-checkout`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -1435,7 +1442,7 @@ function App() {
                         <p style={{ fontSize: '11px', opacity: 0.6, margin: '0 0 20px 0' }}>En doğru streetwear kalıbını bulmak için bilgileri girin.</p>
                         
                         <div style={{ marginBottom: '15px' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '5px', fontWeight: '500' }}>
+                            <div style={{ display: 'flex', justifycontent: 'space-between', fontSize: '12px', marginBottom: '5px', fontWeight: '500' }}>
                                 <span>Boy</span>
                                 <span style={{ color: isDarkMode ? '#fff' : '#000', fontWeight: 'bold' }}>{calcHeight} cm</span>
                             </div>
@@ -1447,7 +1454,7 @@ function App() {
                         </div>
 
                         <div style={{ marginBottom: '15px' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '5px', fontWeight: '500' }}>
+                            <div style={{ display: 'flex', justifycontent: 'space-between', fontSize: '12px', marginBottom: '5px', fontWeight: '500' }}>
                                 <span>Kilo</span>
                                 <span style={{ color: isDarkMode ? '#fff' : '#000', fontWeight: 'bold' }}>{calcWeight} kg</span>
                             </div>
