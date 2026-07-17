@@ -26,8 +26,8 @@ app.get('/', (req, res) => {
     res.send('ALICCI Backend Aktif ve Çalışıyor! 🚀');
 });
 
-// Ödeme Formu Başlatma Rotası (React buraya istek atacak)
-app.post('/create-payment', (req, res) => {
+// Ödeme Formu Başlatma Rotası (DÜZELTİLDİ: React artık burayı bulabilecek)
+app.post('/api/iyzico-checkout', (req, res) => {
     const { basketItems, totalPrice, buyerInfo } = req.body;
 
     // Ödeme formu başlatmak için Iyzico'nun istediği minimum veri yapısı
