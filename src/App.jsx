@@ -145,6 +145,25 @@ function App() {
         setTimeout(() => setToast(null), 3000);
     };
 
+    // ==========================================
+    // BACKEND UYANDIRMA (PING) HOOK'U
+    // Render'ın ücretsiz planındaki 15 dk uykudan uyanma gecikmesini önler.
+    // ==========================================
+    useEffect(() => {
+        if (BACKEND_URL) {
+            console.log("Backend uyandırma sinyali gönderiliyor...");
+            fetch(BACKEND_URL)
+                .then((res) => {
+                    if (res.ok) {
+                        console.log("Backend başarıyla uyandırıldı ve hazır! ⚡");
+                    }
+                })
+                .catch((err) => {
+                    console.warn("Backend uyandırılırken bir sorun oluştu (uykuda olabilir, uyanıyor):", err);
+                });
+        }
+    }, []);
+
     useEffect(() => {
         const observer = new IntersectionObserver((entries) => {
             entries.forEach((entry) => {
