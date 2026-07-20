@@ -52,7 +52,7 @@ app.post('/api/chat', async (req, res) => {
         return res.json({ reply });
     } catch (error) {
         console.error("AI Chatbot Hatası:", error);
-        return res.status(500).json({ error: "AI servisi şu an yanıt veremiyor." });
+        return res.status(500).json({ error: error.message || "AI servisi şu an yanıt veremiyor." });
     }
 });
 
