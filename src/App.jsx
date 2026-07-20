@@ -5,11 +5,9 @@ import { Analytics } from "@vercel/analytics/react";
 import { supabase } from "./supabaseclient";
 
 // ==========================================
-// ⚠️ KENDİ BACKEND SUNUCUNUN ADRESİNİ BURAYA YAZ
-// Örn: "https://alicci-backend.onrender.com"
-// Eğer frontend ve backend aynı yerdeyse boş bırakabilirsin: ""
-const BACKEND_URL = "https://alicci-backend.onrender.com"; 
+// BACKEND SUNUCU ADRESİ
 // ==========================================
+const BACKEND_URL = "https://alicci-backend.onrender.com"; 
 
 // ==========================================
 // AKILLI ALICCI DESTEK CHATBOT BİLEŞENİ
@@ -1954,7 +1952,7 @@ function App() {
                 </div>
             )}
 
-            {/* Müşteri Destek Botu Bileşeni */}
+            {/* Akıllı Müşteri Destek Chatbot Bileşeni */}
             <Chatbot />
 
             <Analytics />
