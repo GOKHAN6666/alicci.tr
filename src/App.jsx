@@ -8,8 +8,9 @@ import { supabase } from "./supabaseclient";
 // BACKEND SUNUCU ADRESİ
 // ==========================================
 const BACKEND_URL = "https://alicci-backend.onrender.com"; 
+
 // ==========================================
-// AKILLI ALICCI DESTEK CHATBOT BİLEŞENİ (ANİMASYONLU SÜRÜM)
+// AKILLI ALICCI DESTEK CHATBOT BİLEŞENİ (AI ENTEGRELİ & ANİMASYONLU SÜRÜM)
 // ==========================================
 function Chatbot() {
   const [isOpen, setIsOpen] = useState(false);
@@ -37,7 +38,8 @@ function Chatbot() {
     { label: '🔄 İade & Değişim', key: 'iade' },
   ];
 
-  const generateBotResponse = (userText) => {
+  // AI Yanıt Vermezse veya Bağlantı Koparsa Devreye Girecek Yedek Kural Motoru
+  const generateFallbackResponse = (userText) => {
     const text = userText.toLowerCase();
 
     if (text.includes('alc-') || text.match(/alc\d+/)) {
@@ -68,7 +70,7 @@ function Chatbot() {
     return 'Mesajınızı aldım! Size daha iyi yardımcı olabilmem için kargo kodu (ALC-...), beden, iade veya kumaş kalitesi hakkında bir soru sorabilirsiniz.';
   };
 
-  const handleSend = (textToSend) => {
+  const handleSend = async (textToSend) => {
     const messageText = textToSend || input;
     if (!messageText.trim()) return;
 
@@ -77,15 +79,39 @@ function Chatbot() {
     if (!textToSend) setInput('');
     setIsTyping(true);
 
-    setTimeout(() => {
+    try {
+      // Backend AI Endpoint Çağrısı
+      const response = await fetch(`${BACKEND_URL}/api/chat`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          message: messageText,
+          history: messages.map(m => ({ sender: m.sender, text: m.text }))
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const botReply = {
+          id: Date.now() + 1,
+          sender: 'bot',
+          text: data.reply || generateFallbackResponse(messageText)
+        };
+        setMessages((prev) => [...prev, botReply]);
+      } else {
+        throw new Error("AI Yanıtı Alınamadı");
+      }
+    } catch (err) {
+      console.warn("AI Backend yanıt vermedi, yerel kural motoruna geçiliyor:", err);
       const botReply = {
         id: Date.now() + 1,
         sender: 'bot',
-        text: generateBotResponse(messageText)
+        text: generateFallbackResponse(messageText)
       };
       setMessages((prev) => [...prev, botReply]);
+    } finally {
       setIsTyping(false);
-    }, 700);
+    }
   };
 
   return (
@@ -116,10 +142,10 @@ function Chatbot() {
         {/* Header */}
         <div style={{ backgroundColor: '#000', color: '#fff', padding: '14px 18px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
-            <h3 style={{ margin: 0, fontSize: '12px', fontWeight: 'bold', letterSpacing: '1px', color: '#fff' }}>ALICCI ASSISTANT</h3>
+            <h3 style={{ margin: 0, fontSize: '12px', fontWeight: 'bold', letterSpacing: '1px', color: '#fff' }}>ALICCI AI ASSISTANT</h3>
             <p style={{ margin: '3px 0 0 0', fontSize: '10px', color: '#34d399', display: 'flex', alignItems: 'center', gap: '4px' }}>
               <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#34d399', display: 'inline-block' }}></span>
-              Çevrimiçi • 7/24 Destek
+              Çevrimiçi • AI Destekli
             </p>
           </div>
           <button
@@ -1939,7 +1965,7 @@ function App() {
                                         <div className="animated-truck waiting">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="28" height="20" viewBox="0 0 24 24" fill="none" stroke="#ff9500" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                                 <rect x="1" y="3" width="15" height="13"></rect>
-                                                <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
+                                                <polygon points="16 8 20 8 23 11 23 16 16 16 8"></polygon>
                                                 <circle cx="5.5" cy="18.5" r="2.5"></circle>
                                                 <circle cx="18.5" cy="18.5" r="2.5"></circle>
                                             </svg>
