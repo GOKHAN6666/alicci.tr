@@ -12,42 +12,81 @@ const BACKEND_URL = "https://alicci-backend.onrender.com";
 // ==========================================
 
 // ==========================================
-// MINIMALIST CHATBOT BILEŞENI
+// AKILLI ALICCI DESTEK CHATBOT BİLEŞENİ
 // ==========================================
 function Chatbot() {
   const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState('');
+  const [isTyping, setIsTyping] = useState(false);
+  const messagesEndRef = useRef(null);
+
   const [messages, setMessages] = useState([
     {
       id: 1,
       sender: 'bot',
-      text: "Merhaba! ALICCI Destek Asistanı'na hoş geldiniz. Siparişiniz, kargo takibi veya ürünlerimiz hakkında nasıl yardımcı olabilirim?"
+      text: "Merhaba! ALICCI Destek Asistanı'na hoş geldiniz. Siparişiniz, kargo takibi, beden ölçüleri veya iade koşulları hakkında size nasıl yardımcı olabilirim?"
     }
   ]);
-  
-  const messagesEndRef = useRef(null);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+  }, [messages, isTyping]);
 
-  const handleSend = async (e) => {
-    e.preventDefault();
-    if (!input.trim()) return;
+  const quickActions = [
+    { label: '📦 Kargo Takibi', key: 'kargo' },
+    { label: '📏 Beden Rehberi', key: 'beden' },
+    { label: '🔄 İade & Değişim', key: 'iade' },
+  ];
 
-    const userMessage = { id: Date.now(), sender: 'user', text: input };
+  const generateBotResponse = (userText) => {
+    const text = userText.toLowerCase();
+
+    if (text.includes('alc-') || text.match(/alc\d+/)) {
+      const code = userText.toUpperCase().trim();
+      return `**${code}** kodlu siparişinizi Kargo Takip panelimizden anlık olarak sorgulayabilirsiniz. Dilerseniz üst menüdeki "Kargo Takip" butonunu kullanabilirsiniz.`;
+    }
+
+    if (text.includes('kargo') || text.includes('teslimat') || text.includes('nerede')) {
+      return 'Sipariş durumunuzu öğrenmek için **ALC-XXXXXX** formatındaki sipariş kodunuzu buraya yazabilir veya üst menüdeki "Kargo Takip" ekranını kullanabilirsiniz.';
+    }
+
+    if (text.includes('beden') || text.includes('kalıp') || text.includes('boy')) {
+      return 'ALICCI ürünleri oversize/modern kesimdir. Ürün detay sayfasındaki **"📐 Bedenimi Bul"** sihirbazını kullanarak boy ve kilonuza en uygun bedeni hesaplayabilirsiniz.';
+    }
+
+    if (text.includes('iade') || text.includes('değişim') || text.includes('iptal')) {
+      return 'Teslim aldığınız ürünleri **14 gün** içerisinde ücretsiz iade edebilir veya beden değişimi talep edebilirsiniz. Ürünün kullanılmamış olması gerekmektedir.';
+    }
+
+    if (text.includes('kumaş') || text.includes('kalite') || text.includes('yıkama')) {
+      return 'Ürünlerimiz %100 birinci sınıf pamuklu kumaşlardan üretilmektedir. 30°C sıcaklıkta, ters çevirerek yıkamanız tavsiye edilir.';
+    }
+
+    if (text.includes('iletişim') || text.includes('temsilci') || text.includes('whatsapp') || text.includes('dm')) {
+      return 'Müşteri temsilcilerimize WhatsApp veya Instagram DM üzerinden doğrudan ulaşabilirsiniz. Sayfanın altındaki iletişim butonlarını kullanabilirsiniz.';
+    }
+
+    return 'Mesajınızı aldım! Size daha iyi yardımcı olabilmem için kargo kodu (ALC-...), beden, iade veya kumaş kalitesi hakkında bir soru sorabilirsiniz.';
+  };
+
+  const handleSend = (textToSend) => {
+    const messageText = textToSend || input;
+    if (!messageText.trim()) return;
+
+    const userMessage = { id: Date.now(), sender: 'user', text: messageText };
     setMessages((prev) => [...prev, userMessage]);
-    setInput('');
+    if (!textToSend) setInput('');
+    setIsTyping(true);
 
-    // Örnek Otomatik Yanıt (İleride buraya backend API isteği bağlayabilirsin)
     setTimeout(() => {
-      const botResponse = {
+      const botReply = {
         id: Date.now() + 1,
         sender: 'bot',
-        text: 'Mesajınızı aldım! İade, kargo ve beden ölçüleri hakkında detaylı bilgi vermek için altyapımız hazırlanıyor.'
+        text: generateBotResponse(messageText)
       };
-      setMessages((prev) => [...prev, botResponse]);
-    }, 800);
+      setMessages((prev) => [...prev, botReply]);
+      setIsTyping(false);
+    }, 700);
   };
 
   return (
@@ -56,34 +95,27 @@ function Chatbot() {
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
-          className="bg-black text-white p-4 rounded-full shadow-2xl hover:bg-neutral-800 transition-all duration-300 flex items-center justify-center group border border-neutral-700"
+          className="bg-black text-white p-4 rounded-full shadow-2xl hover:bg-neutral-800 transition-all duration-300 flex items-center justify-center group border border-neutral-700 cursor-pointer"
           aria-label="Sohbeti Aç"
         >
-          <svg
-            className="w-5 h-5 group-hover:scale-110 transition-transform"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="1.8"
-              d="M8 10h.01M12 10h.01M16 10h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-            />
+          <svg className="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" d="M8 10h.01M12 10h.01M16 10h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
           </svg>
         </button>
       )}
 
       {/* 2. Chat Penceresi */}
       {isOpen && (
-        <div className="w-80 sm:w-96 h-[460px] bg-white dark:bg-[#1a1a1a] border border-neutral-200 dark:border-neutral-800 rounded-2xl shadow-2xl flex flex-col overflow-hidden transition-all duration-300">
+        <div className="w-80 sm:w-96 h-[500px] bg-white dark:bg-[#1a1a1a] border border-neutral-200 dark:border-neutral-800 rounded-2xl shadow-2xl flex flex-col overflow-hidden transition-all duration-300">
           
           {/* Header */}
           <div className="bg-black text-white px-5 py-4 flex justify-between items-center border-b border-neutral-800">
             <div>
-              <h3 className="font-medium text-xs tracking-widest uppercase text-white">ALICCI ASSISTANT</h3>
-              <p className="text-[10px] text-neutral-400 mt-0.5">7/24 Müşteri Destek</p>
+              <h3 className="font-bold text-xs tracking-widest uppercase text-white">ALICCI ASSISTANT</h3>
+              <p className="text-[10px] text-emerald-400 mt-0.5 flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                Çevrimiçi • 7/24 Destek
+              </p>
             </div>
             <button
               onClick={() => setIsOpen(false)}
@@ -101,31 +133,63 @@ function Chatbot() {
                 className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}
               >
                 <div
-                  className={`max-w-[80%] px-4 py-3 rounded-2xl leading-relaxed ${
+                  className={`max-w-[82%] px-4 py-3 rounded-2xl leading-relaxed ${
                     msg.sender === 'user'
                       ? 'bg-black dark:bg-white text-white dark:text-black rounded-br-none'
                       : 'bg-white dark:bg-[#222] border border-neutral-200 dark:border-neutral-700 text-neutral-800 dark:text-neutral-200 shadow-sm rounded-bl-none'
                   }`}
                 >
-                  {msg.text}
+                  {msg.text.split('**').map((part, idx) => 
+                    idx % 2 === 1 ? <strong key={idx} className="font-semibold">{part}</strong> : part
+                  )}
                 </div>
               </div>
             ))}
+
+            {isTyping && (
+              <div className="flex justify-start">
+                <div className="bg-white dark:bg-[#222] border border-neutral-200 dark:border-neutral-700 px-4 py-2.5 rounded-2xl shadow-sm flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 bg-neutral-400 rounded-full animate-bounce"></span>
+                  <span className="w-1.5 h-1.5 bg-neutral-400 rounded-full animate-bounce [animation-delay:0.2s]"></span>
+                  <span className="w-1.5 h-1.5 bg-neutral-400 rounded-full animate-bounce [animation-delay:0.4s]"></span>
+                </div>
+              </div>
+            )}
             <div ref={messagesEndRef} />
           </div>
 
+          {/* Hızlı Kısayollar */}
+          <div className="p-2 bg-white dark:bg-[#1a1a1a] border-t border-neutral-100 dark:border-neutral-800 flex gap-2 overflow-x-auto">
+            {quickActions.map((action) => (
+              <button
+                key={action.key}
+                onClick={() => handleSend(action.label)}
+                className="text-[11px] bg-neutral-100 dark:bg-[#252525] hover:bg-neutral-200 dark:hover:bg-[#333] text-neutral-700 dark:text-neutral-300 px-3 py-1.5 rounded-full whitespace-nowrap transition-colors border-none cursor-pointer shrink-0"
+              >
+                {action.label}
+              </button>
+            ))}
+          </div>
+
           {/* Input Alanı */}
-          <form onSubmit={handleSend} className="p-3 bg-white dark:bg-[#1a1a1a] border-t border-neutral-100 dark:border-neutral-800 flex items-center gap-2">
+          <form 
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleSend();
+            }} 
+            className="p-3 bg-white dark:bg-[#1a1a1a] border-t border-neutral-100 dark:border-neutral-800 flex items-center gap-2"
+          >
             <input
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="Bir şey yazın..."
+              placeholder="Bir soru sorun veya ALC- kargo kodu..."
               className="flex-1 px-4 py-2.5 bg-neutral-100 dark:bg-[#252525] border border-transparent rounded-full text-xs text-black dark:text-white focus:outline-none focus:border-black dark:focus:border-white transition-all"
             />
             <button
               type="submit"
-              className="bg-black dark:bg-white text-white dark:text-black p-2.5 rounded-full hover:opacity-80 transition-opacity flex items-center justify-center shrink-0 border-none cursor-pointer"
+              disabled={!input.trim()}
+              className="bg-black dark:bg-white text-white dark:text-black p-2.5 rounded-full disabled:opacity-40 hover:opacity-80 transition-opacity flex items-center justify-center shrink-0 border-none cursor-pointer"
             >
               <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
