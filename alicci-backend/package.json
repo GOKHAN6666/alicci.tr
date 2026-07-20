@@ -1,8 +1,9 @@
 {
-  "name": "alicci-backend", 
+  "name": "alicci-backend",
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
+    "start": "node index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -10,6 +11,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@google/generative-ai": "^0.21.0",
     "@supabase/supabase-js": "^2.49.8",
     "bcryptjs": "^3.0.2",
     "cors": "^2.8.5",
