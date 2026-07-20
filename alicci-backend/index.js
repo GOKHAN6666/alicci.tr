@@ -53,7 +53,7 @@ app.post('/api/chat', async (req, res) => {
             return res.status(400).json({ error: "Mesaj boş olamaz." });
         }
 
-        // Model adını güncel ve kararlı sürüm olarak ayarladık
+        // Kota sınırına takılmamak için kararlı 1.5 sürümünü kullanıyoruz
         const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
         const systemInstruction = "Sen ALICCI markasının müşteri destek asistanısın. Minimalist, modern kesim ve oversize giyim ürünleri satıyoruz. Müşterilere kısa, kibar, samimi ve yardımsever yanıtlar ver.";
@@ -68,7 +68,6 @@ app.post('/api/chat', async (req, res) => {
         return res.status(500).json({ error: error.message || "AI servisi şu an yanıt veremiyor." });
     }
 });
-
 // ==========================================
 // 2. ÖDEME FORMU BAŞLATMA ROTASI (İYZİCO)
 // ==========================================
