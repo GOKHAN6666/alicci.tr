@@ -5,14 +5,13 @@ import { Analytics } from "@vercel/analytics/react";
 import { supabase } from "./supabaseclient";
 
 // ==========================================
-// BACKEND SUNUCU ADRESİ
+// ⚠️ BACKEND SUNUCU ADRESİ
 // ==========================================
 const BACKEND_URL = "https://alicci-backend.onrender.com"; 
 
 const getRecommendedSize = (height, weight, fitPreference) => {
     let baseSize = "M";
 
-    // Yenilenen beden geçiş eşikleri
     if (height <= 168 && weight <= 54) {
         baseSize = "S"; 
     } else if (height <= 176 && weight <= 68) {
@@ -127,7 +126,7 @@ function App() {
     const [trackingError, setTrackingError] = useState("");
     const [isTrackingLoading, setIsTrackingLoading] = useState(false);
 
-    // Iyzico Entegrasyon State'leri
+    // Iyzico Ödeme State'leri
     const [showIyzicoModal, setShowIyzicoModal] = useState(false);
     const [isIyzicoClosing, setIsIyzicoClosing] = useState(false);
     const [isIyzicoLoading, setIsIyzicoLoading] = useState(false);
@@ -143,18 +142,17 @@ function App() {
         setTimeout(() => setToast(null), 3000);
     };
 
-    // BACKEND UYANDIRMA HOOK'U
+    // ==========================================
+    // BACKEND UYANDIRMA (PING) HOOK'U
+    // ==========================================
     useEffect(() => {
         if (BACKEND_URL) {
-            console.log("Backend uyandırma sinyali gönderiliyor...");
             fetch(BACKEND_URL)
                 .then((res) => {
-                    if (res.ok) {
-                        console.log("Backend başarıyla uyandırıldı ve hazır! ⚡");
-                    }
+                    if (res.ok) console.log("Backend aktif! ⚡");
                 })
                 .catch((err) => {
-                    console.warn("Backend uyandırılırken bir sorun oluştu (uykuda olabilir, uyanıyor):", err);
+                    console.warn("Backend uyandırılırken uyarı:", err);
                 });
         }
     }, []);
@@ -183,9 +181,7 @@ function App() {
     }, [cartItems]);
 
     useEffect(() => {
-        const preventInstallPrompt = (e) => {
-            e.preventDefault();
-        };
+        const preventInstallPrompt = (e) => e.preventDefault();
         window.addEventListener("beforeinstallprompt", preventInstallPrompt);
         return () => window.removeEventListener("beforeinstallprompt", preventInstallPrompt);
     }, []);
@@ -296,7 +292,7 @@ function App() {
         };
     }, [selectedProduct, showOrderOptionsModal, showConfirmationModal, showTrackingModal, isCartOpen, isMobileMenuOpen, showSizeCalcModal, isSizeCalcClosing, showIyzicoModal, isIyzicoClosing]);
 
-    // Iyzico HTML içindeki <script> tag'lerini Regex ile ayrıştırıp enjekte eden useEffect
+    // Iyzico Form Script Enjeksiyonu
     useEffect(() => {
         if (!showIyzicoModal || !iyzicoFormHtml) return;
 
@@ -502,6 +498,7 @@ function App() {
         return Number.isInteger(finalTotal) ? finalTotal : finalTotal.toFixed(2);
     };
 
+    // Iyzico Ödeme Başlatıcı
     const handleCheckout = async () => {
         if (cartItems.length === 0) {
             showToast("Sepetiniz boş.");
@@ -1232,6 +1229,7 @@ function App() {
                         {discount > 0 && <span className="discount-label"> (%{(discount * 100)} İndirim Uygulandı)</span>}
                     </div>
                 )}
+                
                 <button onClick={handleCheckout}>Sepeti Onayla</button>
                 <button className="close-modal close-modal-small" onClick={closeCart}>
                     &times;
@@ -1683,7 +1681,7 @@ function App() {
                                         <div className="animated-truck waiting">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="28" height="20" viewBox="0 0 24 24" fill="none" stroke="#ff9500" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                                 <rect x="1" y="3" width="15" height="13"></rect>
-                                                <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
+                                                <polygon points="16 8 20 8 23 11 23 16 16 16 8"></polygon>
                                                 <circle cx="5.5" cy="18.5" r="2.5"></circle>
                                                 <circle cx="18.5" cy="18.5" r="2.5"></circle>
                                             </svg>
@@ -1712,44 +1710,70 @@ function App() {
                 </div>
             )}
 
+            {/* Dinamik ve Entegre Iyzico Ödeme Modalı */}
             {(showIyzicoModal || isIyzicoClosing) && (
                 <div 
-                    className="fixed inset-0 z-[1000010] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm transition-opacity duration-300"
+                    className="modal-backdrop"
                     style={{ 
+                        zIndex: 1000010,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        padding: '16px',
                         animation: isIyzicoClosing ? "fade-out 0.3s ease forwards" : "fade-in 0.3s ease forwards"
                     }}
                     onClick={closeIyzicoModal}
                 >
                     <div 
-                        className="relative w-full max-w-[550px] max-h-[90vh] overflow-y-auto bg-white dark:bg-[#1a1a1a] rounded-lg p-6 shadow-2xl border border-gray-100 dark:border-[#333] transition-all duration-300"
+                        className="modal-content-base iyzico-modal"
                         style={{ 
+                            position: 'relative',
+                            width: '100%',
+                            maxWidth: '550px',
+                            maxHeight: '90vh',
+                            overflowY: 'auto',
+                            backgroundColor: isDarkMode ? '#1a1a1a' : '#ffffff',
+                            color: isDarkMode ? '#ffffff' : '#000000',
+                            borderRadius: '8px',
+                            padding: '24px',
+                            boxShadow: isDarkMode ? '0 20px 50px rgba(0,0,0,0.6)' : '0 20px 50px rgba(0,0,0,0.2)',
+                            border: isDarkMode ? '1px solid #333' : '1px solid #eee',
                             animation: isIyzicoClosing ? "slide-down 0.3s cubic-bezier(0.32, 0.94, 0.6, 1) forwards" : "slide-up 0.3s cubic-bezier(0.32, 0.94, 0.6, 1) forwards"
                         }}
                         onClick={(e) => e.stopPropagation()}
                     >
                         <button 
-                            className="absolute top-4 right-4 text-2xl font-bold cursor-pointer hover:opacity-70 dark:text-white text-black bg-transparent border-none outline-none"
+                            className="close-modal close-modal-small"
                             onClick={closeIyzicoModal}
+                            style={{ color: isDarkMode ? '#fff' : '#000' }}
                         >
                             &times;
                         </button>
                         
-                        <h3 className="text-lg font-extrabold uppercase tracking-wider mb-1 dark:text-white text-black font-sans">
+                        <h3 style={{ margin: '0 0 4px 0', fontSize: '16px', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '1px' }}>
                             ALICCI GÜVENLİ ÖDEME
                         </h3>
-                        <p className="text-xs opacity-60 mb-6 dark:text-gray-400 text-gray-600 font-sans">
+                        <p style={{ fontSize: '11px', opacity: 0.6, marginBottom: '20px' }}>
                             256-bit SSL korumalı Iyzico altyapısıyla ödemenizi güvenle tamamlayın.
                         </p>
 
                         {isIyzicoLoading ? (
-                            <div className="flex flex-col items-center justify-center py-16 gap-4">
-                                <div className="w-8 h-8 border-4 border-black dark:border-white border-t-transparent rounded-full animate-spin"></div>
-                                <p className="text-sm font-semibold opacity-75 font-sans">Ödeme formu hazırlanıyor, lütfen bekleyin...</p>
+                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '60px 0', gap: '16px' }}>
+                                <div style={{
+                                    width: '32px',
+                                    height: '32px',
+                                    border: `3px solid ${isDarkMode ? '#fff' : '#000'}`,
+                                    borderTopColor: 'transparent',
+                                    borderRadius: '50%',
+                                    animation: 'spin 0.8s linear infinite'
+                                }} />
+                                <p style={{ fontSize: '13px', fontWeight: '600', opacity: 0.8 }}>Ödeme formu hazırlanıyor, lütfen bekleyin...</p>
                             </div>
                         ) : (
                             <div 
                                 id="iyzipay-checkout-form" 
-                                className="responsive w-full min-h-[300px]"
+                                className="responsive"
+                                style={{ width: '100%', minHeight: '300px' }}
                                 dangerouslySetInnerHTML={{ __html: iyzicoFormHtml }}
                             />
                         )}
