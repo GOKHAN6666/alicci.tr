@@ -1641,7 +1641,7 @@ function App() {
                         <p style={{ fontSize: '11px', opacity: 0.6, margin: '0 0 20px 0' }}>En doğru streetwear kalıbını bulmak için bilgileri girin.</p>
                         
                         <div style={{ marginBottom: '15px' }}>
-                            <div style={{ display: 'flex', justifycontent: 'space-between', fontSize: '12px', marginBottom: '5px', fontWeight: '500' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '5px', fontWeight: '500' }}>
                                 <span>Boy</span>
                                 <span style={{ color: isDarkMode ? '#fff' : '#000', fontWeight: 'bold' }}>{calcHeight} cm</span>
                             </div>
@@ -1653,7 +1653,7 @@ function App() {
                         </div>
 
                         <div style={{ marginBottom: '15px' }}>
-                            <div style={{ display: 'flex', justifycontent: 'space-between', fontSize: '12px', marginBottom: '5px', fontWeight: '500' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '5px', fontWeight: '500' }}>
                                 <span>Kilo</span>
                                 <span style={{ color: isDarkMode ? '#fff' : '#000', fontWeight: 'bold' }}>{calcWeight} kg</span>
                             </div>
