@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const Iyzipay = require('iyzipay');
+const { GoogleGenerativeAI } = require("@google/generative-ai"); // Google AI kütüphanesini ekledik
 require('dotenv').config();
 
 const app = express();
@@ -21,12 +22,44 @@ const iyzipay = new Iyzipay({
     uri: 'https://sandbox-api.iyzipay.com' // Test (Sandbox) ortamı adresi. Canlıya geçerken değişir.
 });
 
+// Gemini AI Bağlantı Ayarları
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+
 // Temel bir test rotası (Sunucu çalışıyor mu kontrol etmek için)
 app.get('/', (req, res) => {
     res.send('ALICCI Backend Aktif ve Çalışıyor! 🚀');
 });
 
-// Ödeme Formu Başlatma Rotası (DÜZELTİLDİ: React artık burayı bulabilecek)
+// ==========================================
+// 1. ALICCI AI CHATBOT ENDPOINT (YENİ EKLENDİ)
+// ==========================================
+app.post('/api/chat', async (req, res) => {
+    try {
+        const { message } = req.body;
+
+        if (!message) {
+            return res.status(400).json({ error: "Mesaj boş olamaz." });
+        }
+
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+        const systemInstruction = `Sen ALICCI markasının müşteri destek asistanısın. Minimalist, modern kesim ve oversize giyim ürünleri satıyoruz. Müşterilere kısa, kibar, samimi ve yardımsever yanıtlar ver.`;
+        
+        const prompt = `${systemInstruction}\nMüşteri: ${message}\nAsistan:`;
+
+        const result = await model.generateContent(prompt);
+        const reply = result.response.text();
+
+        return res.json({ reply });
+    } catch (error) {
+        console.error("AI Chatbot Hatası:", error);
+        return res.status(500).json({ error: "AI servisi şu an yanıt veremiyor." });
+    }
+});
+
+// ==========================================
+// 2. ÖDEME FORMU BAŞLATMA ROTASI (İYZİCO)
+// ==========================================
 app.post('/api/iyzico-checkout', (req, res) => {
     const { basketItems, totalPrice, buyerInfo } = req.body;
 
@@ -100,7 +133,9 @@ app.post('/api/iyzico-checkout', (req, res) => {
     });
 });
 
-// Ödeme Sonucu Callback Rotası (Iyzico ödeme bitince buraya yanıt döner)
+// ==========================================
+// 3. ÖDEME SONUCU CALLBACK ROTASI
+// ==========================================
 app.post('/payment-callback', (req, res) => {
     const { token } = req.body;
 
