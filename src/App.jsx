@@ -5,9 +5,139 @@ import { Analytics } from "@vercel/analytics/react";
 import { supabase } from "./supabaseclient";
 
 // ==========================================
-// ⚠️ BACKEND SUNUCU ADRESİ
-// ==========================================
+// ⚠️ KENDİ BACKEND SUNUCUNUN ADRESİNİ BURAYA YAZ
+// Örn: "https://alicci-backend.onrender.com"
+// Eğer frontend ve backend aynı yerdeyse boş bırakabilirsin: ""
 const BACKEND_URL = "https://alicci-backend.onrender.com"; 
+// ==========================================
+
+// ==========================================
+// MINIMALIST CHATBOT BILEŞENI
+// ==========================================
+function Chatbot() {
+  const [isOpen, setIsOpen] = useState(false);
+  const [input, setInput] = useState('');
+  const [messages, setMessages] = useState([
+    {
+      id: 1,
+      sender: 'bot',
+      text: "Merhaba! ALICCI Destek Asistanı'na hoş geldiniz. Siparişiniz, kargo takibi veya ürünlerimiz hakkında nasıl yardımcı olabilirim?"
+    }
+  ]);
+  
+  const messagesEndRef = useRef(null);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
+
+  const handleSend = async (e) => {
+    e.preventDefault();
+    if (!input.trim()) return;
+
+    const userMessage = { id: Date.now(), sender: 'user', text: input };
+    setMessages((prev) => [...prev, userMessage]);
+    setInput('');
+
+    // Örnek Otomatik Yanıt (İleride buraya backend API isteği bağlayabilirsin)
+    setTimeout(() => {
+      const botResponse = {
+        id: Date.now() + 1,
+        sender: 'bot',
+        text: 'Mesajınızı aldım! İade, kargo ve beden ölçüleri hakkında detaylı bilgi vermek için altyapımız hazırlanıyor.'
+      };
+      setMessages((prev) => [...prev, botResponse]);
+    }, 800);
+  };
+
+  return (
+    <div className="fixed bottom-6 right-6 z-[1000000] font-sans">
+      {/* 1. Açılış Butonu */}
+      {!isOpen && (
+        <button
+          onClick={() => setIsOpen(true)}
+          className="bg-black text-white p-4 rounded-full shadow-2xl hover:bg-neutral-800 transition-all duration-300 flex items-center justify-center group border border-neutral-700"
+          aria-label="Sohbeti Aç"
+        >
+          <svg
+            className="w-5 h-5 group-hover:scale-110 transition-transform"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="1.8"
+              d="M8 10h.01M12 10h.01M16 10h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+            />
+          </svg>
+        </button>
+      )}
+
+      {/* 2. Chat Penceresi */}
+      {isOpen && (
+        <div className="w-80 sm:w-96 h-[460px] bg-white dark:bg-[#1a1a1a] border border-neutral-200 dark:border-neutral-800 rounded-2xl shadow-2xl flex flex-col overflow-hidden transition-all duration-300">
+          
+          {/* Header */}
+          <div className="bg-black text-white px-5 py-4 flex justify-between items-center border-b border-neutral-800">
+            <div>
+              <h3 className="font-medium text-xs tracking-widest uppercase text-white">ALICCI ASSISTANT</h3>
+              <p className="text-[10px] text-neutral-400 mt-0.5">7/24 Müşteri Destek</p>
+            </div>
+            <button
+              onClick={() => setIsOpen(false)}
+              className="text-neutral-400 hover:text-white text-sm transition-colors bg-transparent border-none cursor-pointer"
+            >
+              ✕
+            </button>
+          </div>
+
+          {/* Mesaj Alanı */}
+          <div className="flex-1 p-4 overflow-y-auto space-y-3 bg-neutral-50 dark:bg-[#121212] text-xs">
+            {messages.map((msg) => (
+              <div
+                key={msg.id}
+                className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}
+              >
+                <div
+                  className={`max-w-[80%] px-4 py-3 rounded-2xl leading-relaxed ${
+                    msg.sender === 'user'
+                      ? 'bg-black dark:bg-white text-white dark:text-black rounded-br-none'
+                      : 'bg-white dark:bg-[#222] border border-neutral-200 dark:border-neutral-700 text-neutral-800 dark:text-neutral-200 shadow-sm rounded-bl-none'
+                  }`}
+                >
+                  {msg.text}
+                </div>
+              </div>
+            ))}
+            <div ref={messagesEndRef} />
+          </div>
+
+          {/* Input Alanı */}
+          <form onSubmit={handleSend} className="p-3 bg-white dark:bg-[#1a1a1a] border-t border-neutral-100 dark:border-neutral-800 flex items-center gap-2">
+            <input
+              type="text"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder="Bir şey yazın..."
+              className="flex-1 px-4 py-2.5 bg-neutral-100 dark:bg-[#252525] border border-transparent rounded-full text-xs text-black dark:text-white focus:outline-none focus:border-black dark:focus:border-white transition-all"
+            />
+            <button
+              type="submit"
+              className="bg-black dark:bg-white text-white dark:text-black p-2.5 rounded-full hover:opacity-80 transition-opacity flex items-center justify-center shrink-0 border-none cursor-pointer"
+            >
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+              </svg>
+            </button>
+          </form>
+
+        </div>
+      )}
+    </div>
+  );
+}
 
 const getRecommendedSize = (height, weight, fitPreference) => {
     let baseSize = "M";
@@ -126,7 +256,7 @@ function App() {
     const [trackingError, setTrackingError] = useState("");
     const [isTrackingLoading, setIsTrackingLoading] = useState(false);
 
-    // Iyzico Ödeme State'leri
+    // Iyzico Entegrasyon State'leri
     const [showIyzicoModal, setShowIyzicoModal] = useState(false);
     const [isIyzicoClosing, setIsIyzicoClosing] = useState(false);
     const [isIyzicoLoading, setIsIyzicoLoading] = useState(false);
@@ -142,17 +272,17 @@ function App() {
         setTimeout(() => setToast(null), 3000);
     };
 
-    // ==========================================
-    // BACKEND UYANDIRMA (PING) HOOK'U
-    // ==========================================
     useEffect(() => {
         if (BACKEND_URL) {
+            console.log("Backend uyandırma sinyali gönderiliyor...");
             fetch(BACKEND_URL)
                 .then((res) => {
-                    if (res.ok) console.log("Backend aktif! ⚡");
+                    if (res.ok) {
+                        console.log("Backend başarıyla uyandırıldı ve hazır! ⚡");
+                    }
                 })
                 .catch((err) => {
-                    console.warn("Backend uyandırılırken uyarı:", err);
+                    console.warn("Backend uyandırılırken bir sorun oluştu (uykuda olabilir, uyanıyor):", err);
                 });
         }
     }, []);
@@ -181,7 +311,9 @@ function App() {
     }, [cartItems]);
 
     useEffect(() => {
-        const preventInstallPrompt = (e) => e.preventDefault();
+        const preventInstallPrompt = (e) => {
+            e.preventDefault();
+        };
         window.addEventListener("beforeinstallprompt", preventInstallPrompt);
         return () => window.removeEventListener("beforeinstallprompt", preventInstallPrompt);
     }, []);
@@ -292,7 +424,6 @@ function App() {
         };
     }, [selectedProduct, showOrderOptionsModal, showConfirmationModal, showTrackingModal, isCartOpen, isMobileMenuOpen, showSizeCalcModal, isSizeCalcClosing, showIyzicoModal, isIyzicoClosing]);
 
-    // Iyzico Form Script Enjeksiyonu
     useEffect(() => {
         if (!showIyzicoModal || !iyzicoFormHtml) return;
 
@@ -498,7 +629,6 @@ function App() {
         return Number.isInteger(finalTotal) ? finalTotal : finalTotal.toFixed(2);
     };
 
-    // Iyzico Ödeme Başlatıcı
     const handleCheckout = async () => {
         if (cartItems.length === 0) {
             showToast("Sepetiniz boş.");
@@ -1229,7 +1359,6 @@ function App() {
                         {discount > 0 && <span className="discount-label"> (%{(discount * 100)} İndirim Uygulandı)</span>}
                     </div>
                 )}
-                
                 <button onClick={handleCheckout}>Sepeti Onayla</button>
                 <button className="close-modal close-modal-small" onClick={closeCart}>
                     &times;
@@ -1448,7 +1577,7 @@ function App() {
                         <p style={{ fontSize: '11px', opacity: 0.6, margin: '0 0 20px 0' }}>En doğru streetwear kalıbını bulmak için bilgileri girin.</p>
                         
                         <div style={{ marginBottom: '15px' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '5px', fontWeight: '500' }}>
+                            <div style={{ display: 'flex', justifycontent: 'space-between', fontSize: '12px', marginBottom: '5px', fontWeight: '500' }}>
                                 <span>Boy</span>
                                 <span style={{ color: isDarkMode ? '#fff' : '#000', fontWeight: 'bold' }}>{calcHeight} cm</span>
                             </div>
@@ -1460,7 +1589,7 @@ function App() {
                         </div>
 
                         <div style={{ marginBottom: '15px' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '5px', fontWeight: '500' }}>
+                            <div style={{ display: 'flex', justifycontent: 'space-between', fontSize: '12px', marginBottom: '5px', fontWeight: '500' }}>
                                 <span>Kilo</span>
                                 <span style={{ color: isDarkMode ? '#fff' : '#000', fontWeight: 'bold' }}>{calcWeight} kg</span>
                             </div>
@@ -1681,7 +1810,7 @@ function App() {
                                         <div className="animated-truck waiting">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="28" height="20" viewBox="0 0 24 24" fill="none" stroke="#ff9500" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                                 <rect x="1" y="3" width="15" height="13"></rect>
-                                                <polygon points="16 8 20 8 23 11 23 16 16 16 8"></polygon>
+                                                <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
                                                 <circle cx="5.5" cy="18.5" r="2.5"></circle>
                                                 <circle cx="18.5" cy="18.5" r="2.5"></circle>
                                             </svg>
@@ -1710,70 +1839,44 @@ function App() {
                 </div>
             )}
 
-            {/* Dinamik ve Entegre Iyzico Ödeme Modalı */}
             {(showIyzicoModal || isIyzicoClosing) && (
                 <div 
-                    className="modal-backdrop"
+                    className="fixed inset-0 z-[1000010] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm transition-opacity duration-300"
                     style={{ 
-                        zIndex: 1000010,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        padding: '16px',
                         animation: isIyzicoClosing ? "fade-out 0.3s ease forwards" : "fade-in 0.3s ease forwards"
                     }}
                     onClick={closeIyzicoModal}
                 >
                     <div 
-                        className="modal-content-base iyzico-modal"
+                        className="relative w-full max-w-[550px] max-h-[90vh] overflow-y-auto bg-white dark:bg-[#1a1a1a] rounded-lg p-6 shadow-2xl border border-gray-100 dark:border-[#333] transition-all duration-300"
                         style={{ 
-                            position: 'relative',
-                            width: '100%',
-                            maxWidth: '550px',
-                            maxHeight: '90vh',
-                            overflowY: 'auto',
-                            backgroundColor: isDarkMode ? '#1a1a1a' : '#ffffff',
-                            color: isDarkMode ? '#ffffff' : '#000000',
-                            borderRadius: '8px',
-                            padding: '24px',
-                            boxShadow: isDarkMode ? '0 20px 50px rgba(0,0,0,0.6)' : '0 20px 50px rgba(0,0,0,0.2)',
-                            border: isDarkMode ? '1px solid #333' : '1px solid #eee',
                             animation: isIyzicoClosing ? "slide-down 0.3s cubic-bezier(0.32, 0.94, 0.6, 1) forwards" : "slide-up 0.3s cubic-bezier(0.32, 0.94, 0.6, 1) forwards"
                         }}
                         onClick={(e) => e.stopPropagation()}
                     >
                         <button 
-                            className="close-modal close-modal-small"
+                            className="absolute top-4 right-4 text-2xl font-bold cursor-pointer hover:opacity-70 dark:text-white text-black bg-transparent border-none outline-none"
                             onClick={closeIyzicoModal}
-                            style={{ color: isDarkMode ? '#fff' : '#000' }}
                         >
                             &times;
                         </button>
                         
-                        <h3 style={{ margin: '0 0 4px 0', fontSize: '16px', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                        <h3 className="text-lg font-extrabold uppercase tracking-wider mb-1 dark:text-white text-black font-sans">
                             ALICCI GÜVENLİ ÖDEME
                         </h3>
-                        <p style={{ fontSize: '11px', opacity: 0.6, marginBottom: '20px' }}>
+                        <p className="text-xs opacity-60 mb-6 dark:text-gray-400 text-gray-600 font-sans">
                             256-bit SSL korumalı Iyzico altyapısıyla ödemenizi güvenle tamamlayın.
                         </p>
 
                         {isIyzicoLoading ? (
-                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '60px 0', gap: '16px' }}>
-                                <div style={{
-                                    width: '32px',
-                                    height: '32px',
-                                    border: `3px solid ${isDarkMode ? '#fff' : '#000'}`,
-                                    borderTopColor: 'transparent',
-                                    borderRadius: '50%',
-                                    animation: 'spin 0.8s linear infinite'
-                                }} />
-                                <p style={{ fontSize: '13px', fontWeight: '600', opacity: 0.8 }}>Ödeme formu hazırlanıyor, lütfen bekleyin...</p>
+                            <div className="flex flex-col items-center justify-center py-16 gap-4">
+                                <div className="w-8 h-8 border-4 border-black dark:border-white border-t-transparent rounded-full animate-spin"></div>
+                                <p className="text-sm font-semibold opacity-75 font-sans">Ödeme formu hazırlanıyor, lütfen bekleyin...</p>
                             </div>
                         ) : (
                             <div 
                                 id="iyzipay-checkout-form" 
-                                className="responsive"
-                                style={{ width: '100%', minHeight: '300px' }}
+                                className="responsive w-full min-h-[300px]"
                                 dangerouslySetInnerHTML={{ __html: iyzicoFormHtml }}
                             />
                         )}
@@ -1786,6 +1889,9 @@ function App() {
                     <div className="toast-message">{toast}</div>
                 </div>
             )}
+
+            {/* Müşteri Destek Botu Bileşeni */}
+            <Chatbot />
 
             <Analytics />
         </>
