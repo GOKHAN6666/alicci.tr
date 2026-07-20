@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const Iyzipay = require('iyzipay');
-const { GoogleGenerativeAI } = require("@google/generative-ai"); // Google AI kütüphanesini ekledik
+const { GoogleGenerativeAI } = require("@google/generative-ai");
 require('dotenv').config();
 
 const app = express();
@@ -9,7 +9,7 @@ const PORT = process.env.PORT || 5000;
 
 // Frontend'den gelen isteklere izin ver (CORS Ayarı)
 app.use(cors({
-    origin: '*', // Test aşamasında her yere izin veriyoruz, canlıya geçerken buraya sadece kendi site adresini yazabilirsin
+    origin: '*', 
     methods: ['GET', 'POST']
 }));
 
@@ -19,19 +19,19 @@ app.use(express.json());
 const iyzipay = new Iyzipay({
     apiKey: process.env.IYZICO_API_KEY,
     secretKey: process.env.IYZICO_SECRET_KEY,
-    uri: 'https://sandbox-api.iyzipay.com' // Test (Sandbox) ortamı adresi. Canlıya geçerken değişir.
+    uri: 'https://sandbox-api.iyzipay.com'
 });
 
 // Gemini AI Bağlantı Ayarları
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
-// Temel bir test rotası (Sunucu çalışıyor mu kontrol etmek için)
+// Temel bir test rotası
 app.get('/', (req, res) => {
     res.send('ALICCI Backend Aktif ve Çalışıyor! 🚀');
 });
 
 // ==========================================
-// 1. ALICCI AI CHATBOT ENDPOINT (YENİ EKLENDİ)
+// 1. ALICCI AI CHATBOT ENDPOINT
 // ==========================================
 app.post('/api/chat', async (req, res) => {
     try {
@@ -43,8 +43,7 @@ app.post('/api/chat', async (req, res) => {
 
         const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-        const systemInstruction = `Sen ALICCI markasının müşteri destek asistanısın. Minimalist, modern kesim ve oversize giyim ürünleri satıyoruz. Müşterilere kısa, kibar, samimi ve yardımsever yanıtlar ver.`;
-        
+        const systemInstruction = "Sen ALICCI markasının müşteri destek asistanısın. Minimalist, modern kesim ve oversize giyim ürünleri satıyoruz. Müşterilere kısa, kibar, samimi ve yardımsever yanıtlar ver.";
         const prompt = `${systemInstruction}\nMüşteri: ${message}\nAsistan:`;
 
         const result = await model.generateContent(prompt);
@@ -63,16 +62,14 @@ app.post('/api/chat', async (req, res) => {
 app.post('/api/iyzico-checkout', (req, res) => {
     const { basketItems, totalPrice, buyerInfo } = req.body;
 
-    // Ödeme formu başlatmak için Iyzico'nun istediği minimum veri yapısı
     const request = {
         locale: Iyzipay.LOCALE.TR,
-        conversationId: '123456789', // Her işlem için benzersiz bir id üretebilirsin
+        conversationId: '123456789',
         price: totalPrice.toString(),
         paidPrice: totalPrice.toString(),
         currency: Iyzipay.CURRENCY.TRY,
         basketId: 'B' + Date.now(),
         paymentGroup: Iyzipay.PAYMENT_GROUP.PRODUCT,
-        // Ödeme başarıyla tamamlandığında veya başarısız olduğunda yönlendirilecek sayfalar
         callbackUrl: 'https://alicci-backend.onrender.com/payment-callback', 
         
         buyer: {
@@ -104,7 +101,6 @@ app.post('/api/iyzico-checkout', (req, res) => {
             address: buyerInfo?.address || 'Türkiye Merkez',
             zipCode: '34000'
         },
-        // Sepetteki ürünlerin listesi (Iyzico her ürün için detay ister)
         basketItems: basketItems.map((item, index) => ({
             id: item.id || `BI${index}`,
             name: item.title || item.name || 'ALICCI Ürün',
@@ -114,7 +110,6 @@ app.post('/api/iyzico-checkout', (req, res) => {
         }))
     };
 
-    // Iyzico üzerinden formu oluşturma isteği gönderiyoruz
     iyzipay.checkoutFormInitialize.create(request, (err, result) => {
         if (err || result.status === 'failure') {
             console.error('Iyzico Hatası:', err || result.errorMessage);
@@ -124,10 +119,9 @@ app.post('/api/iyzico-checkout', (req, res) => {
             });
         }
 
-        // Başarılı ise Iyzico'nun verdiği HTML form kodunu frontend'e gönderiyoruz
         res.json({
             success: true,
-            checkoutFormContent: result.checkoutFormContent, // İşte o meşhur form içeriği!
+            checkoutFormContent: result.checkoutFormContent,
             token: result.token
         });
     });
@@ -139,18 +133,15 @@ app.post('/api/iyzico-checkout', (req, res) => {
 app.post('/payment-callback', (req, res) => {
     const { token } = req.body;
 
-    // Ödeme durumunu sorguluyoruz
     iyzipay.checkoutForm.retrieve({
         locale: Iyzipay.LOCALE.TR,
         conversationId: '123456789',
         token: token
     }, (err, result) => {
         if (err || result.paymentStatus !== 'SUCCESS') {
-            // Ödeme başarısızsa kullanıcının göreceği sayfaya yönlendir
-            return res.redirect('http://localhost:5173/payment-failed'); // Yerelde test ederken React portun neyse ona göre ayarla
+            return res.redirect('http://localhost:5173/payment-failed');
         }
 
-        // Ödeme başarılıysa siparişi tamamla ve başarılı sayfasına yönlendir
         res.redirect('http://localhost:5173/payment-success');
     });
 });
