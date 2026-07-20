@@ -5,11 +5,9 @@ import { Analytics } from "@vercel/analytics/react";
 import { supabase } from "./supabaseclient";
 
 // ==========================================
-// ⚠️ KENDİ BACKEND SUNUCUNUN ADRESİNİ BURAYA YAZ
-// Örn: "https://alicci-backend.onrender.com"
-// Eğer frontend ve backend aynı yerdeyse boş bırakabilirsin: ""
-const BACKEND_URL = "https://alicci-backend.onrender.com"; 
+// BACKEND SUNUCU ADRESİ
 // ==========================================
+const BACKEND_URL = "https://alicci-backend.onrender.com"; 
 
 const getRecommendedSize = (height, weight, fitPreference) => {
     let baseSize = "M";
@@ -145,10 +143,7 @@ function App() {
         setTimeout(() => setToast(null), 3000);
     };
 
-    // ==========================================
-    // BACKEND UYANDIRMA (PING) HOOK'U
-    // Render'ın ücretsiz planındaki 15 dk uykudan uyanma gecikmesini önler.
-    // ==========================================
+    // BACKEND UYANDIRMA HOOK'U
     useEffect(() => {
         if (BACKEND_URL) {
             console.log("Backend uyandırma sinyali gönderiliyor...");
@@ -301,7 +296,7 @@ function App() {
         };
     }, [selectedProduct, showOrderOptionsModal, showConfirmationModal, showTrackingModal, isCartOpen, isMobileMenuOpen, showSizeCalcModal, isSizeCalcClosing, showIyzicoModal, isIyzicoClosing]);
 
-    // Iyzico HTML içindeki <script> tag'lerini Regex ile ayrıştırıp manuel enjekte eden kritik useEffect
+    // Iyzico HTML içindeki <script> tag'lerini Regex ile ayrıştırıp enjekte eden useEffect
     useEffect(() => {
         if (!showIyzicoModal || !iyzicoFormHtml) return;
 
@@ -323,12 +318,10 @@ function App() {
             scriptsToAppend.push(scriptEl);
         }
 
-        // Script'leri sırayla DOM'a ekliyoruz
         scriptsToAppend.forEach((script) => {
             document.body.appendChild(script);
         });
 
-        // Cleanup: Modal kapandığında bu dinamik scriptleri temizliyoruz
         return () => {
             scriptsToAppend.forEach((script) => {
                 if (document.body.contains(script)) {
@@ -509,7 +502,6 @@ function App() {
         return Number.isInteger(finalTotal) ? finalTotal : finalTotal.toFixed(2);
     };
 
-    // Iyzico Checkout Akışını Başlatan handleCheckout Fonksiyonu
     const handleCheckout = async () => {
         if (cartItems.length === 0) {
             showToast("Sepetiniz boş.");
@@ -522,7 +514,6 @@ function App() {
         closeCart();
 
         try {
-            // Express Backend sunucusuna sepet ve kupon bilgilerini iletiyoruz
             const response = await fetch(`${BACKEND_URL}/api/iyzico-checkout`, {
                 method: "POST",
                 headers: {
@@ -857,7 +848,6 @@ function App() {
                     100% { transform: translateX(-50%); }
                 }
 
-                /* CSS Fallback rule for Tailwind's backdrop blur */
                 .backdrop-blur-sm {
                     backdrop-filter: blur(4px) !important;
                     -webkit-backdrop-filter: blur(4px) !important;
@@ -1242,7 +1232,6 @@ function App() {
                         {discount > 0 && <span className="discount-label"> (%{(discount * 100)} İndirim Uygulandı)</span>}
                     </div>
                 )}
-                {/* Güncellenen Ödeme Butonu */}
                 <button onClick={handleCheckout}>Sepeti Onayla</button>
                 <button className="close-modal close-modal-small" onClick={closeCart}>
                     &times;
@@ -1461,7 +1450,7 @@ function App() {
                         <p style={{ fontSize: '11px', opacity: 0.6, margin: '0 0 20px 0' }}>En doğru streetwear kalıbını bulmak için bilgileri girin.</p>
                         
                         <div style={{ marginBottom: '15px' }}>
-                            <div style={{ display: 'flex', justifycontent: 'space-between', fontSize: '12px', marginBottom: '5px', fontWeight: '500' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '5px', fontWeight: '500' }}>
                                 <span>Boy</span>
                                 <span style={{ color: isDarkMode ? '#fff' : '#000', fontWeight: 'bold' }}>{calcHeight} cm</span>
                             </div>
@@ -1473,7 +1462,7 @@ function App() {
                         </div>
 
                         <div style={{ marginBottom: '15px' }}>
-                            <div style={{ display: 'flex', justifycontent: 'space-between', fontSize: '12px', marginBottom: '5px', fontWeight: '500' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '5px', fontWeight: '500' }}>
                                 <span>Kilo</span>
                                 <span style={{ color: isDarkMode ? '#fff' : '#000', fontWeight: 'bold' }}>{calcWeight} kg</span>
                             </div>
@@ -1723,7 +1712,6 @@ function App() {
                 </div>
             )}
 
-            {/* Yeni Eklenen Dinamik ve Responsive Iyzico Ödeme Modalı */}
             {(showIyzicoModal || isIyzicoClosing) && (
                 <div 
                     className="fixed inset-0 z-[1000010] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm transition-opacity duration-300"
@@ -1759,7 +1747,6 @@ function App() {
                                 <p className="text-sm font-semibold opacity-75 font-sans">Ödeme formu hazırlanıyor, lütfen bekleyin...</p>
                             </div>
                         ) : (
-                            /* Iyzico Form Container */
                             <div 
                                 id="iyzipay-checkout-form" 
                                 className="responsive w-full min-h-[300px]"
