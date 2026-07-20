@@ -9,7 +9,7 @@ import { supabase } from "./supabaseclient";
 // ==========================================
 const BACKEND_URL = "https://alicci-backend.onrender.com"; 
 // ==========================================
-// AKILLI ALICCI DESTEK CHATBOT BİLEŞENİ (SAF CSS SÜRÜMÜ)
+// AKILLI ALICCI DESTEK CHATBOT BİLEŞENİ (ANİMASYONLU SÜRÜM)
 // ==========================================
 function Chatbot() {
   const [isOpen, setIsOpen] = useState(false);
@@ -26,8 +26,10 @@ function Chatbot() {
   ]);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, isTyping]);
+    if (isOpen) {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages, isTyping, isOpen]);
 
   const quickActions = [
     { label: '📦 Kargo Takibi', key: 'kargo' },
@@ -88,167 +90,180 @@ function Chatbot() {
 
   return (
     <div style={{ position: 'fixed', bottom: '24px', right: '24px', zIndex: 9999999, fontFamily: 'sans-serif' }}>
-      {/* 1. Açılış Butonu */}
-      {!isOpen && (
-        <button
-          onClick={() => setIsOpen(true)}
-          style={{
-            backgroundColor: '#000',
-            color: '#fff',
-            padding: '16px',
-            borderRadius: '50%',
-            boxShadow: '0 10px 25px rgba(0,0,0,0.3)',
-            border: '1px solid #333',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            width: '56px',
-            height: '56px',
-            transition: 'transform 0.2s ease'
-          }}
-          aria-label="Sohbeti Aç"
+      
+      {/* 1. Chat Penceresi (Geçiş Animasyonlu) */}
+      <div style={{
+        position: 'absolute',
+        bottom: '70px',
+        right: '0',
+        width: '340px',
+        height: '480px',
+        backgroundColor: '#fff',
+        borderRadius: '16px',
+        boxShadow: '0 20px 40px rgba(0,0,0,0.25)',
+        border: '1px solid #e5e5e5',
+        display: 'flex',
+        flexDirection: 'column',
+        overflow: 'hidden',
+        // --- ANİMASYON AYARLARI ---
+        opacity: isOpen ? 1 : 0,
+        transform: isOpen ? 'translateY(0) scale(1)' : 'translateY(20px) scale(0.9)',
+        pointerEvents: isOpen ? 'all' : 'none',
+        transformOrigin: 'bottom right',
+        transition: 'opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1), transform 0.3s cubic-bezier(0.16, 1, 0.3, 1)'
+      }}>
+        
+        {/* Header */}
+        <div style={{ backgroundColor: '#000', color: '#fff', padding: '14px 18px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div>
+            <h3 style={{ margin: 0, fontSize: '12px', fontWeight: 'bold', letterSpacing: '1px', color: '#fff' }}>ALICCI ASSISTANT</h3>
+            <p style={{ margin: '3px 0 0 0', fontSize: '10px', color: '#34d399', display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#34d399', display: 'inline-block' }}></span>
+              Çevrimiçi • 7/24 Destek
+            </p>
+          </div>
+          <button
+            onClick={() => setIsOpen(false)}
+            style={{ background: 'none', border: 'none', color: '#aaa', fontSize: '16px', cursor: 'pointer', padding: '4px' }}
+          >
+            ✕
+          </button>
+        </div>
+
+        {/* Mesaj Alanı */}
+        <div style={{ flex: 1, padding: '14px', overflowY: 'auto', backgroundColor: '#f9f9f9', display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '12px' }}>
+          {messages.map((msg) => (
+            <div
+              key={msg.id}
+              style={{ display: 'flex', justifyContent: msg.sender === 'user' ? 'flex-end' : 'flex-start' }}
+            >
+              <div
+                style={{
+                  maxWidth: '82%',
+                  padding: '10px 14px',
+                  borderRadius: '14px',
+                  lineHeight: '1.4',
+                  backgroundColor: msg.sender === 'user' ? '#000' : '#fff',
+                  color: msg.sender === 'user' ? '#fff' : '#111',
+                  border: msg.sender === 'user' ? 'none' : '1px solid #eee',
+                  boxShadow: '0 2px 5px rgba(0,0,0,0.03)'
+                }}
+              >
+                {msg.text.split('**').map((part, idx) => 
+                  idx % 2 === 1 ? <strong key={idx} style={{ fontWeight: 'bold' }}>{part}</strong> : part
+                )}
+              </div>
+            </div>
+          ))}
+
+          {isTyping && (
+            <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
+              <div style={{ backgroundColor: '#fff', border: '1px solid #eee', padding: '8px 12px', borderRadius: '12px', color: '#888' }}>
+                Yazıyor...
+              </div>
+            </div>
+          )}
+          <div ref={messagesEndRef} />
+        </div>
+
+        {/* Hızlı Kısayollar */}
+        <div style={{ padding: '8px', backgroundColor: '#fff', borderTop: '1px solid #eee', display: 'flex', gap: '6px', overflowX: 'auto' }}>
+          {quickActions.map((action) => (
+            <button
+              key={action.key}
+              onClick={() => handleSend(action.label)}
+              style={{
+                fontSize: '11px',
+                backgroundColor: '#f0f0f0',
+                color: '#333',
+                padding: '6px 12px',
+                borderRadius: '20px',
+                border: 'none',
+                cursor: 'pointer',
+                whiteSpace: 'nowrap'
+              }}
+            >
+              {action.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Input Alanı */}
+        <form 
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleSend();
+          }} 
+          style={{ padding: '10px', backgroundColor: '#fff', borderTop: '1px solid #eee', display: 'flex', alignItems: 'center', gap: '8px' }}
         >
+          <input
+            type="text"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            placeholder="Bir soru sorun veya ALC- kargo kodu..."
+            style={{
+              flex: 1,
+              padding: '8px 12px',
+              backgroundColor: '#f4f4f4',
+              border: '1px solid #ddd',
+              borderRadius: '20px',
+              fontSize: '12px',
+              outline: 'none',
+              color: '#000'
+            }}
+          />
+          <button
+            type="submit"
+            disabled={!input.trim()}
+            style={{
+              backgroundColor: '#000',
+              color: '#fff',
+              border: 'none',
+              padding: '8px 14px',
+              borderRadius: '20px',
+              cursor: 'pointer',
+              opacity: !input.trim() ? 0.4 : 1,
+              fontSize: '12px'
+            }}
+          >
+            Gönder
+          </button>
+        </form>
+
+      </div>
+
+      {/* 2. Açma/Kapama Balon Butonu (İkon ve Dönüş Animasyonlu) */}
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        style={{
+          backgroundColor: '#000',
+          color: '#fff',
+          borderRadius: '50%',
+          boxShadow: '0 10px 25px rgba(0,0,0,0.3)',
+          border: '1px solid #333',
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          width: '56px',
+          height: '56px',
+          transition: 'transform 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
+          transform: isOpen ? 'rotate(90deg)' : 'rotate(0deg)',
+          float: 'right'
+        }}
+        aria-label="Sohbeti Aç/Kapat"
+      >
+        {isOpen ? (
+          <svg style={{ width: '22px', height: '22px' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        ) : (
           <svg style={{ width: '24px', height: '24px' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 10h.01M12 10h.01M16 10h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
           </svg>
-        </button>
-      )}
+        )}
+      </button>
 
-      {/* 2. Chat Penceresi */}
-      {isOpen && (
-        <div style={{
-          width: '340px',
-          height: '480px',
-          backgroundColor: '#fff',
-          borderRadius: '16px',
-          boxShadow: '0 20px 40px rgba(0,0,0,0.25)',
-          border: '1px solid #e5e5e5',
-          display: 'flex',
-          flexDirection: 'column',
-          overflow: 'hidden',
-          animation: 'fade-in 0.3s ease'
-        }}>
-          
-          {/* Header */}
-          <div style={{ backgroundColor: '#000', color: '#fff', padding: '14px 18px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div>
-              <h3 style={{ margin: 0, fontSize: '12px', fontWeight: 'bold', letterSpacing: '1px', color: '#fff' }}>ALICCI ASSISTANT</h3>
-              <p style={{ margin: '3px 0 0 0', fontSize: '10px', color: '#34d399', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#34d399', display: 'inline-block' }}></span>
-                Çevrimiçi • 7/24 Destek
-              </p>
-            </div>
-            <button
-              onClick={() => setIsOpen(false)}
-              style={{ background: 'none', border: 'none', color: '#aaa', fontSize: '16px', cursor: 'pointer' }}
-            >
-              ✕
-            </button>
-          </div>
-
-          {/* Mesaj Alanı */}
-          <div style={{ flex: 1, padding: '14px', overflowY: 'auto', backgroundColor: '#f9f9f9', display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '12px' }}>
-            {messages.map((msg) => (
-              <div
-                key={msg.id}
-                style={{ display: 'flex', justifyContent: msg.sender === 'user' ? 'flex-end' : 'flex-start' }}
-              >
-                <div
-                  style={{
-                    maxWidth: '82%',
-                    padding: '10px 14px',
-                    borderRadius: '14px',
-                    lineHeight: '1.4',
-                    backgroundColor: msg.sender === 'user' ? '#000' : '#fff',
-                    color: msg.sender === 'user' ? '#fff' : '#111',
-                    border: msg.sender === 'user' ? 'none' : '1px solid #eee',
-                    boxShadow: '0 2px 5px rgba(0,0,0,0.03)'
-                  }}
-                >
-                  {msg.text.split('**').map((part, idx) => 
-                    idx % 2 === 1 ? <strong key={idx} style={{ fontWeight: 'bold' }}>{part}</strong> : part
-                  )}
-                </div>
-              </div>
-            ))}
-
-            {isTyping && (
-              <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
-                <div style={{ backgroundColor: '#fff', border: '1px solid #eee', padding: '8px 12px', borderRadius: '12px', color: '#888' }}>
-                  Yazıyor...
-                </div>
-              </div>
-            )}
-            <div ref={messagesEndRef} />
-          </div>
-
-          {/* Hızlı Kısayollar */}
-          <div style={{ padding: '8px', backgroundColor: '#fff', borderTop: '1px solid #eee', display: 'flex', gap: '6px', overflowX: 'auto' }}>
-            {quickActions.map((action) => (
-              <button
-                key={action.key}
-                onClick={() => handleSend(action.label)}
-                style={{
-                  fontSize: '11px',
-                  backgroundColor: '#f0f0f0',
-                  color: '#333',
-                  padding: '6px 12px',
-                  borderRadius: '20px',
-                  border: 'none',
-                  cursor: 'pointer',
-                  whiteSpace: 'nowrap'
-                }}
-              >
-                {action.label}
-              </button>
-            ))}
-          </div>
-
-          {/* Input Alanı */}
-          <form 
-            onSubmit={(e) => {
-              e.preventDefault();
-              handleSend();
-            }} 
-            style={{ padding: '10px', backgroundColor: '#fff', borderTop: '1px solid #eee', display: 'flex', alignItems: 'center', gap: '8px' }}
-          >
-            <input
-              type="text"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              placeholder="Bir soru sorun veya ALC- kargo kodu..."
-              style={{
-                flex: 1,
-                padding: '8px 12px',
-                backgroundColor: '#f4f4f4',
-                border: '1px solid #ddd',
-                borderRadius: '20px',
-                fontSize: '12px',
-                outline: 'none',
-                color: '#000'
-              }}
-            />
-            <button
-              type="submit"
-              disabled={!input.trim()}
-              style={{
-                backgroundColor: '#000',
-                color: '#fff',
-                border: 'none',
-                padding: '8px 14px',
-                borderRadius: '20px',
-                cursor: 'pointer',
-                opacity: !input.trim() ? 0.4 : 1,
-                fontSize: '12px'
-              }}
-            >
-              Gönder
-            </button>
-          </form>
-
-        </div>
-      )}
     </div>
   );
 }
