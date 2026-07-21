@@ -54,7 +54,7 @@ app.post('/api/chat', async (req, res) => {
         }
 
         // Kota sınırına takılmamak için kararlı 1.5 sürümünü kullanıyoruz
-       const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" });
+     const model = genAI.getGenerativeModel({ model: "gemini-pro" });
 
         const systemInstruction = "Sen ALICCI markasının müşteri destek asistanısın. Minimalist, modern kesim ve oversize giyim ürünleri satıyoruz. Müşterilere kısa, kibar, samimi ve yardımsever yanıtlar ver.";
         const prompt = `${systemInstruction}\nMüşteri: ${message}\nAsistan:`;
