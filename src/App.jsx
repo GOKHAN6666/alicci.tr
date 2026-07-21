@@ -9,6 +9,13 @@ import { supabase } from "./supabaseclient";
 // ==========================================
 const BACKEND_URL = "https://alicci-backend.onrender.com"; 
 
+// Hızlı Kısayol Butonları
+const quickActions = [
+  { key: 'tracking', label: '📦 Kargo Takibi' },
+  { key: 'size', label: '📏 Beden Rehberi' },
+  { key: 'returns', label: '🔄 İade & Değişim' }
+];
+
 // ==========================================
 // AKILLI ALICCI DESTEK CHATBOT BİLEŞENİ (AI ENTEGRELİ & ANİMASYONLU SÜRÜM)
 // ==========================================
@@ -31,12 +38,6 @@ function Chatbot() {
       messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }
   }, [messages, isTyping, isOpen]);
-  
-<div class="quick-replies">
-    <button>📦 Kargo Takibi</button>
-    <button>📏 Beden Rehberi</button>
-    <button>🔄 İade & Değişim</button>
-</div>
 
   // AI Yanıt Vermezse veya Bağlantı Koparsa Devreye Girecek Yedek Kural Motoru
   const generateFallbackResponse = (userText) => {
@@ -1954,7 +1955,7 @@ function App() {
                                         <div className="animated-truck">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="28" height="20" viewBox="0 0 24 24" fill="none" stroke={isDarkMode ? "#fff" : "#000"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                                 <rect x="1" y="3" width="15" height="13"></rect>
-                                                <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
+                                                <polygon points="16 8 20 8 23 11 23 16 16 16 8"></polygon>
                                                 <circle cx="5.5" cy="18.5" r="2.5"></circle>
                                                 <circle cx="18.5" cy="18.5" r="2.5"></circle>
                                             </svg>
