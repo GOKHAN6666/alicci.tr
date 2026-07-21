@@ -39,44 +39,44 @@ app.get('/', (req, res) => {
 });
 
 // ==========================================
-// 1. ALICCI AI CHATBOT ENDPOINT (TEST VE TEŞHİS MODU)
+// 1. ALICCI AI CHATBOT ENDPOINT (DİNAMİK MODEL SEÇİCİ)
 // ==========================================
 app.post('/api/chat', async (req, res) => {
     try {
-        if (!process.env.GEMINI_API_KEY) {
-            return res.status(500).json({ error: "API Key eksik veya Render ortam değişkenlerine eklenmemiş." });
+        if (!genAI || !process.env.GEMINI_API_KEY) {
+            return res.status(500).json({ error: "AI servisi yapılandırılmamış (API Anahtarı eksik)." });
         }
 
-        // Google'ın bu API Key ve Sunucuya izin verdiği TÜM modelleri çekiyoruz
+        const { message } = req.body;
+        if (!message) {
+            return res.status(400).json({ error: "Mesaj boş olamaz." });
+        }
+
+        // Google'dan bu API anahtarının erişebildiği modelleri çekiyoruz
         const apiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${process.env.GEMINI_API_KEY}`);
         const data = await apiResponse.json();
 
-        // Render loglarında görebilmek için konsola bastırıyoruz
-        console.log("=== GOOGLE TARAFINDAN DESTEKLENEN MODELLER ===");
-        console.log(JSON.stringify(data, null, 2));
-
-        // Eğer doğrudan çalışabilen model varsa normal akış denemesi yapalım
-        try {
-            const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-            const { message } = req.body;
-            const systemInstruction = "Sen ALICCI markasının müşteri destek asistanısın. Minimalist, modern kesim ve oversize giyim ürünleri satıyoruz. Müşterilere kısa, kibar, samimi ve yardımsever yanıtlar ver.";
-            const prompt = `${systemInstruction}\nMüşteri: ${message || 'Merhaba'}\nAsistan:`;
-
-            const result = await model.generateContent(prompt);
-            const reply = result.response.text();
-            return res.json({ reply });
-        } catch (modelError) {
-            console.error("Model Çağırma Hatası:", modelError.message);
-            // Model çağrılamazsa frontend'e desteklenen modellerin listesini döküyoruz
-            return res.status(200).json({ 
-                warning: "Model tetiklenemedi, desteklenen modeller listelendi.",
-                availableModels: data 
-            });
+        if (!data.models || data.models.length === 0) {
+            return res.status(500).json({ error: "API anahtarınız hiçbir modele erişemiyor." });
         }
 
+        // Listeden uygun bir modeli otomatik seç (öncelik flash veya listedeki ilk model)
+        const selectedModelObj = data.models.find(m => m.name.includes('flash') || m.name.includes('gemini')) || data.models[0];
+        const cleanModelName = selectedModelObj.name.replace('models/', '');
+
+        console.log("Kullanılan Dinamik Model:", cleanModelName);
+
+        const model = genAI.getGenerativeModel({ model: cleanModelName });
+        const systemInstruction = "Sen ALICCI markasının müşteri destek asistanısın. Minimalist, modern kesim ve oversize giyim ürünleri satıyoruz. Müşterilere kısa, kibar, samimi ve yardımsever yanıtlar ver.";
+        const prompt = `${systemInstruction}\nMüşteri: ${message}\nAsistan:`;
+
+        const result = await model.generateContent(prompt);
+        const reply = result.response.text();
+
+        return res.json({ reply });
     } catch (error) {
-        console.error("AI Chatbot Teşhis Hatası:", error);
-        return res.status(500).json({ error: error.message || "AI servisi yanıt veremiyor." });
+        console.error("AI Chatbot Hatası:", error);
+        return res.status(500).json({ error: error.message || "AI servisi şu an yanıt veremiyor." });
     }
 });
 
