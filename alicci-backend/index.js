@@ -39,7 +39,7 @@ app.get('/', (req, res) => {
 });
 
 // ==========================================
-// 1. ALICCI AI CHATBOT ENDPOINT (ÇOKLU MODEL DÖNGÜSÜ)
+// 1. ALICCI AI CHATBOT ENDPOINT (OTOMATİK MODEL KEŞFİ)
 // ==========================================
 app.post('/api/chat', async (req, res) => {
     try {
@@ -55,26 +55,36 @@ app.post('/api/chat', async (req, res) => {
         const systemInstruction = "Sen ALICCI markasının müşteri destek asistanısın. Minimalist, modern kesim ve oversize giyim ürünleri satıyoruz. Müşterilere kısa, kibar, samimi ve yardımsever yanıtlar ver.";
         const prompt = `${systemInstruction}\nMüşteri: ${message}\nAsistan:`;
 
-        // Desteklenme ihtimali olan modelleri sırasıyla deniyoruz
-        const candidateModels = ["gemini-1.5-flash", "gemini-1.5-pro", "gemini-pro"];
+        // 1. Google'dan bu API anahtarının erişebildiği güncel modelleri dinamik olarak çekiyoruz
+        const apiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${process.env.GEMINI_API_KEY}`);
+        const data = await apiResponse.json();
+
+        if (!data.models || data.models.length === 0) {
+            return res.status(500).json({ error: "API anahtarınız hiçbir modele erişemiyor." });
+        }
+
+        // 2. Listeden ismi 'gemini' içeren modelleri filtreleyip sırasıyla deniyoruz
         let reply = null;
         let lastError = null;
 
-        for (const modelName of candidateModels) {
+        const geminiModels = data.models.filter(m => m.name.toLowerCase().includes('gemini'));
+
+        for (const m of geminiModels) {
+            const modelName = m.name.replace('models/', '');
             try {
                 const model = genAI.getGenerativeModel({ model: modelName });
                 const result = await model.generateContent(prompt);
                 reply = result.response.text();
-                console.log(`Başarıyla kullanılan model: ${modelName}`);
-                break; // Başarılı yanıt aldıysak döngüden çık
+                console.log(`Başarıyla yanıt veren dinamik model: ${modelName}`);
+                break; 
             } catch (err) {
                 lastError = err.message;
-                console.warn(`${modelName} modeli başarısız oldu, sıradakine geçiliyor...`);
+                console.warn(`${modelName} modeli yanıt vermedi, sıradakine geçiliyor...`);
             }
         }
 
         if (!reply) {
-            return res.status(500).json({ error: "Hiçbir yapay zeka modeli yanıt vermedi. Hata: " + lastError });
+            return res.status(500).json({ error: "Erişilebilir hiçbir Gemini modeli yanıt vermedi. Son hata: " + lastError });
         }
 
         return res.json({ reply });
