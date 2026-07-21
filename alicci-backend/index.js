@@ -39,7 +39,7 @@ app.get('/', (req, res) => {
 });
 
 // ==========================================
-// 1. ALICCI AI CHATBOT ENDPOINT (OTOMATİK MODEL KEŞFİ)
+// 1. ALICCI AI CHATBOT ENDPOINT (HAFIZALI & OTOMATİK MODEL KEŞFİ)
 // ==========================================
 app.post('/api/chat', async (req, res) => {
     try {
@@ -47,13 +47,12 @@ app.post('/api/chat', async (req, res) => {
             return res.status(500).json({ error: "AI servisi yapılandırılmamış (API Anahtarı eksik)." });
         }
 
-        const { message } = req.body;
-        if (!message) {
-            return res.status(400).json({ error: "Mesaj boş olamaz." });
+        const { history } = req.body;
+        if (!history || !Array.isArray(history)) {
+            return res.status(400).json({ error: "Sohbet geçmişi (history) bulunamadı." });
         }
 
-        const systemInstruction = "Sen ALICCI markasının müşteri destek asistanısın. Minimalist, modern kesim ve oversize giyim ürünleri satıyoruz. Müşterilere kısa, kibar, samimi ve yardımsever yanıtlar ver.";
-        const prompt = `${systemInstruction}\nMüşteri: ${message}\nAsistan:`;
+        const systemInstruction = "Sen ALICCI markasının profesyonel müşteri destek asistanısın. Minimalist, modern kesim ve oversize giyim ürünleri satıyoruz. Kullanıcı daha önce kargo kodunu (örn: ALC-...) veya sipariş bilgilerini verdiyse asla tekrar sorma, hafızanda tut ve o bilgi üzerinden ilerle. Müşterilere kısa, kibar, samimi ve yardımsever yanıtlar ver.";
 
         // 1. Google'dan bu API anahtarının erişebildiği güncel modelleri dinamik olarak çekiyoruz
         const apiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${process.env.GEMINI_API_KEY}`);
@@ -72,10 +71,24 @@ app.post('/api/chat', async (req, res) => {
         for (const m of geminiModels) {
             const modelName = m.name.replace('models/', '');
             try {
-                const model = genAI.getGenerativeModel({ model: modelName });
-                const result = await model.generateContent(prompt);
+                const model = genAI.getGenerativeModel({ 
+                    model: modelName,
+                    systemInstruction: systemInstruction 
+                });
+
+                // Sohbet geçmişini Gemini formatına uyarlıyoruz (Son mesaj hariç)
+                const formattedHistory = history.slice(0, -1).map(msg => ({
+                    role: msg.sender === 'user' ? 'user' : 'model',
+                    parts: [{ text: msg.text }]
+                }));
+
+                const chat = model.startChat({ history: formattedHistory });
+                const lastMessage = history[history.length - 1].text;
+
+                const result = await chat.sendMessage(lastMessage);
                 reply = result.response.text();
-                console.log(`Başarıyla yanıt veren dinamik model: ${modelName}`);
+                
+                console.log(`Başarıyla yanıt veren dinamik model (Hafızalı): ${modelName}`);
                 break; 
             } catch (err) {
                 lastError = err.message;
