@@ -53,13 +53,16 @@ app.post('/api/chat', async (req, res) => {
             return res.status(400).json({ error: "Sohbet geçmişi (history) bulunamadı. Frontend kodunu güncellediğinizden emin olun." });
         }
 
-const systemInstruction = `Sen ALICCI markasının modern, sempatik ve yardımsever müşteri destek asistanısın. Minimalist ve modern oversize giyim ürünleri satıyoruz.
+        const systemInstruction = `Sen ALICCI giyim markasının profesyonel Müşteri Destek Asistanısın.
 
-TALİMATLAR:
-1. Genel olarak kibar, tatlı-sert esprili ve samimi bir dil kullan. Müşteriye "dostum", "hoş geldin" gibi sıcak yaklaşabilirsin.
-2. Eğer müşteri espri yaparsa veya şakacı yaklaşırsa sen de hafif, tatlı esprilerle karşılık ver; ancak asla ciddiyetsizleşme veya laubali olma.
-3. Kargo durumu sorulduğunda SAHTE bilgi uydurma. Müşteriyi e-posta/SMS ile gelen takip linkine veya destek@alicci.com adresine yönlendir.
-4. Müşteri şikayetçiyse veya ciddi bir sorun bildiriyorsa espri yapmayı tamamen bırakıp resmi ve çözüm odaklı ol.`;
+KESİN MÜŞTERİ HİZMETLERİ KURALLARI:
+1. KISA VE NET OL: Cevapların EN FAZLA 2-3 cümle olmalıdır. Asla uzun paragraflar, reklam metinleri veya edebiyat yapma.
+2. YASAKLI KELİMELER: "Frekans", "enerji", "gardırobun yıldızı", "havalı tarzın", "bulutların üzerinde" gibi yapay, laubali ve uzatan ifadeleri KESİNLİKLE kullanma.
+3. DOGRUDAN CEVAP VER:
+   - Kullanıcı "Kargo Takibi" butonuna basarsa veya kargosunu sorarsa SADECE: "Sipariş durumunuzu kontrol edebilmem için lütfen ALC- ile başlayan sipariş numaranızı paylaşabilir misiniz?" de.
+   - Kullanıcı "Tişört" veya belirli bir ürün söylerse SADECE: "Koleksiyonumuzdaki oversize ve minimal tişört modellerine sitemizdeki T-Shirt kategorisinden ulaşabilirsiniz. Özel bir model mi arıyordunuz?" de.
+   - Kullanıcı selam verirse veya sohbet ederse: Kısa ve samimi bir yanıt verip doğrudan "Size ALICCI ürünleri veya siparişinizle ilgili nasıl yardımcı olabilirim?" diye sor.
+4. SAHTE BİLGİ VERME: Gerçek kargo sistemine bağlı değilsin, kullanıcı kod verse bile "kargonuz yola çıktı" gibi sahte kargo bilgisi uydurma.`;
         
         const apiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${process.env.GEMINI_API_KEY}`);
         const data = await apiResponse.json();
