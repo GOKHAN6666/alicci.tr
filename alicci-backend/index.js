@@ -39,7 +39,7 @@ app.get('/', (req, res) => {
 });
 
 // ==========================================
-// 1. ALICCI AI CHATBOT ENDPOINT (DİNAMİK MODEL SEÇİCİ)
+// 1. ALICCI AI CHATBOT ENDPOINT (ÇOKLU MODEL DÖNGÜSÜ)
 // ==========================================
 app.post('/api/chat', async (req, res) => {
     try {
@@ -52,30 +52,34 @@ app.post('/api/chat', async (req, res) => {
             return res.status(400).json({ error: "Mesaj boş olamaz." });
         }
 
-        // Google'dan bu API anahtarının erişebildiği modelleri çekiyoruz
-        const apiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${process.env.GEMINI_API_KEY}`);
-        const data = await apiResponse.json();
-
-        if (!data.models || data.models.length === 0) {
-            return res.status(500).json({ error: "API anahtarınız hiçbir modele erişemiyor." });
-        }
-
-        // Listeden uygun bir modeli otomatik seç (öncelik flash veya listedeki ilk model)
-        const selectedModelObj = data.models.find(m => m.name.includes('flash') || m.name.includes('gemini')) || data.models[0];
-        const cleanModelName = selectedModelObj.name.replace('models/', '');
-
-        console.log("Kullanılan Dinamik Model:", cleanModelName);
-
-        const model = genAI.getGenerativeModel({ model: cleanModelName });
         const systemInstruction = "Sen ALICCI markasının müşteri destek asistanısın. Minimalist, modern kesim ve oversize giyim ürünleri satıyoruz. Müşterilere kısa, kibar, samimi ve yardımsever yanıtlar ver.";
         const prompt = `${systemInstruction}\nMüşteri: ${message}\nAsistan:`;
 
-        const result = await model.generateContent(prompt);
-        const reply = result.response.text();
+        // Desteklenme ihtimali olan modelleri sırasıyla deniyoruz
+        const candidateModels = ["gemini-1.5-flash", "gemini-1.5-pro", "gemini-pro"];
+        let reply = null;
+        let lastError = null;
+
+        for (const modelName of candidateModels) {
+            try {
+                const model = genAI.getGenerativeModel({ model: modelName });
+                const result = await model.generateContent(prompt);
+                reply = result.response.text();
+                console.log(`Başarıyla kullanılan model: ${modelName}`);
+                break; // Başarılı yanıt aldıysak döngüden çık
+            } catch (err) {
+                lastError = err.message;
+                console.warn(`${modelName} modeli başarısız oldu, sıradakine geçiliyor...`);
+            }
+        }
+
+        if (!reply) {
+            return res.status(500).json({ error: "Hiçbir yapay zeka modeli yanıt vermedi. Hata: " + lastError });
+        }
 
         return res.json({ reply });
     } catch (error) {
-        console.error("AI Chatbot Hatası:", error);
+        console.error("AI Chatbot Genel Hatası:", error);
         return res.status(500).json({ error: error.message || "AI servisi şu an yanıt veremiyor." });
     }
 });
