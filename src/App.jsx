@@ -32,11 +32,6 @@ function Chatbot() {
     }
   }, [messages, isTyping, isOpen]);
 
-  const quickActions = [
-    { label: '📦 Kargo Takibi', key: 'kargo' },
-    { label: '📏 Beden Rehberi', key: 'beden' },
-    { label: '🔄 İade & Değişim', key: 'iade' },
-  ];
 
   // AI Yanıt Vermezse veya Bağlantı Koparsa Devreye Girecek Yedek Kural Motoru
   const generateFallbackResponse = (userText) => {
