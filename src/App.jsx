@@ -31,7 +31,12 @@ function Chatbot() {
       messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }
   }, [messages, isTyping, isOpen]);
-
+  
+<div class="quick-replies">
+    <button>📦 Kargo Takibi</button>
+    <button>📏 Beden Rehberi</button>
+    <button>🔄 İade & Değişim</button>
+</div>
 
   // AI Yanıt Vermezse veya Bağlantı Koparsa Devreye Girecek Yedek Kural Motoru
   const generateFallbackResponse = (userText) => {
