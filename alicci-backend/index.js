@@ -39,71 +39,49 @@ app.get('/', (req, res) => {
 });
 
 // ==========================================
-// 1. ALICCI AI CHATBOT ENDPOINT (KUSURSUZ HAFIZA)
+// 1. ALICCI AI CHATBOT ENDPOINT (AKILLI VE ESNEK)
 // ==========================================
 app.post('/api/chat', async (req, res) => {
     try {
         if (!genAI || !process.env.GEMINI_API_KEY) {
-            return res.status(500).json({ error: "AI servisi yapılandırılmamış (API Anahtarı eksik)." });
+            return res.status(500).json({ error: "AI servisi yapılandırılmamış." });
         }
 
-        const { history } = req.body;
+        // Frontend'den hem 'history' hem de 'message' gelebilmesine izin veriyoruz
+        const { history, message } = req.body;
         
-        if (!history || !Array.isArray(history)) {
-            return res.status(400).json({ error: "Sohbet geçmişi (history) bulunamadı. Frontend kodunu güncellediğinizden emin olun." });
+        // Kullanıcı son mesajı ne gönderdi?
+        let userLastMessage = "";
+        if (message) {
+            userLastMessage = message;
+        } else if (history && Array.isArray(history) && history.length > 0) {
+            userLastMessage = history[history.length - 1].text || history[history.length - 1].message;
         }
 
-        const systemInstruction = `Sen ALICCI giyim markasının profesyonel Müşteri Destek Asistanısın.
+        if (!userLastMessage) {
+            return res.status(400).json({ error: "Boş mesaj gönderilemez." });
+        }
 
-MANTIK VE AKIŞ KURALLARI:
-1. EĞER kullanıcı "Kargo Takibi" derse veya kargosunu sorarsa AMA henüz sipariş kodu (ALC-...) vermediyse:
-   - SADECE: "Sipariş durumunuzu kontrol edebilmem için lütfen ALC- ile başlayan sipariş numaranızı paylaşabilir misiniz?" yanıtını ver.
+        const systemInstruction = `Sen ALICCI giyim markasının Müşteri Destek Asistanısın.
 
-2. EĞER kullanıcı zaten sipariş kodunu verdiyse (örneğin: alc-123456, ALC-98765 vb.):
-   - ASLA TEKRAR SİPARİŞ KODU İSTEME!
-   - Doğrudan verilen kodu kullanarak şu yanıtı ver: "[SİPARİŞ_KODU] numaralı siparişinizin durumunu size e-posta/SMS ile iletilen kargo takip linki üzerinden kontrol edebilirsiniz. Dilerseniz destek@alicci.com adresinden de detay alabilirsiniz."
+KURALLAR:
+1. Kullanıcının sorduğu soruya DOĞRUDAN cevap ver. Sohbet dışı veya genel sorular gelirse (örn: hal hatır, komik sorular) kibarca kısa cevap verip konuyu e-ticarete/yardıma getir.
+2. Kargo takibi sorulursa:
+   - Eğer mesajda ALC- ile başlayan kod VARSA (Örn: ALC-123456): "ALC-123456 numaralı siparişinizin durumunu size SMS/E-posta ile gönderilen kargo takip linkinden kontrol edebilirsiniz. Dilerseniz destek@alicci.com adresine yazabilirsiniz." de.
+   - Eğer mesajda henüz sipariş kodu YOKSA: "Siparişinizi kontrol edebilmem için lütfen ALC- ile başlayan sipariş numaranızı yazar mısınız?" de.
+3. Gerçek kargo sistemine bağlı değilsin, asla "yola çıktı", "hazırlanıyor" gibi SAHTE bilgi uydurma.
+4. Cevapların her zaman 1-2 cümle, kısa, resmi ve kibar olsun.`;
 
-3. GENEL KURALLAR:
-   - Cevapların EN FAZLA 3 cümle olmalı.
-   - Gerçek kargo veritabanına bağlı değilsin, "kargonuz yola çıktı" veya "hazırlanıyor" gibi SAHTE kargo durumları uydurma.
-   - Ciddi, resmi, samimi ve yardımsever ol. "Frekans", "enerji", "harika" gibi gereksiz kelimeler kullanma.`;
-        
+        // API anahtarına bağlı modelleri çek
         const apiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${process.env.GEMINI_API_KEY}`);
         const data = await apiResponse.json();
 
         if (!data.models || data.models.length === 0) {
-            return res.status(500).json({ error: "API anahtarınız hiçbir modele erişemiyor." });
+            return res.status(500).json({ error: "Model listesi alınamadı." });
         }
 
         const geminiModels = data.models.filter(m => m.name.toLowerCase().includes('gemini'));
-
-        // GEMINI API KURALI: Geçmiş mutlaka 'user' ile başlamalı ve 'user -> model' şeklinde sırayla gitmeli.
-        const previousMessages = history.slice(0, -1);
-        let formattedHistory = [];
-        let expectedRole = 'user'; // İlk beklenen mesaj her zaman user olmalı
-
-        for (const msg of previousMessages) {
-            const role = msg.sender === 'user' ? 'user' : 'model';
-            // Eğer gelen mesajın rolü beklediğimiz role uygunsa geçmişe ekle
-            if (role === expectedRole) {
-                formattedHistory.push({
-                    role: role,
-                    parts: [{ text: msg.text }]
-                });
-                // Sıradaki rolü değiştir (user ise model, model ise user bekle)
-                expectedRole = role === 'user' ? 'model' : 'user';
-            }
-        }
-
-        // Eğer geçmiş 'user' ile bitiyorsa ve biz son mesaj olarak yine 'user' yollarsak API çöker. 
-        // Bunu önlemek için sondaki user mesajını çıkarıyoruz.
-        if (formattedHistory.length > 0 && formattedHistory[formattedHistory.length - 1].role === 'user') {
-            formattedHistory.pop();
-        }
-
-        const lastMessage = history[history.length - 1].text;
         let reply = null;
-        let lastError = null;
 
         for (const m of geminiModels) {
             const modelName = m.name.replace('models/', '');
@@ -113,29 +91,48 @@ MANTIK VE AKIŞ KURALLARI:
                     systemInstruction: systemInstruction 
                 });
 
-                const chat = model.startChat({ history: formattedHistory });
-                const result = await chat.sendMessage(lastMessage);
-                reply = result.response.text();
-                
-                console.log(`Başarıyla yanıt veren model: ${modelName}`);
-                break; 
+                // Eğer history varsa chat modunu başlat, yoksa doğrudan yanıt üret
+                if (history && Array.isArray(history) && history.length > 1) {
+                    const formattedHistory = [];
+                    let expectedRole = 'user';
+
+                    for (const msg of history.slice(0, -1)) {
+                        const role = msg.sender === 'user' ? 'user' : 'model';
+                        if (role === expectedRole) {
+                            formattedHistory.push({ role: role, parts: [{ text: msg.text || msg.message }] });
+                            expectedRole = role === 'user' ? 'model' : 'user';
+                        }
+                    }
+
+                    if (formattedHistory.length > 0 && formattedHistory[formattedHistory.length - 1].role === 'user') {
+                        formattedHistory.pop();
+                    }
+
+                    const chat = model.startChat({ history: formattedHistory });
+                    const result = await chat.sendMessage(userLastMessage);
+                    reply = result.response.text();
+                } else {
+                    const prompt = `${systemInstruction}\nMüşteri: ${userLastMessage}\nAsistan:`;
+                    const result = await model.generateContent(prompt);
+                    reply = result.response.text();
+                }
+
+                if (reply) break;
             } catch (err) {
-                lastError = err.message;
-                console.warn(`${modelName} modeli yanıt vermedi, hata: ${lastError}`);
+                console.warn(`${modelName} hatası:`, err.message);
             }
         }
 
         if (!reply) {
-            return res.status(500).json({ error: "Modellerden yanıt alınamadı. Son hata: " + lastError });
+            return res.status(500).json({ error: "AI yanıt üretemedi." });
         }
 
         return res.json({ reply });
     } catch (error) {
-        console.error("AI Chatbot Genel Hatası:", error);
-        return res.status(500).json({ error: error.message || "AI servisi şu an yanıt veremiyor." });
+        console.error("Chatbot Hatası:", error);
+        return res.status(500).json({ error: "Sunucu hatası oluştu." });
     }
 });
-
 // ==========================================
 // 2. ÖDEME FORMU BAŞLATMA ROTASI (İYZİCO)
 // ==========================================
