@@ -3289,3 +3289,9 @@ body.dark-mode .spinner { border-top: 2px solid #000; }
   /* Diğer genişlik ve gölge stillerin... */
   z-index: 1000; /* Diğer elemanların üstünde görünmesi için */
 }
+.chat-window {
+  position: fixed;
+  bottom: 80px; /* Ekranın altından butonun yüksekliği kadar yukarıda */
+  right: 20px;
+  /* top: ... satırı varsa tamamen silinmeli */
+}
