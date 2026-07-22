@@ -3174,3 +3174,7 @@ body.dark-mode .spinner { border-top: 2px solid #000; }
   color: #ffffff;
   border-color: rgba(255, 255, 255, 0.2);
 }
+/* Chatbot penceresindeki X butonunu tamamen gizler */
+.chatbot-close-btn {
+  display: none !important;
+}
