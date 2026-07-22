@@ -3019,3 +3019,66 @@ body.dark-mode .spinner { border-top: 2px solid #000; }
     bottom: 72px;
   }
 }
+/* ==========================================
+   ALICCI CHATBOT - REFINED MINIMALIST CSS
+   ========================================== */
+
+/* 1. YEŞİL İLE İŞARETLENEN YER (Hızlı Butonlar - Tamamen Gizlendi) */
+.chatbot-quick-actions {
+  display: none !important;
+}
+
+/* 2. KIRMIZI İLE İŞARETLENEN YER (Üst Kapatma Butonu - Gizlendi) */
+.chatbot-close-btn {
+  display: none !important;
+}
+
+/* 3. GRİ İLE İŞARETLENEN YER (Çevrimiçi / AI Yazısı - Ultra Minimalist & Şık) */
+.chatbot-status {
+  margin-top: 3px;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.4); /* Mat ve elit duran gri tonu */
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.chatbot-status-dot {
+  width: 5px;
+  height: 5px;
+  background-color: #10B981;
+  border-radius: 50%;
+  box-shadow: 0 0 6px rgba(16, 185, 129, 0.5);
+}
+
+/* 4. MAVİ İLE İŞARETLENEN YER (Alt Açma/Kapama Butonu - Küçültüldü ve Lüksleştirildi) */
+.chatbot-toggle-btn {
+  width: 44px; /* Dev beyaz halka yerine zarif 44px boyut */
+  height: 44px;
+  border-radius: 50%;
+  background: #0d0d0d; /* Kalitesiz beyaz yerine derin mat siyah */
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.45);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.chatbot-toggle-btn:hover {
+  transform: scale(1.06);
+  background: #181818;
+  border-color: rgba(255, 255, 255, 0.25);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6);
+}
+
+.chatbot-toggle-btn svg {
+  width: 18px; /* İkon boyutu kibarlaştırıldı */
+  height: 18px;
+  stroke-width: 1.8px;
+}
