@@ -3271,3 +3271,21 @@ body.dark-mode .spinner { border-top: 2px solid #000; }
 .chat-btn:hover {
   background-color: #dcfce7;
 }
+/* Kapsayıcı elemanın konum bağlamını belirliyoruz */
+.chatbot-wrapper {
+  position: relative;
+}
+
+/* Açılan sohbet penceresi veya menüsü */
+.chat-window { /* Kendi kullandığın class adını yazabilirsin */
+  position: absolute;
+  bottom: 100%; /* Butonun tam üstünden başlatır */
+  left: 0;       /* Veya sağa yaslamak istersen: right: 0; */
+  margin-bottom: 8px; /* Buton ile pencere arasına biraz mesafe koyar */
+  
+  /* Varsayılan top değerlerini sıfırlıyoruz */
+  top: auto; 
+  
+  /* Diğer genişlik ve gölge stillerin... */
+  z-index: 1000; /* Diğer elemanların üstünde görünmesi için */
+}
