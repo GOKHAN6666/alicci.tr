@@ -2766,22 +2766,21 @@ body.dark-mode .spinner { border-top: 2px solid #000; }
   }
 }
 /* ==========================================
-   1. KIRMIZI ALANLARI GİZLEME (HIDE)
+   1. KIRMIZI ALANLARI GİZLEME
    ========================================== */
 
-/* Üst kısımdaki "Çevrimiçi" durum metni ve sağ üst ikon */
-.chat-header .status-indicator,
-.chat-header .status,
-.chat-header .header-icon, /* Veya sağ üstteki ikona ait class */
-.chat-header span:not(.title) { 
+/* Üst kısımdaki "Çevrimiçi • AI Destekli" yazısı ve yeşil nokta */
+.chatbot-status {
   display: none !important;
 }
 
-/* Alt taraftaki hızlı işlem butonları ve kaydırma alanı */
-.quick-replies,
-.quick-buttons,
-.suggestion-chips,
-.scroll-container { /* Kendi HTML yapındaki sınıf adlarına göre güncelleyebilirsin */
+/* Sağ üst köşedeki '✕' kapatma ikonu */
+.chatbot-close-btn {
+  display: none !important;
+}
+
+/* Alt taraftaki hızlı kısayol butonları (Kargo Takibi, Beden Rehberi vb.) */
+.chatbot-quick-actions {
   display: none !important;
 }
 
@@ -2790,13 +2789,13 @@ body.dark-mode .spinner { border-top: 2px solid #000; }
    2. MAVİ ALAN: GÖNDER BUTONU ANİMASYONU
    ========================================== */
 
-/* Animasyon tanımı (hafif genişleyip küçülme) */
+/* Nefes alma / Nabız (Pulse) animasyon tanımı */
 @keyframes sendBtnPulse {
   0% {
     transform: scale(1);
-    box-shadow: 0 0 0 0 rgba(0, 0, 0, 0.2);
+    box-shadow: 0 0 0 0 rgba(0, 0, 0, 0.25);
   }
-  70% {
+  50% {
     transform: scale(1.05);
     box-shadow: 0 0 0 8px rgba(0, 0, 0, 0);
   }
@@ -2806,16 +2805,14 @@ body.dark-mode .spinner { border-top: 2px solid #000; }
   }
 }
 
-/* Gönder Butonuna Animasyonu Bağlama */
-.send-btn, 
-button[type="submit"] {
-  animation: sendBtnPulse 2s infinite ease-in-out;
-  transition: all 0.2s ease-in-out;
+/* Gönder butonuna animasyonu bağlama */
+.chatbot-send-btn {
+  animation: sendBtnPulse 2.2s infinite ease-in-out !important;
+  transition: transform 0.2s ease, opacity 0.2s ease !important;
 }
 
-/* Butonun üzerine gelindiğinde (Hover) tepkisi */
-.send-btn:hover,
-button[type="submit"]:hover {
+/* Fare üzerine geldiğinde (Hover) tepki */
+.chatbot-send-btn:hover:not(:disabled) {
   transform: scale(1.1) !important;
   opacity: 0.9;
 }
