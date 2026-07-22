@@ -2765,3 +2765,57 @@ body.dark-mode .spinner { border-top: 2px solid #000; }
     opacity: 1;
   }
 }
+/* ==========================================
+   1. KIRMIZI ALANLARI GİZLEME (HIDE)
+   ========================================== */
+
+/* Üst kısımdaki "Çevrimiçi" durum metni ve sağ üst ikon */
+.chat-header .status-indicator,
+.chat-header .status,
+.chat-header .header-icon, /* Veya sağ üstteki ikona ait class */
+.chat-header span:not(.title) { 
+  display: none !important;
+}
+
+/* Alt taraftaki hızlı işlem butonları ve kaydırma alanı */
+.quick-replies,
+.quick-buttons,
+.suggestion-chips,
+.scroll-container { /* Kendi HTML yapındaki sınıf adlarına göre güncelleyebilirsin */
+  display: none !important;
+}
+
+
+/* ==========================================
+   2. MAVİ ALAN: GÖNDER BUTONU ANİMASYONU
+   ========================================== */
+
+/* Animasyon tanımı (hafif genişleyip küçülme) */
+@keyframes sendBtnPulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(0, 0, 0, 0.2);
+  }
+  70% {
+    transform: scale(1.05);
+    box-shadow: 0 0 0 8px rgba(0, 0, 0, 0);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
+  }
+}
+
+/* Gönder Butonuna Animasyonu Bağlama */
+.send-btn, 
+button[type="submit"] {
+  animation: sendBtnPulse 2s infinite ease-in-out;
+  transition: all 0.2s ease-in-out;
+}
+
+/* Butonun üzerine gelindiğinde (Hover) tepkisi */
+.send-btn:hover,
+button[type="submit"]:hover {
+  transform: scale(1.1) !important;
+  opacity: 0.9;
+}
