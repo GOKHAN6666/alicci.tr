@@ -17,7 +17,7 @@ const quickActions = [
 ];
 
 // ==========================================
-// AKILLI ALICCI DESTEK CHATBOT BİLEŞENİ (AI ENTEGRELİ & ANİMASYONLU SÜRÜM)
+// AKILLI ALICCI DESTEK CHATBOT BİLEŞENİ
 // ==========================================
 function Chatbot() {
   const [isOpen, setIsOpen] = useState(false);
@@ -81,7 +81,6 @@ function Chatbot() {
     setIsTyping(true);
 
     try {
-      // Backend AI Endpoint Çağrısı
       const response = await fetch(`${BACKEND_URL}/api/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -132,7 +131,6 @@ function Chatbot() {
         display: 'flex',
         flexDirection: 'column',
         overflow: 'hidden',
-        // --- ANİMASYON AYARLARI ---
         opacity: isOpen ? 1 : 0,
         transform: isOpen ? 'translateY(0) scale(1)' : 'translateY(20px) scale(0.9)',
         pointerEvents: isOpen ? 'all' : 'none',
@@ -259,7 +257,7 @@ function Chatbot() {
 
       </div>
 
-      {/* 2. Açma/Kapama Balon Butonu (İkon ve Dönüş Animasyonlu) */}
+      {/* 2. Açma/Kapama Balon Butonu */}
       <button
         onClick={() => setIsOpen(!isOpen)}
         style={{
@@ -295,6 +293,9 @@ function Chatbot() {
   );
 }
 
+// ==========================================
+// YARDIMCI FONKSİYONLAR & BİLEŞENLER
+// ==========================================
 const getRecommendedSize = (height, weight, fitPreference) => {
     let baseSize = "M";
 
@@ -372,6 +373,9 @@ const ProductCard = ({ product, openProductModal, closeCart }) => {
     );
 };
 
+// ==========================================
+// ANA UYGULAMA BİLEŞENİ (APP)
+// ==========================================
 function App() {
     const [products, setProducts] = useState([]);
     const [selectedProduct, setSelectedProduct] = useState(null);
@@ -438,7 +442,7 @@ function App() {
                     }
                 })
                 .catch((err) => {
-                    console.warn("Backend uyandırılırken bir sorun oluştu (uykuda olabilir, uyanıyor):", err);
+                    console.warn("Backend uyandırılırken bir sorun oluştu:", err);
                 });
         }
     }, []);
@@ -2046,7 +2050,7 @@ function App() {
                 </div>
             )}
 
-            {/* Akıllı Müşteri Destek Chatbot Bileşeni */}
+            {/* Chatbot Bileşeni */}
             <Chatbot />
 
             <Analytics />
