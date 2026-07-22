@@ -3082,3 +3082,95 @@ body.dark-mode .spinner { border-top: 2px solid #000; }
   height: 18px;
   stroke-width: 1.8px;
 }
+/* ==========================================
+   ALICCI CHATBOT - HEADER & ANİMASYON REVİZYONU
+   ========================================== */
+
+/* 1. KAPANIŞ ANİMASYONUNU AKICI YAPAN PENCERE KODU */
+.chatbot-window {
+  position: absolute;
+  bottom: 64px;
+  right: 0;
+  width: 380px;
+  max-height: 85vh;
+  height: 580px;
+  background: #0d0d0d;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  
+  /* Kapanış Esnasında Aşağı Süzülme Animasyonu */
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(16px) scale(0.97);
+  transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+              visibility 0.3s step-after;
+}
+
+.chatbot-window.open {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0) scale(1);
+  transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+              visibility 0s;
+}
+
+/* 2. ÜST BAR (HEADER) DÜZENLEMESİ */
+.chatbot-header {
+  padding: 18px 20px;
+  background: rgba(13, 13, 13, 0.9);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* TURUNCU KISIM: Başlık Ortalandı ve Boyutu Tipografik Olarak Ayarlandı */
+.chatbot-title {
+  margin: 0;
+  font-size: 14.5px;
+  font-weight: 600;
+  letter-spacing: 2px; /* Lüks marka hissi veren geniş harf aralığı */
+  color: #ffffff;
+  text-transform: uppercase;
+  text-align: center;
+}
+
+/* KIRMIZI KISIM: Çevrimiçi / AI Destekli Yazısı Tamamen Kaldırıldı */
+.chatbot-status {
+  display: none !important;
+}
+
+/* ÜST BARA EKLENEN KİBAR VE MİNİMAL KAPATMA BUTONU */
+.chatbot-close-btn {
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.5);
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.chatbot-close-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.2);
+}
