@@ -2765,3 +2765,257 @@ body.dark-mode .spinner { border-top: 2px solid #000; }
     opacity: 1;
   }
 }
+/* ==========================================
+   AKILLI ALICCI CHATBOT - PREMIUM UI (SADE & ŞIK)
+   ========================================== */
+
+/* Genel Konteyner */
+.chatbot-container {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 9999;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+/* Yüzen Açma/Kapama Butonu */
+.chatbot-toggle-btn {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: #0a0a0a;
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+}
+.chatbot-toggle-btn:hover {
+  transform: scale(1.05);
+  background: #1a1a1a;
+  border-color: rgba(255, 255, 255, 0.2);
+}
+.chatbot-toggle-btn svg {
+  width: 24px;
+  height: 24px;
+}
+
+/* Ana Chat Penceresi */
+.chatbot-window {
+  position: absolute;
+  bottom: 76px;
+  right: 0;
+  width: 380px;
+  max-height: 85vh;
+  height: 600px;
+  background: #0f0f0f; /* Çok derin premium siyah */
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 20px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(15px) scale(0.98);
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.chatbot-window.open {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0) scale(1);
+}
+
+/* Üst Başlık (Header) */
+.chatbot-header {
+  padding: 20px;
+  background: rgba(15, 15, 15, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.chatbot-title {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  color: #fff;
+  text-transform: uppercase;
+}
+.chatbot-status {
+  margin: 4px 0 0;
+  font-size: 11px;
+  color: #888;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.chatbot-status-dot {
+  width: 6px;
+  height: 6px;
+  background-color: #10B981; /* Canlı ve zarif bir yeşil */
+  border-radius: 50%;
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.4);
+}
+.chatbot-close-btn {
+  background: none;
+  border: none;
+  color: #666;
+  font-size: 18px;
+  cursor: pointer;
+  transition: color 0.2s ease;
+  padding: 4px;
+}
+.chatbot-close-btn:hover {
+  color: #fff;
+}
+
+/* Sohbet Akışı (Mesajlar) */
+.chatbot-messages {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  /* Çirkin scrollbar'ı tamamen gizler */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.chatbot-messages::-webkit-scrollbar {
+  display: none;
+}
+
+/* Mesaj Balonları */
+.chatbot-message-wrapper {
+  display: flex;
+  width: 100%;
+}
+.chatbot-message-wrapper.bot {
+  justify-content: flex-start;
+}
+.chatbot-message-wrapper.user {
+  justify-content: flex-end;
+}
+
+.chatbot-message-bubble {
+  max-width: 82%;
+  padding: 12px 16px;
+  font-size: 13.5px;
+  line-height: 1.5;
+  border-radius: 16px;
+  word-wrap: break-word;
+}
+.chatbot-message-bubble.bot {
+  background: #1a1a1a;
+  color: #e5e5e5;
+  border-bottom-left-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.03);
+}
+.chatbot-message-bubble.user {
+  background: #ffffff;
+  color: #000000;
+  border-bottom-right-radius: 4px;
+  font-weight: 500;
+}
+
+/* Yazıyor Animasyonu */
+.chatbot-typing-indicator {
+  font-size: 12px;
+  color: #666;
+  font-style: italic;
+  padding: 4px 8px;
+}
+
+/* Hızlı Kısayol Butonları (Scrollbar Gizli) */
+.chatbot-quick-actions {
+  display: flex;
+  gap: 8px;
+  padding: 12px 20px;
+  overflow-x: auto;
+  border-top: 1px solid rgba(255, 255, 255, 0.03);
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.chatbot-quick-actions::-webkit-scrollbar {
+  display: none;
+}
+.chatbot-quick-btn {
+  flex-shrink: 0;
+  background: transparent;
+  color: #aaa;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  padding: 8px 16px;
+  border-radius: 30px; /* Daha oval, zarif bir hap görünümü */
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+.chatbot-quick-btn:hover {
+  background: #fff;
+  color: #000;
+  border-color: #fff;
+}
+
+/* Alt Input Alanı */
+.chatbot-input-form {
+  display: flex;
+  padding: 16px 20px;
+  background: rgba(15, 15, 15, 0.9);
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+  gap: 12px;
+  align-items: center;
+}
+.chatbot-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-size: 14px;
+  padding: 8px 0;
+  outline: none;
+}
+.chatbot-input::placeholder {
+  color: #555;
+}
+.chatbot-send-btn {
+  background: #fff;
+  color: #000;
+  border: none;
+  padding: 8px 18px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.chatbot-send-btn:disabled {
+  background: #222;
+  color: #555;
+  cursor: not-allowed;
+}
+.chatbot-send-btn:not(:disabled):hover {
+  background: #e0e0e0;
+  transform: translateY(-1px);
+}
+
+/* Mobil Uyumluluk */
+@media (max-width: 480px) {
+  .chatbot-container {
+    bottom: 16px;
+    right: 16px;
+  }
+  .chatbot-window {
+    width: calc(100vw - 32px);
+    right: 0;
+    bottom: 72px;
+  }
+}
