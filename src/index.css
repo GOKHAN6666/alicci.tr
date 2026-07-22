@@ -3245,6 +3245,8 @@ body.dark-mode .spinner { border-top: 2px solid #000; }
   display: none;
 }
 
+
+
 /* Chatbot Butonu */
 .chatbot-wrapper {
   position: relative;
@@ -3259,10 +3261,6 @@ body.dark-mode .spinner { border-top: 2px solid #000; }
   color: #166534;
   border: 1px solid #bbf7d0;
   border-radius: 9999px;
-
-.chat-btn:hover {
-  background-color: #dcfce7;
-}
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
@@ -3270,4 +3268,6 @@ body.dark-mode .spinner { border-top: 2px solid #000; }
   transition: background-color 0.2s;
 }
 
-
+.chat-btn:hover {
+  background-color: #dcfce7;
+}
