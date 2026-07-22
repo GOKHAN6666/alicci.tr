@@ -3273,20 +3273,4 @@ body.dark-mode .spinner { border-top: 2px solid #000; }
   background-color: #dcfce7;
 }
 
-/* Chat Popover (Varsayılan olarak GİZLİ) */
-.chat-popover {
-  display: none; /* Gizli */
-  position: absolute;
-  right: 0;
-  top: calc(100% + 12px);
-  width: 340px;
-  height: 450px;
-  background-color: #ffffff;
-  border: 1px solid #e5e7eb;
-  border-radius: 16px;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
-  z-index: 1000;
-  flex-direction: column;
-  overflow: hidden;
-}
 
