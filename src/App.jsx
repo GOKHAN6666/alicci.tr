@@ -17,7 +17,7 @@ const quickActions = [
 ];
 
 // ==========================================
-// AKILLI ALICCI DESTEK CHATBOT BİLEŞENİ
+// AKILLI ALICCI DESTEK CHATBOT BİLEŞENİ (CSS / CLASSNAME ENTEGRELİ SÜRÜM)
 // ==========================================
 function Chatbot() {
   const [isOpen, setIsOpen] = useState(false);
@@ -81,6 +81,7 @@ function Chatbot() {
     setIsTyping(true);
 
     try {
+      // Backend AI Endpoint Çağrısı
       const response = await fetch(`${BACKEND_URL}/api/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -115,75 +116,47 @@ function Chatbot() {
   };
 
   return (
-    <div style={{ position: 'fixed', bottom: '24px', right: '24px', zIndex: 9999999, fontFamily: 'sans-serif' }}>
+    <div className="chatbot-container">
       
-      {/* 1. Chat Penceresi (Geçiş Animasyonlu) */}
-      <div style={{
-        position: 'absolute',
-        bottom: '70px',
-        right: '0',
-        width: '340px',
-        height: '480px',
-        backgroundColor: '#fff',
-        borderRadius: '16px',
-        boxShadow: '0 20px 40px rgba(0,0,0,0.25)',
-        border: '1px solid #e5e5e5',
-        display: 'flex',
-        flexDirection: 'column',
-        overflow: 'hidden',
-        opacity: isOpen ? 1 : 0,
-        transform: isOpen ? 'translateY(0) scale(1)' : 'translateY(20px) scale(0.9)',
-        pointerEvents: isOpen ? 'all' : 'none',
-        transformOrigin: 'bottom right',
-        transition: 'opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1), transform 0.3s cubic-bezier(0.16, 1, 0.3, 1)'
-      }}>
+      {/* 1. Chat Penceresi */}
+      <div className={`chatbot-window ${isOpen ? 'open' : ''}`}>
         
         {/* Header */}
-        <div style={{ backgroundColor: '#000', color: '#fff', padding: '14px 18px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div className="chatbot-header">
           <div>
-            <h3 style={{ margin: 0, fontSize: '12px', fontWeight: 'bold', letterSpacing: '1px', color: '#fff' }}>ALICCI AI ASSISTANT</h3>
-            <p style={{ margin: '3px 0 0 0', fontSize: '10px', color: '#34d399', display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#34d399', display: 'inline-block' }}></span>
+            <h3 className="chatbot-title">ALICCI AI ASSISTANT</h3>
+            <p className="chatbot-status">
+              <span className="chatbot-status-dot"></span>
               Çevrimiçi • AI Destekli
             </p>
           </div>
           <button
             onClick={() => setIsOpen(false)}
-            style={{ background: 'none', border: 'none', color: '#aaa', fontSize: '16px', cursor: 'pointer', padding: '4px' }}
+            className="chatbot-close-btn"
+            aria-label="Kapat"
           >
             ✕
           </button>
         </div>
 
         {/* Mesaj Alanı */}
-        <div style={{ flex: 1, padding: '14px', overflowY: 'auto', backgroundColor: '#f9f9f9', display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '12px' }}>
+        <div className="chatbot-messages">
           {messages.map((msg) => (
             <div
               key={msg.id}
-              style={{ display: 'flex', justifyContent: msg.sender === 'user' ? 'flex-end' : 'flex-start' }}
+              className={`chatbot-message-wrapper ${msg.sender}`}
             >
-              <div
-                style={{
-                  maxWidth: '82%',
-                  padding: '10px 14px',
-                  borderRadius: '14px',
-                  lineHeight: '1.4',
-                  backgroundColor: msg.sender === 'user' ? '#000' : '#fff',
-                  color: msg.sender === 'user' ? '#fff' : '#111',
-                  border: msg.sender === 'user' ? 'none' : '1px solid #eee',
-                  boxShadow: '0 2px 5px rgba(0,0,0,0.03)'
-                }}
-              >
+              <div className={`chatbot-message-bubble ${msg.sender}`}>
                 {msg.text.split('**').map((part, idx) => 
-                  idx % 2 === 1 ? <strong key={idx} style={{ fontWeight: 'bold' }}>{part}</strong> : part
+                  idx % 2 === 1 ? <strong key={idx}>{part}</strong> : part
                 )}
               </div>
             </div>
           ))}
 
           {isTyping && (
-            <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
-              <div style={{ backgroundColor: '#fff', border: '1px solid #eee', padding: '8px 12px', borderRadius: '12px', color: '#888' }}>
+            <div className="chatbot-message-wrapper bot">
+              <div className="chatbot-typing-indicator">
                 Yazıyor...
               </div>
             </div>
@@ -192,21 +165,12 @@ function Chatbot() {
         </div>
 
         {/* Hızlı Kısayollar */}
-        <div style={{ padding: '8px', backgroundColor: '#fff', borderTop: '1px solid #eee', display: 'flex', gap: '6px', overflowX: 'auto' }}>
+        <div className="chatbot-quick-actions">
           {quickActions.map((action) => (
             <button
               key={action.key}
               onClick={() => handleSend(action.label)}
-              style={{
-                fontSize: '11px',
-                backgroundColor: '#f0f0f0',
-                color: '#333',
-                padding: '6px 12px',
-                borderRadius: '20px',
-                border: 'none',
-                cursor: 'pointer',
-                whiteSpace: 'nowrap'
-              }}
+              className="chatbot-quick-btn"
             >
               {action.label}
             </button>
@@ -219,37 +183,19 @@ function Chatbot() {
             e.preventDefault();
             handleSend();
           }} 
-          style={{ padding: '10px', backgroundColor: '#fff', borderTop: '1px solid #eee', display: 'flex', alignItems: 'center', gap: '8px' }}
+          className="chatbot-input-form"
         >
           <input
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="Bir soru sorun veya ALC- kargo kodu..."
-            style={{
-              flex: 1,
-              padding: '8px 12px',
-              backgroundColor: '#f4f4f4',
-              border: '1px solid #ddd',
-              borderRadius: '20px',
-              fontSize: '12px',
-              outline: 'none',
-              color: '#000'
-            }}
+            className="chatbot-input"
           />
           <button
             type="submit"
             disabled={!input.trim()}
-            style={{
-              backgroundColor: '#000',
-              color: '#fff',
-              border: 'none',
-              padding: '8px 14px',
-              borderRadius: '20px',
-              cursor: 'pointer',
-              opacity: !input.trim() ? 0.4 : 1,
-              fontSize: '12px'
-            }}
+            className="chatbot-send-btn"
           >
             Gönder
           </button>
@@ -260,30 +206,15 @@ function Chatbot() {
       {/* 2. Açma/Kapama Balon Butonu */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        style={{
-          backgroundColor: '#000',
-          color: '#fff',
-          borderRadius: '50%',
-          boxShadow: '0 10px 25px rgba(0,0,0,0.3)',
-          border: '1px solid #333',
-          cursor: 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          width: '56px',
-          height: '56px',
-          transition: 'transform 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
-          transform: isOpen ? 'rotate(90deg)' : 'rotate(0deg)',
-          float: 'right'
-        }}
+        className={`chatbot-toggle-btn ${isOpen ? 'open' : ''}`}
         aria-label="Sohbeti Aç/Kapat"
       >
         {isOpen ? (
-          <svg style={{ width: '22px', height: '22px' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
           </svg>
         ) : (
-          <svg style={{ width: '24px', height: '24px' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 10h.01M12 10h.01M16 10h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
           </svg>
         )}
@@ -293,9 +224,6 @@ function Chatbot() {
   );
 }
 
-// ==========================================
-// YARDIMCI FONKSİYONLAR & BİLEŞENLER
-// ==========================================
 const getRecommendedSize = (height, weight, fitPreference) => {
     let baseSize = "M";
 
@@ -373,9 +301,6 @@ const ProductCard = ({ product, openProductModal, closeCart }) => {
     );
 };
 
-// ==========================================
-// ANA UYGULAMA BİLEŞENİ (APP)
-// ==========================================
 function App() {
     const [products, setProducts] = useState([]);
     const [selectedProduct, setSelectedProduct] = useState(null);
@@ -442,7 +367,7 @@ function App() {
                     }
                 })
                 .catch((err) => {
-                    console.warn("Backend uyandırılırken bir sorun oluştu:", err);
+                    console.warn("Backend uyandırılırken bir sorun oluştu (uykuda olabilir, uyanıyor):", err);
                 });
         }
     }, []);
@@ -1023,6 +948,254 @@ function App() {
                 @keyframes slide-up { from { transform: scale(0.95) translateY(20px); opacity: 0; } to { transform: scale(1) translateY(0); opacity: 1; } }
                 @keyframes slide-down { from { transform: scale(1) translateY(0); opacity: 1; } to { transform: scale(0.95) translateY(20px); opacity: 0; } }
                 @keyframes cart-slide-out { from { transform: translateX(0); opacity: 1; } to { transform: translateX(100%); opacity: 0; } }
+
+                /* CHATBOT STİLLERİ */
+                .chatbot-container {
+                    position: fixed;
+                    bottom: 24px;
+                    right: 24px;
+                    z-index: 9999999;
+                    font-family: sans-serif;
+                }
+                .chatbot-window {
+                    position: absolute;
+                    bottom: 70px;
+                    right: 0;
+                    width: 340px;
+                    height: 480px;
+                    background-color: #fff;
+                    border-radius: 16px;
+                    box-shadow: 0 20px 40px rgba(0,0,0,0.25);
+                    border: 1px solid #e5e5e5;
+                    display: flex;
+                    flex-direction: column;
+                    overflow: hidden;
+                    opacity: 0;
+                    transform: translateY(20px) scale(0.9);
+                    pointer-events: none;
+                    transform-origin: bottom right;
+                    transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1), transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+                }
+                body.dark-mode .chatbot-window {
+                    background-color: #1a1a1a;
+                    border-color: #333;
+                    color: #fff;
+                }
+                .chatbot-window.open {
+                    opacity: 1;
+                    transform: translateY(0) scale(1);
+                    pointer-events: all;
+                }
+                .chatbot-header {
+                    background-color: #000;
+                    color: #fff;
+                    padding: 14px 18px;
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                }
+                body.dark-mode .chatbot-header {
+                    background-color: #111;
+                    border-bottom: 1px solid #222;
+                }
+                .chatbot-title {
+                    margin: 0;
+                    font-size: 12px;
+                    font-weight: bold;
+                    letter-spacing: 1px;
+                    color: #fff;
+                }
+                .chatbot-status {
+                    margin: 3px 0 0 0;
+                    font-size: 10px;
+                    color: #34d399;
+                    display: flex;
+                    align-items: center;
+                    gap: 4px;
+                }
+                .chatbot-status-dot {
+                    width: 6px;
+                    height: 6px;
+                    border-radius: 50%;
+                    background-color: #34d399;
+                    display: inline-block;
+                }
+                .chatbot-close-btn {
+                    background: none;
+                    border: none;
+                    color: #aaa;
+                    font-size: 16px;
+                    cursor: pointer;
+                    padding: 4px;
+                }
+                .chatbot-close-btn:hover {
+                    color: #fff;
+                }
+                .chatbot-messages {
+                    flex: 1;
+                    padding: 14px;
+                    overflow-y: auto;
+                    background-color: #f9f9f9;
+                    display: flex;
+                    flex-direction: column;
+                    gap: 10px;
+                    font-size: 12px;
+                }
+                body.dark-mode .chatbot-messages {
+                    background-color: #121212;
+                }
+                .chatbot-message-wrapper {
+                    display: flex;
+                }
+                .chatbot-message-wrapper.user {
+                    justify-content: flex-end;
+                }
+                .chatbot-message-wrapper.bot {
+                    justify-content: flex-start;
+                }
+                .chatbot-message-bubble {
+                    max-width: 82%;
+                    padding: 10px 14px;
+                    border-radius: 14px;
+                    line-height: 1.4;
+                    box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+                }
+                .chatbot-message-bubble.user {
+                    background-color: #000;
+                    color: #fff;
+                    border: none;
+                }
+                body.dark-mode .chatbot-message-bubble.user {
+                    background-color: #fff;
+                    color: #000;
+                }
+                .chatbot-message-bubble.bot {
+                    background-color: #fff;
+                    color: #111;
+                    border: 1px solid #eee;
+                }
+                body.dark-mode .chatbot-message-bubble.bot {
+                    background-color: #222;
+                    color: #eee;
+                    border-color: #333;
+                }
+                .chatbot-typing-indicator {
+                    background-color: #fff;
+                    border: 1px solid #eee;
+                    padding: 8px 12px;
+                    border-radius: 12px;
+                    color: #888;
+                }
+                body.dark-mode .chatbot-typing-indicator {
+                    background-color: #222;
+                    border-color: #333;
+                    color: #aaa;
+                }
+                .chatbot-quick-actions {
+                    padding: 8px;
+                    background-color: #fff;
+                    border-top: 1px solid #eee;
+                    display: flex;
+                    gap: 6px;
+                    overflow-x: auto;
+                }
+                body.dark-mode .chatbot-quick-actions {
+                    background-color: #1a1a1a;
+                    border-color: #2d2d2d;
+                }
+                .chatbot-quick-btn {
+                    font-size: 11px;
+                    background-color: #f0f0f0;
+                    color: #333;
+                    padding: 6px 12px;
+                    border-radius: 20px;
+                    border: none;
+                    cursor: pointer;
+                    white-space: nowrap;
+                    transition: background-color 0.2s;
+                }
+                body.dark-mode .chatbot-quick-btn {
+                    background-color: #2a2a2a;
+                    color: #ddd;
+                }
+                .chatbot-quick-btn:hover {
+                    background-color: #e0e0e0;
+                }
+                body.dark-mode .chatbot-quick-btn:hover {
+                    background-color: #3a3a3a;
+                }
+                .chatbot-input-form {
+                    padding: 10px;
+                    background-color: #fff;
+                    border-top: 1px solid #eee;
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                }
+                body.dark-mode .chatbot-input-form {
+                    background-color: #1a1a1a;
+                    border-color: #2d2d2d;
+                }
+                .chatbot-input {
+                    flex: 1;
+                    padding: 8px 12px;
+                    background-color: #f4f4f4;
+                    border: 1px solid #ddd;
+                    border-radius: 20px;
+                    font-size: 12px;
+                    outline: none;
+                    color: #000;
+                }
+                body.dark-mode .chatbot-input {
+                    background-color: #252525;
+                    border-color: #3d3d3d;
+                    color: #fff;
+                }
+                .chatbot-send-btn {
+                    background-color: #000;
+                    color: #fff;
+                    border: none;
+                    padding: 8px 14px;
+                    border-radius: 20px;
+                    cursor: pointer;
+                    font-size: 12px;
+                    transition: opacity 0.2s;
+                }
+                body.dark-mode .chatbot-send-btn {
+                    background-color: #fff;
+                    color: #000;
+                }
+                .chatbot-send-btn:disabled {
+                    opacity: 0.4;
+                    cursor: not-allowed;
+                }
+                .chatbot-toggle-btn {
+                    background-color: #000;
+                    color: #fff;
+                    border-radius: 50%;
+                    box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+                    border: 1px solid #333;
+                    cursor: pointer;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    width: 56px;
+                    height: 56px;
+                    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s;
+                    float: right;
+                }
+                body.dark-mode .chatbot-toggle-btn {
+                    background-color: #fff;
+                    color: #000;
+                    border-color: #fff;
+                }
+                .chatbot-toggle-btn.open {
+                    transform: rotate(90deg);
+                }
+                .chatbot-toggle-btn svg {
+                    width: 24px;
+                    height: 24px;
+                }
 
                 @keyframes avatar-breathe {
                     0%, 100% { transform: scale(1); }
@@ -2050,7 +2223,7 @@ function App() {
                 </div>
             )}
 
-            {/* Chatbot Bileşeni */}
+            {/* Akıllı Müşteri Destek Chatbot Bileşeni */}
             <Chatbot />
 
             <Analytics />
