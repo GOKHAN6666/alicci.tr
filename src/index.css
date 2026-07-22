@@ -2816,3 +2816,10 @@ body.dark-mode .spinner { border-top: 2px solid #000; }
   transform: scale(1.1) !important;
   opacity: 0.9;
 }
+/* Chatbot açıkken sağ alttaki yuvarlak butonu gizle */
+.chatbot-toggle-btn.open {
+  opacity: 0 !important;
+  pointer-events: none !important;
+  transform: scale(0.8) !important;
+  transition: all 0.2s ease-in-out !important;
+}
