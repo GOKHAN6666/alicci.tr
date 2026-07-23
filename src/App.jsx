@@ -17,10 +17,9 @@ const quickActions = [
 ];
 
 // ==========================================
-// AKILLI ALICCI DESTEK CHATBOT BİLEŞENİ (CSS / CLASSNAME ENTEGRELİ SÜRÜM)
+// AKILLI ALICCI DESTEK CHATBOT BİLEŞENİ
 // ==========================================
-function Chatbot() {
-  const [isOpen, setIsOpen] = useState(false);
+function Chatbot({ isOpen, setIsOpen }) {
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef(null);
@@ -81,7 +80,6 @@ function Chatbot() {
     setIsTyping(true);
 
     try {
-      // Backend AI Endpoint Çağrısı
       const response = await fetch(`${BACKEND_URL}/api/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -205,7 +203,7 @@ function Chatbot() {
 
       {/* 2. Açma/Kapama Balon Butonu */}
       <button
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={() => setIsOpen()}
         className={`chatbot-toggle-btn ${isOpen ? 'open' : ''}`}
         aria-label="Sohbeti Aç/Kapat"
       >
@@ -215,7 +213,7 @@ function Chatbot() {
           </svg>
         ) : (
           <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 10h.01M12 10h.01M16 10h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 10h.01M12 10h.01M16 10h.01M16 10h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
           </svg>
         )}
       </button>
@@ -320,6 +318,9 @@ function App() {
     const [isLoading, setIsLoading] = useState(true);
     const [isDarkMode, setIsDarkMode] = useState(false);
     
+    // AI Chatbot State'i
+    const [isChatbotOpen, setIsChatbotOpen] = useState(false);
+
     const [showSizeCalcModal, setShowSizeCalcModal] = useState(false);
     const [isSizeCalcClosing, setIsSizeCalcClosing] = useState(false);
     const [modalTiltStyle, setModalTiltStyle] = useState({});
@@ -351,6 +352,21 @@ function App() {
 
     const WHATSAPP_NUMBER = "905511903118";
     const INSTAGRAM_USERNAME = "alicci.official";
+
+    // AI Chatbot Açma/Kapama ve Diğer Modalları Temizleme Yönetimi
+    const toggleChatbot = (explicitState) => {
+        const nextState = typeof explicitState === 'boolean' ? explicitState : !isChatbotOpen;
+        if (nextState) {
+            setSelectedProduct(null);
+            setIsCartOpen(false);
+            setShowTrackingModal(false);
+            setShowSizeCalcModal(false);
+            setShowOrderOptionsModal(false);
+            setIsMobileMenuOpen(false);
+            setShowIyzicoModal(false);
+        }
+        setIsChatbotOpen(nextState);
+    };
 
     const showToast = (message) => {
         setToast(message);
@@ -497,8 +513,9 @@ function App() {
         localStorage.setItem("alicciCartItems", JSON.stringify(cartItems));
     }, [cartItems]);
 
+    // SCROLL ENGELLEME (no-scroll) EFEKTİ (isChatbotOpen DAHİL EDİLDİ)
     useEffect(() => {
-        const isAnyModalOpen = selectedProduct || showOrderOptionsModal || showConfirmationModal || showTrackingModal || isCartOpen || isMobileMenuOpen || showSizeCalcModal || isSizeCalcClosing || showIyzicoModal || isIyzicoClosing;
+        const isAnyModalOpen = selectedProduct || showOrderOptionsModal || showConfirmationModal || showTrackingModal || isCartOpen || isMobileMenuOpen || showSizeCalcModal || isSizeCalcClosing || showIyzicoModal || isIyzicoClosing || isChatbotOpen;
         if (isAnyModalOpen) {
             document.body.classList.add('no-scroll');
         } else {
@@ -507,7 +524,7 @@ function App() {
         return () => {
             document.body.classList.remove('no-scroll');
         };
-    }, [selectedProduct, showOrderOptionsModal, showConfirmationModal, showTrackingModal, isCartOpen, isMobileMenuOpen, showSizeCalcModal, isSizeCalcClosing, showIyzicoModal, isIyzicoClosing]);
+    }, [selectedProduct, showOrderOptionsModal, showConfirmationModal, showTrackingModal, isCartOpen, isMobileMenuOpen, showSizeCalcModal, isSizeCalcClosing, showIyzicoModal, isIyzicoClosing, isChatbotOpen]);
 
     useEffect(() => {
         if (!showIyzicoModal || !iyzicoFormHtml) return;
@@ -544,6 +561,7 @@ function App() {
     }, [iyzicoFormHtml, showIyzicoModal]);
 
     const openProductModal = (product) => {
+        setIsChatbotOpen(false);
         setSelectedProduct(product);
         setIsProductClosing(false);
         setCurrentModalImageIndex(0);
@@ -634,6 +652,7 @@ function App() {
                 ]);
             }
             closeProductModal();
+            setIsChatbotOpen(false);
             setIsCartOpen(true);
         }
     };
@@ -720,6 +739,7 @@ function App() {
             return;
         }
 
+        setIsChatbotOpen(false);
         setIsIyzicoLoading(true);
         setShowIyzicoModal(true);
         setIsIyzicoClosing(false);
@@ -773,6 +793,7 @@ function App() {
     };
 
     const openTrackingModal = () => {
+        setIsChatbotOpen(false);
         setShowTrackingModal(true);
         setIsTrackingClosing(false);
         setSearchedOrder(null);
@@ -1594,6 +1615,7 @@ function App() {
                     <li onClick={() => handleNavLinkClick("contact")}>İletişim</li>
                     <li onClick={() => handleNavLinkClick(null, openTrackingModal)}>Kargo Takip</li>
                     <li className="mobile-cart-button" onClick={() => {
+                        setIsChatbotOpen(false);
                         if (isCartOpen) closeCart();
                         else setIsCartOpen(true);
                         closeMobileMenu();
@@ -1807,6 +1829,7 @@ function App() {
                                         <button 
                                             type="button"
                                             onClick={() => {
+                                                setIsChatbotOpen(false);
                                                 setShowSizeCalcModal(true);
                                                 setCalcResult(null);
                                             }}
@@ -2224,7 +2247,7 @@ function App() {
             )}
 
             {/* Akıllı Müşteri Destek Chatbot Bileşeni */}
-            <Chatbot />
+            <Chatbot isOpen={isChatbotOpen} setIsOpen={toggleChatbot} />
 
             <Analytics />
         </>
