@@ -39,7 +39,7 @@ app.get('/', (req, res) => {
 });
 
 // ==========================================
-// 1. ALICCI AI CHATBOT ENDPOINT (AKILLI VE ESNEK)
+// 1. ALICCI AI CHATBOT ENDPOINT (HIZLI & DÜŞÜK LİMİTLİ)
 // ==========================================
 app.post('/api/chat', async (req, res) => {
     try {
@@ -47,7 +47,6 @@ app.post('/api/chat', async (req, res) => {
             return res.status(500).json({ error: "AI servisi yapılandırılmamış." });
         }
 
-        // Frontend'den hem 'history' hem de 'message' gelebilmesine izin veriyoruz
         const { history, message } = req.body;
         
         // Kullanıcı son mesajı ne gönderdi?
@@ -72,67 +71,47 @@ KURALLAR:
 3. Gerçek kargo sistemine bağlı değilsin, asla "yola çıktı", "hazırlanıyor" gibi SAHTE bilgi uydurma.
 4. Cevapların her zaman 1-2 cümle, kısa, resmi ve kibar olsun.`;
 
-        // API anahtarına bağlı modelleri çek
-        const apiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${process.env.GEMINI_API_KEY}`);
-        const data = await apiResponse.json();
+        // Doğrudan Gemini 3.5 Flash-Lite Model Entegrasyonu
+        const model = genAI.getGenerativeModel({ 
+            model: "gemini-3.5-flash-lite",
+            systemInstruction: systemInstruction 
+        });
 
-        if (!data.models || data.models.length === 0) {
-            return res.status(500).json({ error: "Model listesi alınamadı." });
-        }
+        let reply = "";
 
-        const geminiModels = data.models.filter(m => m.name.toLowerCase().includes('gemini'));
-        let reply = null;
+        // Geçmiş varsa sohbet oturumu başlat, yoksa doğrudan yanıt üret
+        if (history && Array.isArray(history) && history.length > 1) {
+            const formattedHistory = [];
+            let expectedRole = 'user';
 
-        for (const m of geminiModels) {
-            const modelName = m.name.replace('models/', '');
-            try {
-                const model = genAI.getGenerativeModel({ 
-                    model: modelName,
-                    systemInstruction: systemInstruction 
-                });
-
-                // Eğer history varsa chat modunu başlat, yoksa doğrudan yanıt üret
-                if (history && Array.isArray(history) && history.length > 1) {
-                    const formattedHistory = [];
-                    let expectedRole = 'user';
-
-                    for (const msg of history.slice(0, -1)) {
-                        const role = msg.sender === 'user' ? 'user' : 'model';
-                        if (role === expectedRole) {
-                            formattedHistory.push({ role: role, parts: [{ text: msg.text || msg.message }] });
-                            expectedRole = role === 'user' ? 'model' : 'user';
-                        }
-                    }
-
-                    if (formattedHistory.length > 0 && formattedHistory[formattedHistory.length - 1].role === 'user') {
-                        formattedHistory.pop();
-                    }
-
-                    const chat = model.startChat({ history: formattedHistory });
-                    const result = await chat.sendMessage(userLastMessage);
-                    reply = result.response.text();
-                } else {
-                    const prompt = `${systemInstruction}\nMüşteri: ${userLastMessage}\nAsistan:`;
-                    const result = await model.generateContent(prompt);
-                    reply = result.response.text();
+            for (const msg of history.slice(0, -1)) {
+                const role = msg.sender === 'user' ? 'user' : 'model';
+                if (role === expectedRole) {
+                    formattedHistory.push({ role: role, parts: [{ text: msg.text || msg.message }] });
+                    expectedRole = role === 'user' ? 'model' : 'user';
                 }
-
-                if (reply) break;
-            } catch (err) {
-                console.warn(`${modelName} hatası:`, err.message);
             }
-        }
 
-        if (!reply) {
-            return res.status(500).json({ error: "AI yanıt üretemedi." });
+            if (formattedHistory.length > 0 && formattedHistory[formattedHistory.length - 1].role === 'user') {
+                formattedHistory.pop();
+            }
+
+            const chat = model.startChat({ history: formattedHistory });
+            const result = await chat.sendMessage(userLastMessage);
+            reply = result.response.text();
+        } else {
+            const result = await model.generateContent(userLastMessage);
+            reply = result.response.text();
         }
 
         return res.json({ reply });
+
     } catch (error) {
         console.error("Chatbot Hatası:", error);
         return res.status(500).json({ error: "Sunucu hatası oluştu." });
     }
 });
+
 // ==========================================
 // 2. ÖDEME FORMU BAŞLATMA ROTASI (İYZİCO)
 // ==========================================
