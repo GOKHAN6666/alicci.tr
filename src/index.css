@@ -2875,3 +2875,42 @@ body.dark-mode .chatbot-send-btn {
 .chatbot-preview-container {
   margin-right: 70px !important;
 }
+/* ==========================================
+   AI PANEL BOYUT VE SCROLL (KAYDIRMA) DÜZELTMESİ
+   ========================================== */
+
+/* AI Panelinin ekrandan taşmasını ve sayfada scroll oluşturmasını engelleme */
+.chatbot-window,
+.chatbot-container {
+  position: fixed !important;
+  right: 20px !important;
+  bottom: 20px !important;
+  width: 380px !important;
+  max-width: calc(100vw - 40px) !important;
+  
+  /* Yüksekliği ekrana göre sınırla (Ekranın dışına asla taşmaz) */
+  height: 560px !important;
+  max-height: calc(100vh - 40px) !important;
+  
+  display: flex !important;
+  flex-direction: column !important;
+  z-index: 9999 !important;
+}
+
+/* Kaydırma (Scroll) işlemini sadece mesajlar alanının içine hapsetme */
+.chatbot-messages,
+.chatbot-body {
+  flex: 1 !important;
+  overflow-y: auto !important; /* Yalnızca içerik taşarsa panel içinde scroll çıkar */
+  overflow-x: hidden !important;
+}
+
+/* Şık ve ince iç scrollbar görünümü */
+.chatbot-messages::-webkit-scrollbar {
+  width: 5px;
+}
+
+.chatbot-messages::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+}
