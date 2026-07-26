@@ -7,7 +7,7 @@ import { supabase } from "./supabaseclient";
 // ==========================================
 // BACKEND SUNUCU ADRESİ
 // ==========================================
-const BACKEND_URL = "https://alicci-backend.onrender.com"; 
+const BACKEND_URL = "https://alicci-backend-us.onrender.com"; 
 
 // Hızlı Kısayol Butonları
 const quickActions = [
