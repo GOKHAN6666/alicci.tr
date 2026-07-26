@@ -127,7 +127,7 @@ app.post('/api/iyzico-checkout', (req, res) => {
             currency: Iyzipay.CURRENCY.TRY,
             basketId: 'B' + Date.now(),
             paymentGroup: Iyzipay.PAYMENT_GROUP.PRODUCT,
-            callbackUrl: 'https://alicci-backend.onrender.com/payment-callback', 
+            callbackUrl: 'https://alicci-backend-us.onrender.com/payment-callback', 
             
             buyer: {
                 id: buyerInfo?.id || 'BY99',
