@@ -2015,7 +2015,7 @@ function App() {
                                         color: 'inherit'
                                     }}
                                 >
-                                    Sokak Tarzı (Oversize)
+                                    Biraz Bol Olsun (Oversize)
                                 </button>
                             </div>
                         </div>
