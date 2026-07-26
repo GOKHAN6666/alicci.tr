@@ -73,7 +73,7 @@ KURALLAR:
 
         // Doğrudan Gemini 3.5 Flash-Lite Model Entegrasyonu
         const model = genAI.getGenerativeModel({ 
-            model: "gemini-3.5-flash-lite",
+            model: "gemini-1.5-flash",
             systemInstruction: systemInstruction 
         });
 
