@@ -39,18 +39,14 @@ app.get('/', (req, res) => {
 });
 
 // ==========================================
-// 1. ALICCI AI CHATBOT ENDPOINT (HIZLI & DÜŞÜK LİMİTLİ)
+// 1. ALICCI AI CHATBOT ENDPOINT (Kesintisiz Mod)
 // ==========================================
 app.post('/api/chat', async (req, res) => {
-    try {
-        if (!genAI || !process.env.GEMINI_API_KEY) {
-            return res.status(500).json({ error: "AI servisi yapılandırılmamış." });
-        }
+    let userLastMessage = "";
 
+    try {
         const { history, message } = req.body;
         
-        // Kullanıcı son mesajı ne gönderdi?
-        let userLastMessage = "";
         if (message) {
             userLastMessage = message;
         } else if (history && Array.isArray(history) && history.length > 0) {
@@ -61,55 +57,71 @@ app.post('/api/chat', async (req, res) => {
             return res.status(400).json({ error: "Boş mesaj gönderilemez." });
         }
 
-        const systemInstruction = `Sen ALICCI giyim markasının Müşteri Destek Asistanısın.
+        if (genAI && process.env.GEMINI_API_KEY) {
+            const systemInstruction = `Sen ALICCI giyim markasının Müşteri Destek Asistanısın.
 
 KURALLAR:
-1. Kullanıcının sorduğu soruya DOĞRUDAN cevap ver. Sohbet dışı veya genel sorular gelirse (örn: hal hatır, komik sorular) kibarca kısa cevap verip konuyu e-ticarete/yardıma getir.
+1. Kullanıcının sorduğu soruya DOĞRUDAN cevap ver. Sohbet dışı sorular gelirse kibarca kısa cevap verip konuyu e-ticarete/yardıma getir.
 2. Kargo takibi sorulursa:
-   - Eğer mesajda ALC- ile başlayan kod VARSA (Örn: ALC-123456): "ALC-123456 numaralı siparişinizin durumunu size SMS/E-posta ile gönderilen kargo takip linkinden kontrol edebilirsiniz. Dilerseniz destek@alicci.com adresine yazabilirsiniz." de.
+   - Eğer mesajda ALC- ile başlayan kod VARSA (Örn: ALC-123456): "ALC-123456 numaralı siparişinizin durumunu size SMS/E-posta ile gönderilen kargo takip linkinden kontrol edebilirsiniz." de.
    - Eğer mesajda henüz sipariş kodu YOKSA: "Siparişinizi kontrol edebilmem için lütfen ALC- ile başlayan sipariş numaranızı yazar mısınız?" de.
-3. Gerçek kargo sistemine bağlı değilsin, asla "yola çıktı", "hazırlanıyor" gibi SAHTE bilgi uydurma.
+3. Asla sahte kargo durumu uydurma.
 4. Cevapların her zaman 1-2 cümle, kısa, resmi ve kibar olsun.`;
 
-        // Doğrudan Gemini 3.5 Flash-Lite Model Entegrasyonu
-        const model = genAI.getGenerativeModel({ 
-            model: "gemini-2.0-flash-lite",
-            systemInstruction: systemInstruction 
-        });
+            // En kararlı ve yüksek kotalı hafif model
+            const model = genAI.getGenerativeModel({ 
+                model: "gemini-1.5-flash-8b",
+                systemInstruction: systemInstruction 
+            });
 
-        let reply = "";
+            let reply = "";
 
-        // Geçmiş varsa sohbet oturumu başlat, yoksa doğrudan yanıt üret
-        if (history && Array.isArray(history) && history.length > 1) {
-            const formattedHistory = [];
-            let expectedRole = 'user';
+            if (history && Array.isArray(history) && history.length > 1) {
+                const formattedHistory = [];
+                let expectedRole = 'user';
 
-            for (const msg of history.slice(0, -1)) {
-                const role = msg.sender === 'user' ? 'user' : 'model';
-                if (role === expectedRole) {
-                    formattedHistory.push({ role: role, parts: [{ text: msg.text || msg.message }] });
-                    expectedRole = role === 'user' ? 'model' : 'user';
+                for (const msg of history.slice(0, -1)) {
+                    const role = msg.sender === 'user' ? 'user' : 'model';
+                    if (role === expectedRole) {
+                        formattedHistory.push({ role: role, parts: [{ text: msg.text || msg.message }] });
+                        expectedRole = role === 'user' ? 'model' : 'user';
+                    }
                 }
+
+                if (formattedHistory.length > 0 && formattedHistory[formattedHistory.length - 1].role === 'user') {
+                    formattedHistory.pop();
+                }
+
+                const chat = model.startChat({ history: formattedHistory });
+                const result = await chat.sendMessage(userLastMessage);
+                reply = result.response.text();
+            } else {
+                const result = await model.generateContent(userLastMessage);
+                reply = result.response.text();
             }
 
-            if (formattedHistory.length > 0 && formattedHistory[formattedHistory.length - 1].role === 'user') {
-                formattedHistory.pop();
-            }
-
-            const chat = model.startChat({ history: formattedHistory });
-            const result = await chat.sendMessage(userLastMessage);
-            reply = result.response.text();
-        } else {
-            const result = await model.generateContent(userLastMessage);
-            reply = result.response.text();
+            return res.json({ reply });
         }
 
-        return res.json({ reply });
-
     } catch (error) {
-        console.error("Chatbot Hatası:", error);
-        return res.status(500).json({ error: "Sunucu hatası oluştu." });
+        console.warn("AI Servis Uyarısı (Kota/Limit Aşıldı), Güvenli Yedek Yanıt Veriliyor:", error.message);
     }
+
+    // KOTA DOLSA BİLE KULLANICIYA CEVAP VEREN YEREL MOTOR (Fallback)
+    const lowerMsg = userLastMessage.toLowerCase();
+    let fallbackReply = "Şu anda canlı destek yoğunluğumuz bulunuyor. Sorularınız için adresine alicci.tr@gmail.com e-posta gönderebilirsiniz.";
+
+    if (lowerMsg.includes("alc-") || (lowerMsg.includes("kargo") && lowerMsg.includes("numara"))) {
+        fallbackReply = "ALC- numaralı siparişinizin durumunu 'Kargo Takip' butonuna tıklayıp bakabilirsiniz.";
+    } else if (lowerMsg.includes("kargo") || lowerMsg.includes("sipariş") || lowerMsg.includes("nerede")) {
+        fallbackReply = "Sipariş durumunuzu sorgulayabilmemiz için lütfen ALC- ile başlayan sipariş numaranızı paylaşır mısınız?";
+    } else if (lowerMsg.includes("iade") || lowerMsg.includes("değişim")) {
+        fallbackReply = "İade ve değişim işlemlerinizi 14 gün içinde alicci.tr@gmail.com üzerinden iletişime geçerek başlatabilirsiniz.";
+    } else if (lowerMsg.includes("merhaba") || lowerMsg.includes("selam")) {
+        fallbackReply = "Merhaba! ALICCI Müşteri Hizmetleri'ne hoş geldiniz. Size nasıl yardımcı olabilirim?";
+    }
+
+    return res.json({ reply: fallbackReply });
 });
 
 // ==========================================
