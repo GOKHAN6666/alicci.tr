@@ -69,9 +69,9 @@ KURALLAR:
 4. Cevapların her zaman 1-2 cümle, kısa, resmi ve kibar olsun.
 5. Eğer şakacı tavır edinilirse sende hafiften şakacı ol`;
 
-            // DÜZELTME: Model adı stabil çalışan 'gemini-1.5-flash' ile değiştirildi
+            // DÜZELTME: Model adı 404 hatalarını önlemek için 'gemini-2.0-flash' olarak güncellendi
             const model = genAI.getGenerativeModel({ 
-                model: "gemini-1.5-flash",
+                model: "gemini-2.0-flash",
                 systemInstruction: systemInstruction 
             });
 
@@ -105,7 +105,6 @@ KURALLAR:
         }
 
     } catch (error) {
-        // DÜZELTME: Yanıltıcı "Kota Aşıldı" mesajı yerine gerçek hata detaylandırıldı
         console.warn("AI Servis Hatası (Yedek Yerel Cevap Veriliyor):", error.message);
     }
 
