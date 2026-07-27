@@ -69,9 +69,9 @@ KURALLAR:
 4. Cevapların her zaman 1-2 cümle, kısa, resmi ve kibar olsun.
 5. Eğer şakacı tavır edinilirse sende hafiften şakacı ol`;
 
-            // DÜZELTME: Model adı 404 hatalarını önlemek için 'gemini-2.0-flash' olarak güncellendi
+            // DÜZELTME: Kota hatalarını önlemek ve en yüksek ücretsiz limitleri kullanmak için 'gemini-1.5-flash' seçildi
             const model = genAI.getGenerativeModel({ 
-                model: "gemini-2.0-flash",
+                model: "gemini-1.5-flash",
                 systemInstruction: systemInstruction 
             });
 
