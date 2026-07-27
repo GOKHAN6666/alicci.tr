@@ -69,9 +69,9 @@ KURALLAR:
 4. Cevapların her zaman 1-2 cümle, kısa, resmi ve kibar olsun.
 5. Eğer şakacı tavır edinilirse sende hafiften şakacı ol`;
 
-            // En kararlı ve yüksek kotalı hafif model
+            // DÜZELTME: Model adı stabil çalışan 'gemini-1.5-flash' ile değiştirildi
             const model = genAI.getGenerativeModel({ 
-                model: "gemini-1.5-flash-lite",
+                model: "gemini-1.5-flash",
                 systemInstruction: systemInstruction 
             });
 
@@ -105,12 +105,13 @@ KURALLAR:
         }
 
     } catch (error) {
-        console.warn("AI Servis Uyarısı (Kota/Limit Aşıldı), Güvenli Yedek Yanıt Veriliyor:", error.message);
+        // DÜZELTME: Yanıltıcı "Kota Aşıldı" mesajı yerine gerçek hata detaylandırıldı
+        console.warn("AI Servis Hatası (Yedek Yerel Cevap Veriliyor):", error.message);
     }
 
-    // KOTA DOLSA BİLE KULLANICIYA CEVAP VEREN YEREL MOTOR (Fallback)
+    // KOTA VEYA API HATASI DURUMUNDA ÇALIŞAN YEREL MOTOR (Fallback)
     const lowerMsg = userLastMessage.toLowerCase();
-    let fallbackReply = "Şu anda canlı destek yoğunluğumuz bulunuyor. Sorularınız için adresine alicci.tr@gmail.com e-posta gönderebilirsiniz.";
+    let fallbackReply = "Şu anda canlı destek yoğunluğumuz bulunuyor. Sorularınız için alicci.tr@gmail.com e-posta gönderebilirsiniz.";
 
     if (lowerMsg.includes("alc-") || (lowerMsg.includes("kargo") && lowerMsg.includes("numara"))) {
         fallbackReply = "ALC- numaralı siparişinizin durumunu 'Kargo Takip' butonuna tıklayıp bakabilirsiniz.";
