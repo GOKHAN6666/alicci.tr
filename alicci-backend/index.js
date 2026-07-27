@@ -69,14 +69,11 @@ KURALLAR:
 4. Cevapların her zaman 1-2 cümle, kısa, resmi ve kibar olsun.
 5. Eğer şakacı tavır edinilirse sende hafiften şakacı ol`;
 
-            // DÜZELTME: apiVersion: "v1" parametresi eklenerek v1beta 404 hatası engellendi
-            const model = genAI.getGenerativeModel(
-                { 
-                    model: "gemini-1.5-flash-latest",
-                    systemInstruction: systemInstruction 
-                },
-                { apiVersion: "v1" }
-            );
+            // DÜZELTME: Doğrudan resmi model ismi olan 'gemini-1.5-flash' kullanıldı.
+            const model = genAI.getGenerativeModel({ 
+                model: "gemini-1.5-flash",
+                systemInstruction: systemInstruction 
+            });
 
             let reply = "";
 
