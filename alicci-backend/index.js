@@ -25,12 +25,12 @@ const iyzipay = new Iyzipay({
 
 // Gemini AI Güvenli Başlatma
 let genAI = null;
-try {
-    if (process.env.GEMINI_API_KEY) {
+if (process.env.GEMINI_API_KEY) {
+    try {
         genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+    } catch (e) {
+        console.error("Gemini Başlatma Hatası:", e);
     }
-} catch (e) {
-    console.error("Gemini Başlatma Hatası:", e);
 }
 
 // Temel test rotası
@@ -47,17 +47,19 @@ app.post('/api/chat', async (req, res) => {
     try {
         const { history, message } = req.body;
         
+        // Kullanıcının son mesajını alma
         if (message) {
             userLastMessage = message;
         } else if (history && Array.isArray(history) && history.length > 0) {
-            userLastMessage = history[history.length - 1].text || history[history.length - 1].message;
+            const lastItem = history[history.length - 1];
+            userLastMessage = lastItem.text || lastItem.message;
         }
 
         if (!userLastMessage) {
             return res.status(400).json({ error: "Boş mesaj gönderilemez." });
         }
 
-        if (genAI && process.env.GEMINI_API_KEY) {
+        if (genAI) {
             const systemInstruction = `Sen ALICCI giyim markasının Müşteri Destek Asistanısın.
 
 KURALLAR:
@@ -69,7 +71,6 @@ KURALLAR:
 4. Cevapların her zaman 1-2 cümle, kısa, resmi ve kibar olsun.
 5. Eğer şakacı tavır edinilirse sende hafiften şakacı ol`;
 
-            // DÜZELTME: Doğrudan resmi model ismi olan 'gemini-1.5-flash' kullanıldı.
             const model = genAI.getGenerativeModel({ 
                 model: "gemini-1.5-flash",
                 systemInstruction: systemInstruction 
@@ -77,22 +78,38 @@ KURALLAR:
 
             let reply = "";
 
+            // Geçmiş mesajları Gemini'nin istediği formata getirme
+            let formattedHistory = [];
             if (history && Array.isArray(history) && history.length > 1) {
-                const formattedHistory = [];
-                let expectedRole = 'user';
+                const previousMessages = history.slice(0, -1);
+                
+                for (const msg of previousMessages) {
+                    const textContent = msg.text || msg.message;
+                    if (!textContent) continue;
 
-                for (const msg of history.slice(0, -1)) {
-                    const role = msg.sender === 'user' ? 'user' : 'model';
-                    if (role === expectedRole) {
-                        formattedHistory.push({ role: role, parts: [{ text: msg.text || msg.message }] });
-                        expectedRole = role === 'user' ? 'model' : 'user';
+                    const role = (msg.sender === 'user' || msg.role === 'user') ? 'user' : 'model';
+                    
+                    // Gemini geçmişinin İLK mesajı mutlaka 'user' olmak zorundadır
+                    if (formattedHistory.length === 0 && role !== 'user') {
+                        continue; // Botun ilk karşılama mesajını atla
+                    }
+
+                    // Ardışık aynı rolleri engelle (user -> model -> user)
+                    if (formattedHistory.length === 0 || formattedHistory[formattedHistory.length - 1].role !== role) {
+                        formattedHistory.push({
+                            role: role,
+                            parts: [{ text: textContent }]
+                        });
                     }
                 }
 
+                // Geçmiş en son 'user' ile bitiyorsa çıkar (çünkü yeni mesaj ayrıca gönderilecek)
                 if (formattedHistory.length > 0 && formattedHistory[formattedHistory.length - 1].role === 'user') {
                     formattedHistory.pop();
                 }
+            }
 
+            if (formattedHistory.length > 0) {
                 const chat = model.startChat({ history: formattedHistory });
                 const result = await chat.sendMessage(userLastMessage);
                 reply = result.response.text();
@@ -101,7 +118,9 @@ KURALLAR:
                 reply = result.response.text();
             }
 
-            return res.json({ reply });
+            if (reply) {
+                return res.json({ reply });
+            }
         }
 
     } catch (error) {
@@ -132,11 +151,13 @@ app.post('/api/iyzico-checkout', (req, res) => {
     try {
         const { basketItems, totalPrice, buyerInfo } = req.body;
 
+        const formattedPrice = parseFloat(totalPrice || 0).toFixed(2);
+
         const request = {
             locale: Iyzipay.LOCALE.TR,
             conversationId: '123456789',
-            price: totalPrice.toString(),
-            paidPrice: totalPrice.toString(),
+            price: formattedPrice,
+            paidPrice: formattedPrice,
             currency: Iyzipay.CURRENCY.TRY,
             basketId: 'B' + Date.now(),
             paymentGroup: Iyzipay.PAYMENT_GROUP.PRODUCT,
@@ -158,14 +179,14 @@ app.post('/api/iyzico-checkout', (req, res) => {
                 zipCode: '34000'
             },
             shippingAddress: {
-                contactName: (buyerInfo?.name + ' ' + buyerInfo?.surname) || 'Misafir Kullanıcı',
+                contactName: buyerInfo?.name ? `${buyerInfo.name} ${buyerInfo.surname || ''}` : 'Misafir Kullanıcı',
                 city: buyerInfo?.city || 'Istanbul',
                 country: 'Turkey',
                 address: buyerInfo?.address || 'Türkiye Merkez',
                 zipCode: '34000'
             },
             billingAddress: {
-                contactName: (buyerInfo?.name + ' ' + buyerInfo?.surname) || 'Misafir Kullanıcı',
+                contactName: buyerInfo?.name ? `${buyerInfo.name} ${buyerInfo.surname || ''}` : 'Misafir Kullanıcı',
                 city: buyerInfo?.city || 'Istanbul',
                 country: 'Turkey',
                 address: buyerInfo?.address || 'Türkiye Merkez',
@@ -176,16 +197,16 @@ app.post('/api/iyzico-checkout', (req, res) => {
                 name: item.title || item.name || 'ALICCI Ürün',
                 category: 'E-Ticaret',
                 itemType: Iyzipay.BASKET_ITEM_TYPE.PHYSICAL,
-                price: item.price.toString()
+                price: parseFloat(item.price || 0).toFixed(2)
             }))
         };
 
         iyzipay.checkoutFormInitialize.create(request, (err, result) => {
             if (err || result.status === 'failure') {
-                console.error('Iyzico Hatası:', err || result.errorMessage);
+                console.error('Iyzico Hatası:', err || result?.errorMessage);
                 return res.status(400).json({
                     success: false,
-                    message: result.errorMessage || 'Ödeme formu oluşturulamadı.'
+                    message: result?.errorMessage || 'Ödeme formu oluşturulamadı.'
                 });
             }
 
