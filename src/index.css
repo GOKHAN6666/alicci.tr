@@ -3020,3 +3020,29 @@ body.dark-mode .chatbot-send-btn {
   0% { transform: translateY(0); opacity: 0.4; }
   100% { transform: translateY(-6px); opacity: 1; }
 }
+/* ==========================================
+   AI BUTON VE MENÜ BACKDROP Z-INDEX DÜZELTMESİ
+   ========================================== */
+
+/* 1. AI Chat Butonu (Backdrop'un (40) altında kalması için z-index: 30 yapıyoruz) */
+.chatbot-toggle-btn,
+.ai-toggle-btn,
+.ai-chat-button {
+  z-index: 30 !important;
+}
+
+/* 2. Menü Açıldığında Ekranı Kaplayan Karartma/Buğulama Katmanı (Overlay) */
+.menu-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  z-index: 40 !important; /* AI butonunun (30) ÜSTÜNE geçer ve onu da buğular */
+}
+
+/* 3. Açılır Mobil Menünün Kendisi */
+.mobile-menu-drawer,
+.nav-menu.open {
+  z-index: 50 !important; /* Her şeyin en üstünde durur */
+}
