@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const Iyzipay = require('iyzipay');
-const { GoogleGenerativeAI } = require("@google/generative-ai");
+const Groq = require("groq-sdk"); // Gemini yerine Groq eklendi
 require('dotenv').config();
 
 const app = express();
@@ -23,13 +23,13 @@ const iyzipay = new Iyzipay({
     uri: 'https://sandbox-api.iyzipay.com'
 });
 
-// Gemini AI Güvenli Başlatma
-let genAI = null;
-if (process.env.GEMINI_API_KEY) {
+// Groq AI Güvenli Başlatma
+let groq = null;
+if (process.env.GROQ_API_KEY) {
     try {
-        genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+        groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
     } catch (e) {
-        console.error("Gemini Başlatma Hatası:", e);
+        console.error("Groq Başlatma Hatası:", e);
     }
 }
 
@@ -39,7 +39,7 @@ app.get('/', (req, res) => {
 });
 
 // ==========================================
-// 1. ALICCI AI CHATBOT ENDPOINT (Kesintisiz Mod)
+// 1. ALICCI AI CHATBOT ENDPOINT (Groq Destekli)
 // ==========================================
 app.post('/api/chat', async (req, res) => {
     let userLastMessage = "";
@@ -59,7 +59,7 @@ app.post('/api/chat', async (req, res) => {
             return res.status(400).json({ error: "Boş mesaj gönderilemez." });
         }
 
-        if (genAI) {
+        if (groq) {
             const systemInstruction = `Sen ALICCI giyim markasının Müşteri Destek Asistanısın.
 
 KURALLAR:
@@ -71,14 +71,11 @@ KURALLAR:
 4. Cevapların her zaman 1-2 cümle, kısa, resmi ve kibar olsun.
 5. Eğer şakacı tavır edinilirse sende hafiften şakacı ol`;
 
-const model = genAI.getGenerativeModel({ 
-    model: "gemini-1.5-flash",
-    systemInstruction: systemInstruction 
-});
-            let reply = "";
+            // Groq için Mesaj Geçmişi Yapılandırması
+            const messages = [
+                { role: "system", content: systemInstruction }
+            ];
 
-            // Geçmiş mesajları Gemini'nin istediği formata getirme
-            let formattedHistory = [];
             if (history && Array.isArray(history) && history.length > 1) {
                 const previousMessages = history.slice(0, -1);
                 
@@ -86,36 +83,36 @@ const model = genAI.getGenerativeModel({
                     const textContent = msg.text || msg.message;
                     if (!textContent) continue;
 
-                    const role = (msg.sender === 'user' || msg.role === 'user') ? 'user' : 'model';
+                    // Groq role formatı: "user" veya "assistant"
+                    const role = (msg.sender === 'user' || msg.role === 'user') ? 'user' : 'assistant';
                     
-                    // Gemini geçmişinin İLK mesajı mutlaka 'user' olmak zorundadır
-                    if (formattedHistory.length === 0 && role !== 'user') {
-                        continue; // Botun ilk karşılama mesajını atla
+                    if (messages.length === 1 && role !== 'user') {
+                        continue; // İlk karşılama mesajını atla
                     }
 
-                    // Ardışık aynı rolleri engelle (user -> model -> user)
-                    if (formattedHistory.length === 0 || formattedHistory[formattedHistory.length - 1].role !== role) {
-                        formattedHistory.push({
+                    if (messages[messages.length - 1].role !== role) {
+                        messages.push({
                             role: role,
-                            parts: [{ text: textContent }]
+                            content: textContent
                         });
                     }
                 }
 
-                // Geçmiş en son 'user' ile bitiyorsa çıkar (çünkü yeni mesaj ayrıca gönderilecek)
-                if (formattedHistory.length > 0 && formattedHistory[formattedHistory.length - 1].role === 'user') {
-                    formattedHistory.pop();
+                if (messages[messages.length - 1].role === 'user') {
+                    messages.pop();
                 }
             }
 
-            if (formattedHistory.length > 0) {
-                const chat = model.startChat({ history: formattedHistory });
-                const result = await chat.sendMessage(userLastMessage);
-                reply = result.response.text();
-            } else {
-                const result = await model.generateContent(userLastMessage);
-                reply = result.response.text();
-            }
+            // Kullanıcının son mesajını ekle
+            messages.push({ role: "user", content: userLastMessage });
+
+            // Groq API İsteği (Llama 3.3 Modeli)
+            const completion = await groq.chat.completions.create({
+                messages: messages,
+                model: "llama-3.3-70b-versatile"
+            });
+
+            const reply = completion.choices[0]?.message?.content;
 
             if (reply) {
                 return res.json({ reply });
