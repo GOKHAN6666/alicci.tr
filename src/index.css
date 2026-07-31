@@ -3046,3 +3046,36 @@ body.dark-mode .chatbot-send-btn {
 .nav-menu.open {
   z-index: 50 !important; /* Her şeyin en üstünde durur */
 }
+/* ==========================================
+   MODAL / KATMAN Z-INDEX DÜZELTMESİ
+   ========================================== */
+
+/* 1. Üst Navbar / Header (Modal açıldığında altta kalmalı) */
+header, 
+.header, 
+.navbar,
+.top-nav {
+  z-index: 100 !important; /* Arka plan karartmasından DÜŞÜK olmalı */
+}
+
+/* 2. Tüm Modalların Siyah Karartma Arka Planı (Backdrop) */
+.modal-overlay,
+.backdrop,
+.drawer-overlay,
+.kargo-overlay {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  background-color: rgba(0, 0, 0, 0.65); /* Ekranı karartan katman */
+  z-index: 9998 !important; /* Header'ın (100) ÜSTÜNE çıkar, tıklamayı keser */
+}
+
+/* 3. Açılan Pencere Panelleri (Kargo Takip, Sepet, AI Chat) */
+.modal-content,
+.kargo-takip-modal,
+.cart-drawer,
+.ai-chat-window {
+  z-index: 9999 !important; /* En üstte duran ana pencere */
+}
