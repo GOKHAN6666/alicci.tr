@@ -1,7 +1,8 @@
 const express = require('express');
 const cors = require('cors');
 const Iyzipay = require('iyzipay');
-const Groq = require("groq-sdk"); // Gemini yerine Groq eklendi
+const Groq = require("groq-sdk");
+const { createClient } = require('@supabase/supabase-js'); // Supabase kütüphanesi eklendi
 require('dotenv').config();
 
 const app = express();
@@ -33,13 +34,42 @@ if (process.env.GROQ_API_KEY) {
     }
 }
 
+// Supabase Bağlantı Ayarları
+const supabase = createClient(
+    process.env.SUPABASE_URL || '',
+    process.env.SUPABASE_ANON_KEY || ''
+);
+
+// Supabase'den 'products' tablosundaki tek ürünü çeken fonksiyon
+async function getProductData() {
+    try {
+        if (!process.env.SUPABASE_URL || !process.env.SUPABASE_ANON_KEY) {
+            return null;
+        }
+        const { data, error } = await supabase
+            .from('products')
+            .select('name, price, description, stock')
+            .limit(1)
+            .maybeSingle();
+
+        if (error) {
+            console.error("Supabase Ürün Verisi Okunamadı:", error);
+            return null;
+        }
+        return data;
+    } catch (err) {
+        console.error("Supabase Bağlantı Hatası:", err);
+        return null;
+    }
+}
+
 // Temel test rotası
 app.get('/', (req, res) => {
     res.send('ALICCI Backend Aktif ve Çalışıyor! 🚀');
 });
 
 // ==========================================
-// 1. ALICCI AI CHATBOT ENDPOINT (Groq Destekli)
+// 1. ALICCI AI CHATBOT ENDPOINT (Groq + Supabase Destekli)
 // ==========================================
 app.post('/api/chat', async (req, res) => {
     let userLastMessage = "";
@@ -60,16 +90,31 @@ app.post('/api/chat', async (req, res) => {
         }
 
         if (groq) {
-            const systemInstruction = `Sen ALICCI giyim markasının Müşteri Destek Asistanısın.
+            // 1. Supabase'den güncel ürün bilgisini çekiyoruz
+            const product = await getProductData();
+
+            let productDetailsText = "Şu an sistemde aktif ürün bilgisi bulunamadı.";
+            if (product) {
+                productDetailsText = `
+- Ürün Adı: ${product.name}
+- Fiyatı: ${product.price} TL
+- Açıklama / Detay: ${product.description}
+- Stok Durumu: ${product.stock > 0 ? `${product.stock} adet stokta var` : 'Stok tükendi'}
+                `;
+            }
+
+            // 2. Dinamik Sistem Talimatı (System Prompt)
+            const systemInstruction = `Sen ALICCI giyim markasının resmi yapay zeka satış ve müşteri destek asistanısın.
+
+MAĞAZAMIZDAKİ GÜNCEL ÜRÜN BİLGİSİ:
+${productDetailsText}
 
 KURALLAR:
-1. Kullanıcının sorduğu soruya DOĞRUDAN cevap ver. Sohbet dışı sorular gelirse kibarca kısa cevap verip konuyu e-ticarete/yardıma getir.
-2. Kargo takibi sorulursa:
-   - Eğer mesajda ALC- ile başlayan kod VARSA (Örn: ALC-123456): "ALC-123456 numaralı siparişinizin durumunu sitemizdeki "Kargo Takip" butonuna tıklayarak kontrol edebilirsiniz." de.
-   - Eğer mesajda henüz sipariş kodu YOKSA: "Siparişinizi kontrol edebilmem için lütfen ALC- ile başlayan sipariş numaranızı yazar mısınız?" de.
-3. Asla sahte kargo durumu uydurma.
-4. Cevapların her zaman 1-2 cümle, kısa, resmi ve kibar olsun.
-5. Eğer şakacı tavır edinilirse sende hafiften şakacı ol`;
+1. ÜRÜN SORULARI: Ürünün adı, fiyatı, özellikleri, detayları veya stok durumu sorulduğunda YUKARIDAKİ GÜNCEL VERİLERİ esas alarak net cevap ver.
+2. KARGO TAKİBİ: Kargo durumu sorulursa kullanıcıyı sitemizdeki arayüze yönlendir: "Siparişinizin durumunu sitemizdeki 'Kargo Takip' butonuna tıklayarak kontrol edebilirsiniz." de.
+3. SAHTE BİLGİ UYDURMA: Ürün fiyatı, kumaş bilgisi veya stoğu hakkında yukarıdaki veriden sapma, kafandan uydurma.
+4. SPAM VE KÜFÜR KORUMASI: Kullanıcı anlamsız harfler (örn: "asdfgh"), spam veya küfür/hakaret yazarsa tartışmaya girmeden kibarca "Tam anlayamadım, ürünümüz hakkında size nasıl yardımcı olabilirim?" de.
+5. ÜSLUP: Kibar, resmi, yardımsever ve 1-2 cümlelik kısa yanıtlar ver. Kullanıcı şakacı davranırsa ciddiyetini bozmadan hafif sempatik olabilirsin.`;
 
             // Groq için Mesaj Geçmişi Yapılandırması
             const messages = [
@@ -109,7 +154,8 @@ KURALLAR:
             // Groq API İsteği (Llama 3.3 Modeli)
             const completion = await groq.chat.completions.create({
                 messages: messages,
-                model: "llama-3.3-70b-versatile"
+                model: "llama-3.3-70b-versatile",
+                temperature: 0.5
             });
 
             const reply = completion.choices[0]?.message?.content;
@@ -127,10 +173,10 @@ KURALLAR:
     const lowerMsg = userLastMessage.toLowerCase();
     let fallbackReply = "Şu anda canlı destek yoğunluğumuz bulunuyor. Sorularınız için alicci.tr@gmail.com e-posta gönderebilirsiniz.";
 
-    if (lowerMsg.includes("alc-") || (lowerMsg.includes("kargo") && lowerMsg.includes("numara"))) {
-        fallbackReply = "ALC- numaralı siparişinizin durumunu 'Kargo Takip' butonuna tıklayıp bakabilirsiniz.";
-    } else if (lowerMsg.includes("kargo") || lowerMsg.includes("sipariş") || lowerMsg.includes("nerede")) {
-        fallbackReply = "Sipariş durumunuzu sorgulayabilmemiz için lütfen ALC- ile başlayan sipariş numaranızı paylaşır mısınız?";
+    if (lowerMsg.includes("alc-") || lowerMsg.includes("kargo")) {
+        fallbackReply = "Siparişinizin durumunu sitemizdeki 'Kargo Takip' butonuna tıklayarak bakabilirsiniz.";
+    } else if (lowerMsg.includes("fiyat") || lowerMsg.includes("ürün") || lowerMsg.includes("kaç tl")) {
+        fallbackReply = "Güncel ürün detaylarımız ve fiyat bilgimiz için sitemizi inceleyebilir veya müşteri hizmetlerimizle iletişime geçebilirsiniz.";
     } else if (lowerMsg.includes("iade") || lowerMsg.includes("değişim")) {
         fallbackReply = "İade ve değişim işlemlerinizi 14 gün içinde alicci.tr@gmail.com üzerinden iletişime geçerek başlatabilirsiniz.";
     } else if (lowerMsg.includes("merhaba") || lowerMsg.includes("selam")) {
