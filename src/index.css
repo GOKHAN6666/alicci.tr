@@ -2949,3 +2949,28 @@ body.dark-mode .chatbot-send-btn {
   opacity: 0.4;              /* Saydamlık */
   pointer-events: none;      /* Menü açıkken butonun tıklanmasını engeller */
 }
+/* 1. AI Chat Açma Butonu (En alt katmanda kalmalı) */
+.ai-chat-button {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 30; /* Karartma katmanından DÜŞÜK olmalı */
+}
+
+/* 2. Menü Açıldığında Ekranı Kaplayan Karartma/Buğulama Katmanı (Overlay) */
+.menu-backdrop {
+  position: fixed;
+  inset: 0; /* top:0, left:0, right:0, bottom:0 */
+  background: rgba(0, 0, 0, 0.4); /* Siyah karartma */
+  backdrop-filter: blur(5px);      /* CSS ile arkasındaki HER ŞEYİ (AI butonu dahil) buğular */
+  -webkit-backdrop-filter: blur(5px);
+  z-index: 40;                     /* AI Butonundan YÜKSEK olmalı (40 > 30) */
+}
+
+/* 3. Sol Açılır Hamburger Menünün Kendisi */
+.mobile-menu-drawer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 50;                     /* En üstte görünmeli (50 > 40) */
+}
