@@ -3079,3 +3079,20 @@ header,
 .ai-chat-window {
   z-index: 9999 !important; /* En üstte duran ana pencere */
 }
+header, .header {
+  /* Header'ın z-index değerini karartma katmanından düşük tutuyoruz */
+  z-index: 10 !important;
+}
+
+/* Siyah Karartma (Backdrop) */
+.modal-overlay, .backdrop {
+  position: fixed !important;
+  inset: 0 !important; /* top:0, left:0, right:0, bottom:0 kapsar */
+  z-index: 9998 !important;
+}
+
+/* Açılan Pencere */
+.modal-content, .kargo-takip-modal {
+  position: fixed !important;
+  z-index: 9999 !important;
+}
