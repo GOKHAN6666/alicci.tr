@@ -2916,3 +2916,22 @@ body.dark-mode .chatbot-send-btn {
   overflow-y: auto !important;
   overflow-x: hidden !important;
 }
+.chat-container {
+    position: fixed;
+    z-index: 9999; /* Sayfadaki her şeyin üstünde görünmesini sağlar */
+    bottom: 15px;
+    right: 15px;
+    width: calc(100% - 30px); /* Mobilde ekran kenarlarına yapışmaz */
+    max-width: 380px;
+    height: 550px;
+    max-height: 85vh; /* Ekrandan dışarı taşmaz */
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+@media (min-width: 768px) {
+    .chat-container {
+        width: 380px;
+        right: 25px;
+        bottom: 25px;
+    }
+}
