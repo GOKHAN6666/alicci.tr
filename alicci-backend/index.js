@@ -2,11 +2,15 @@ const express = require('express');
 const cors = require('cors');
 const Iyzipay = require('iyzipay');
 const Groq = require("groq-sdk");
-const { createClient } = require('@supabase/supabase-js'); // Supabase kütüphanesi eklendi
+const { createClient } = require('@supabase/supabase-js');
+const rateLimit = require('express-rate-limit'); // Rate limit kütüphanesi eklendi
 require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+
+// Render/Vercel reverse-proxy arkasında doğru IP tespiti için
+app.set('trust proxy', 1);
 
 // CORS Ayarları (Vercel frontend adresine tam yetki)
 app.use(cors({
@@ -16,6 +20,19 @@ app.use(cors({
 }));
 
 app.use(express.json());
+
+// ==========================================
+// SPAM KORUMASI (Rate Limiter Ayarı)
+// ==========================================
+const chatLimiter = rateLimit({
+    windowMs: 1 * 60 * 1000, // 1 dakikalık zaman penceresi
+    max: 10, // Aynı IP adresinden 1 dakikada en fazla 10 mesaj atılabilir
+    message: {
+        reply: "Çok fazla mesaj gönderdiniz. Lütfen 1 dakika bekleyip tekrar deneyiniz."
+    },
+    standardHeaders: true,
+    legacyHeaders: false,
+});
 
 // Iyzico Bağlantı Ayarları
 const iyzipay = new Iyzipay({
@@ -69,9 +86,9 @@ app.get('/', (req, res) => {
 });
 
 // ==========================================
-// 1. ALICCI AI CHATBOT ENDPOINT (Groq + Supabase Destekli)
+// 1. ALICCI AI CHATBOT ENDPOINT (chatLimiter Korumalı)
 // ==========================================
-app.post('/api/chat', async (req, res) => {
+app.post('/api/chat', chatLimiter, async (req, res) => {
     let userLastMessage = "";
 
     try {
@@ -104,7 +121,7 @@ app.post('/api/chat', async (req, res) => {
             }
 
             // 2. Dinamik Sistem Talimatı (System Prompt)
-           const systemInstruction = `Sen ALICCI e-ticaret markasının uzman satış ve stil danışmanısın.
+            const systemInstruction = `Sen ALICCI e-ticaret markasının uzman satış ve stil danışmanısın.
 
 MAĞAZAMIZDAKİ GÜNCEL ÜRÜN BİLGİSİ:
 ${productDetailsText}
@@ -115,6 +132,7 @@ KURALLAR:
 3. SAHTE BİLGİ UYDURMA: Ürün fiyatı veya özellikleri hakkında sana verilen veri dışına çıkma.
 4. SPAM KORUMASI: Anlamsız harflere takılma, kibarca "Tam anlayamadım, ürünümüz hakkında nasıl yardımcı olabilirim?" de.
 5. ÜSLUP: Kibar, havalı, müşteri dostu ve 2-3 cümlelik akıcı yanıtlar ver.`;
+
             // Groq için Mesaj Geçmişi Yapılandırması
             const messages = [
                 { role: "system", content: systemInstruction }
