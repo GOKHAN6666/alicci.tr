@@ -2974,3 +2974,49 @@ body.dark-mode .chatbot-send-btn {
   left: 0;
   z-index: 50;                     /* En üstte görünmeli (50 > 40) */
 }
+/* Chat penceresi kapsayıcısına bu sınıfı ekleyin */
+.chat-window {
+  animation: chatOpen 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  transform-origin: bottom right;
+}
+
+@keyframes chatOpen {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+.chat-bubble {
+  animation: bubbleSlide 0.25s ease-out forwards;
+}
+
+@keyframes bubbleSlide {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.dot-flashing {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: #888;
+  animation: dotFlashing 1s infinite alternate;
+}
+
+.dot-flashing:nth-child(2) { animation-delay: 0.2s; }
+.dot-flashing:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes dotFlashing {
+  0% { transform: translateY(0); opacity: 0.4; }
+  100% { transform: translateY(-6px); opacity: 1; }
+}
