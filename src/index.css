@@ -2935,3 +2935,17 @@ body.dark-mode .chatbot-send-btn {
         bottom: 25px;
     }
 }
+.ai-toggle-btn {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 40;
+  transition: filter 0.3s ease, opacity 0.3s ease;
+}
+
+/* Menü veya Modal açıldığında eklenecek sınıf */
+.ai-toggle-btn.blurred {
+  filter: blur(4px);         /* Buğulama efekti */
+  opacity: 0.4;              /* Saydamlık */
+  pointer-events: none;      /* Menü açıkken butonun tıklanmasını engeller */
+}
