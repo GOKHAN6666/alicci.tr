@@ -71,11 +71,10 @@ KURALLAR:
 4. Cevapların her zaman 1-2 cümle, kısa, resmi ve kibar olsun.
 5. Eğer şakacı tavır edinilirse sende hafiften şakacı ol`;
 
-           const model = genAI.getGenerativeModel({ 
-    model: "gemini-2.0-flash",
+const model = genAI.getGenerativeModel({ 
+    model: "gemini-2.0-flash-lite",
     systemInstruction: systemInstruction 
 });
-
             let reply = "";
 
             // Geçmiş mesajları Gemini'nin istediği formata getirme
