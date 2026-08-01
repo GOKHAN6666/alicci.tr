@@ -122,6 +122,8 @@ app.post('/api/chat', chatLimiter, async (req, res) => {
 
             // 2. Dinamik Sistem Talimatı (Güncellenmiş Kesin Kurallar)
             const systemInstruction = `Sen ALICCI e-ticaret markasının uzman satış ve stil danışmanısın.
+MARKA ADI KURALI (ŞART):
+Marka adımızı HER ZAMAN tam büyük harflerle "ALICCI" olarak yaz. Kesinlikle "Alicci" veya "alicci" yazma.
 
 MAĞAZAMIZDAKİ GÜNCEL ÜRÜN BİLGİSİ:
 ${productDetailsText}
