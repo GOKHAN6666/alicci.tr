@@ -3096,3 +3096,112 @@ header, .header {
   position: fixed !important;
   z-index: 9999 !important;
 }
+/* ==========================================
+   ALICCI AI PANELİ - TASARIM & ANİMASYON DÜZELTMESİ
+   ========================================== */
+
+/* 1. Panel Açılış Animasyonu */
+.ai-chat-window,
+.chat-drawer {
+  animation: slideInRight 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  box-shadow: -10px 0 30px rgba(0, 0, 0, 0.5);
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(40px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+/* 2. Resimdeki Boşluğu Çözen Mesaj Alanı Düzenlemesi */
+.chat-messages-container,
+.chat-body {
+  padding: 16px 12px !important; /* İç boşluğu dengeler */
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow-y: auto;
+}
+
+/* Mesaj Balonlarının Genişliği (Boşluğu kapatan kısım) */
+.chat-message,
+.message-bubble {
+  max-width: 90% !important; /* %70-80 olan darlığı genişletip boşluğu bitirir */
+  word-break: break-word;
+  animation: messagePop 0.25s ease-out forwards;
+}
+
+/* Mesaj Belirme Animasyonu */
+@keyframes messagePop {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 3. İnce ve Şık Scrollbar (Kaydırma Çubuğu) */
+.chat-messages-container::-webkit-scrollbar,
+.chat-body::-webkit-scrollbar {
+  width: 5px;
+}
+
+.chat-messages-container::-webkit-scrollbar-track,
+.chat-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.chat-messages-container::-webkit-scrollbar-thumb,
+.chat-body::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+}
+
+.chat-messages-container::-webkit-scrollbar-thumb:hover,
+.chat-body::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* 4. "Online AI" Canlılık Işığı Animasyonu (Header İçin) */
+.ai-status-dot {
+  width: 8px;
+  height: 8px;
+  background-color: #10b981;
+  border-radius: 50%;
+  display: inline-block;
+  box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+  animation: pulseGreen 2s infinite;
+}
+
+@keyframes pulseGreen {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+  }
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 6px rgba(16, 185, 129, 0);
+  }
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+  }
+}
+
+/* 5. Gönder Butonu Hover Efekti */
+.chat-send-btn {
+  transition: all 0.2s ease;
+}
+
+.chat-send-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(255, 255, 255, 0.15);
+}
