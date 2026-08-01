@@ -120,43 +120,41 @@ app.post('/api/chat', chatLimiter, async (req, res) => {
                 `;
             }
 
-            // 2. Dinamik Sistem Talimatı (System Prompt)
+            // 2. Dinamik Sistem Talimatı (Güncellenmiş Kesin Kurallar)
             const systemInstruction = `Sen ALICCI e-ticaret markasının uzman satış ve stil danışmanısın.
 
 MAĞAZAMIZDAKİ GÜNCEL ÜRÜN BİLGİSİ:
 ${productDetailsText}
 
 KURALLAR:
-1. ÜRÜN SUNUMU: Müşteri ürün sorduğunda veri alanlarını ham olarak okuma (örn: "açıklama olarak şu yazıyor" deme). Bir Mağaza Danışmanı gibi ürünü şık bir şekilde tanıt; adını, fiyatını, kalitesini/açıklamasını ve stok durumunu doğal cümlelerle anlat.
+1. ÜRÜN SUNUMU: Müşteri ürün sorduğunda veri alanlarını ham olarak okuma. Bir Mağaza Danışmanı gibi ürünü şık bir şekilde sun; adını, fiyatını, kalitesini ve stok durumunu doğal ve çekici bir dille anlat.
 2. KARGO TAKİBİ: Kargo durumu sorulursa kullanıcıyı sitemizdeki arayüze yönlendir: "Sipariş durumunuzu sitemizdeki 'Kargo Takip' butonuna tıklayarak kontrol edebilirsiniz." de.
 3. SAHTE BİLGİ UYDURMA: Ürün fiyatı veya özellikleri hakkında sana verilen veri dışına çıkma.
-4. Kullanıcıya bir ürün önerdiğinde ve kullanıcı "evet", "olur", "incelemek isterim" gibi olumlu yanıt verdiğinde:
-   - Kesinlikle ürünü TEKRAR TANITMA veya aynı soruyu tekrar sorma.
-   - Doğrudan aksiyona geç: Ürünün detaylı özelliklerini açıklayabilirsin (beden, renk seçenekleri, kumaş detayları) VEYA ürün sayfasına yönlendirecek bağlantıyı/butonu sağla.
-   - Kullanıcıya bir sonraki adımı sor. (Örn: "Hangi bedeni düşünürsünüz?", "Sepetinize eklemem için yönlendirmemi ister misiniz?")
-   - Aynı sohbet geçmişinde daha önce verdiğin fiyat, stok ve ürün açıklama cümlelerini birebir veya benzer şekilde tekrarlama.
-5. SPAM KORUMASI: Anlamsız harflere takılma, kibarca "Tam anlayamadım, ürünümüz hakkında nasıl yardımcı olabilirim?" de.
+4. ONAY VE "EVET" YANITLARI YÖNETİMİ:
+   - "Bilgi almak ister misiniz?" gibi sorularına kullanıcı "evet" derse: Doğrudan mağazadaki ürünü (${product?.name || 'Alicci Özel Ürünü'}) detaylarıyla tanıt.
+   - Ürün tanıttıktan sonra kullanıcı "evet / olur / isterim" derse: ÜRÜNÜ VE FİYATINI TEKRAR ANLATMA. Doğrudan "Ürünü sepetinize eklemem için yönlendirmemi ister misiniz?" ya da "Hangi bedeni arıyorsunuz?" gibi bir sonraki adım sorusunu sor.
+   - BİTİŞ SORULARI: Mesaj sonlarını ASLA "İlgileniyor musunuz?" veya "Merak ediyor musunuz?" diyerek bitirme.
+5. SPAM KORUMASI: Anlamsız harflere takılma, kibarca "Tam anlayamadım, ürünlerimiz veya kargo takibi hakkında nasıl yardımcı olabilirim?" de.
 6. ÜSLUP: Kibar, havalı, müşteri dostu ve 2-3 cümlelik akıcı yanıtlar ver.`;
 
-            // Groq için Mesaj Geçmişi Yapılandırması
+            // 3. Düzeltilmiş Geçmiş (History) Yapılandırması
             const messages = [
                 { role: "system", content: systemInstruction }
             ];
 
-            if (history && Array.isArray(history) && history.length > 1) {
-                const previousMessages = history.slice(0, -1);
-                
-                for (const msg of previousMessages) {
+            if (history && Array.isArray(history)) {
+                for (const msg of history) {
                     const textContent = msg.text || msg.message;
                     if (!textContent) continue;
 
-                    // Groq role formatı: "user" veya "assistant"
                     const role = (msg.sender === 'user' || msg.role === 'user') ? 'user' : 'assistant';
                     
-                    if (messages.length === 1 && role !== 'user') {
-                        continue; // İlk karşılama mesajını atla
+                    // İlk karşılama mesajını atla (varsa)
+                    if (messages.length === 1 && role === 'assistant') {
+                        continue;
                     }
 
+                    // Aynı rolden üst üste mesaj eklenmesini engelle (Groq format zorunluluğu)
                     if (messages[messages.length - 1].role !== role) {
                         messages.push({
                             role: role,
@@ -164,20 +162,18 @@ KURALLAR:
                         });
                     }
                 }
-
-                if (messages[messages.length - 1].role === 'user') {
-                    messages.pop();
-                }
             }
 
-            // Kullanıcının son mesajını ekle
-            messages.push({ role: "user", content: userLastMessage });
+            // Kullanıcının attığı son mesaj dizide yoksa ekle
+            if (messages[messages.length - 1]?.role !== 'user') {
+                messages.push({ role: "user", content: userLastMessage });
+            }
 
             // Groq API İsteği (Llama 3.3 Modeli)
             const completion = await groq.chat.completions.create({
                 messages: messages,
                 model: "llama-3.3-70b-versatile",
-                temperature: 0.5
+                temperature: 0.4
             });
 
             const reply = completion.choices[0]?.message?.content;
@@ -207,7 +203,6 @@ KURALLAR:
 
     return res.json({ reply: fallbackReply });
 });
-
 // ==========================================
 // 2. ÖDEME FORMU BAŞLATMA ROTASI (İYZİCO)
 // ==========================================
