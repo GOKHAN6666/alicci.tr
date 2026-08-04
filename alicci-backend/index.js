@@ -3,7 +3,7 @@ const cors = require('cors');
 const Iyzipay = require('iyzipay');
 const Groq = require("groq-sdk");
 const { createClient } = require('@supabase/supabase-js');
-const rateLimit = require('express-rate-limit'); // Rate limit kütüphanesi eklendi
+const rateLimit = require('express-rate-limit');
 require('dotenv').config();
 
 const app = express();
@@ -86,7 +86,7 @@ app.get('/', (req, res) => {
 });
 
 // ==========================================
-// 1. ALICCI AI CHATBOT ENDPOINT (Düzeltilmiş ve Optimize Edilmiş)
+// 1. ALICCI AI CHATBOT ENDPOINT (Tam Optimize Yapı)
 // ==========================================
 app.post('/api/chat', chatLimiter, async (req, res) => {
     let userLastMessage = "";
@@ -120,31 +120,24 @@ app.post('/api/chat', chatLimiter, async (req, res) => {
                 `;
             }
 
-            // 2. Dinamik Sistem Talimatı (Kesin ve Net Yapılandırılmış)
-            const systemInstruction = `Sen ALICCI e-ticaret markasının lüks satış ve stil danışmanısın.
+            // 2. Dinamik Sistem Talimatı (Kesin Kurallar ve Kalıp Yasağı)
+            const systemInstruction = `GÖREV: ALICCI markasının lüks satış ve stil asistanısın.
 
-KRİTİK MARKA YAZIM KURALI:
-- Marka adını metin içinde HER ZAMAN tam büyük harfle "ALICCI" olarak yazacaksın. Kesinlikle "Alicci" veya "alicci" yazma.
+YASAKLAR (KESİNLİKLE YAPMA):
+- "Ben ALICCI e-ticaret markasının uzman satış ve stil danışmanıyım" veya "ALICCI Destek Asistanı'na hoş geldiniz" gibi kalıp tanıtım cümleleri KURMA.
+- "Ürünlerimiz hakkında bilgi almak ister misiniz?", "İncelemek ister misiniz?", "İlgileniyor musunuz?" sorularını ASLA SORMA.
+- Her mesajın sonuna ezbere "Nasıl yardımcı olabilirim?" veya "İlgileniyor musunuz?" ekleme.
 
 GÜNCEL ÜRÜN BİLGİSİ:
 ${productDetailsText}
 
-İLETİŞİM VE DAVRANIŞ KURALLARI:
-1. İLK GİRİŞ VE SELAMLA:
-   - Kullanıcı "selam", "slm", "merhaba" derse sadece kibarca karşıla ve neye ihtiyacı olduğunu sor.
-   - Asla "Ürünlerimiz hakkında bilgi almak ister misiniz?" veya "İlgileniyor musunuz?" gibi ucu kapalı izin soruları sorma!
-
-2. ÜRÜN BİLGİSİ SUNUMU VE YÖNLENDİRME:
-   - Kullanıcı "evet", "olur", "ürün hakkında bilgi", "ilgilenirim" derse VEYA ürün sorduğunda; TEKRAR İZİN İSTEME ("Tanıtmak isterim", "İster misiniz?" DEME).
-   - Doğrudan ürünün adını, özelliklerini, kumaşını ve fiyatını şık bir dille anlat.
-   - Bilgiyi verdikten hemen sonra kullanıcıyı doğrudan sipariş vermeye veya beden seçmeye davet et.
-
-3. TEKRARLAYAN KALIP YASAĞI:
-   - Mesaj sonlarına otomatik "Nasıl yardımcı olabilirim?" veya "İlgileniyor musunuz?" ekleme.
-   - Yanıtların kısa, öz ve maksimum 2-3 cümle olsun.
-
-4. SİPARİŞ VE KARGO:
-   - Kargo/sipariş durumu sorulursa kullanıcıyı sitemizdeki 'Kargo Takip' alanına yönlendir.`;
+SÜRÜŞ VE YANIT KURALLARI:
+1. Müşteri "selam", "slm", "merhaba" derse sadece kısaca kibarca karşıla ve neye ihtiyacı olduğunu sor.
+2. Müşteri "isterim", "evet", "ürün hakkında bilgi", "bilgi" derse veya ürün sorarsa:
+   - TEKRAR İZİN İSTEME. Doğrudan ürünün adını, %100 pamuklu kumaş özelliğini, fiyatını ve stok durumunu anlat.
+   - Bilgiyi verdikten hemen sonra kullanıcıyı beden seçmeye veya sepetine eklemeye davet et.
+3. Yanıtların doğal, akıcı, çekici ve maksimum 2-3 cümle uzunluğunda olsun.
+4. Kargo/sipariş durumu sorulursa kullanıcıyı sitemizdeki 'Kargo Takip' alanına yönlendir.`;
 
             // 3. Geçmiş (History) Yapılandırması
             const messages = [
@@ -163,7 +156,7 @@ ${productDetailsText}
                         continue;
                     }
 
-                    // Üst üste aynı rolden mesaj girmesini engelle
+                    // Üst üste aynı rolden mesaj girmesini engelle (Groq gereksinimi)
                     if (messages[messages.length - 1].role !== role) {
                         messages.push({
                             role: role,
@@ -178,16 +171,20 @@ ${productDetailsText}
                 messages.push({ role: "user", content: userLastMessage });
             }
 
-            // Groq API İsteği (Temperature 0.2 yapıldı - kurallara sıkı uyması için)
+            // Groq API İsteği (Temperature 0.1: Kesin kural takibi için düşürüldü)
             const completion = await groq.chat.completions.create({
                 messages: messages,
                 model: "llama-3.3-70b-versatile",
-                temperature: 0.2
+                temperature: 0.1
             });
 
-            const reply = completion.choices[0]?.message?.content;
+            let reply = completion.choices[0]?.message?.content;
 
             if (reply) {
+                // KOD SEVİYESİNDE %100 KESİN MARKA DÜZELTMESİ (Regex):
+                // Yapay zeka ne yazarsa yazsın, "Alicci" / "alicci" kelimelerini doğrudan büyük harfli "ALICCI"ya dönüştürür.
+                reply = reply.replace(/alicci/gi, "ALICCI");
+
                 return res.json({ reply });
             }
         }
@@ -212,6 +209,7 @@ ${productDetailsText}
 
     return res.json({ reply: fallbackReply });
 });
+
 // ==========================================
 // 2. ÖDEME FORMU BAŞLATMA ROTASI (İYZİCO)
 // ==========================================
