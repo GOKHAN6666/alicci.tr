@@ -3205,3 +3205,132 @@ header, .header {
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(255, 255, 255, 0.15);
 }
+/* ==========================================
+   1. GENEL PENCERE VE BOŞLUK DÜZELTMELERİ
+   ========================================== */
+
+/* Mesaj Alanı İç Boşluğu */
+.chat-messages-container {
+  padding: 16px 12px; /* Sağ ve soldaki gereksiz boşluğu dengeler */
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow-y: auto;
+  scroll-behavior: smooth;
+}
+
+/* Mesaj Balonlarının Boşluk ve Genişlik Ayarı (BOŞLUĞU ÇÖZEN KISIM) */
+.message-bubble {
+  max-width: 88% !important; /* Eskiden %70-75 civarı duruyordu, %88 yaptık */
+  padding: 12px 16px;
+  border-radius: 16px;
+  word-break: break-word;
+  line-height: 1.5;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Kullanıcı Mesajı (Sağa Tam Yapışık) */
+.message-user {
+  align-self: flex-end;
+  background: #ffffff;
+  color: #111111;
+  border-bottom-right-radius: 4px;
+  /* Animasyonu uygula */
+  animation: userMessageSlide 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards;
+}
+
+/* Asistan Mesajı (Sola Yapışık) */
+.message-bot {
+  align-self: flex-start;
+  background: #1c1c1e;
+  color: #f1f1f1;
+  border-bottom-left-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  /* Animasyonu uygula */
+  animation: botMessageSlide 0.35s ease-out forwards;
+}
+
+
+/* ==========================================
+   2. HAREKETLİ ANİMASYONLAR (ANIMATIONS)
+   ========================================== */
+
+/* Sohbet Penceresinin Açılış Animasyonu */
+.chat-modal-open {
+  animation: modalScaleUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  transform-origin: bottom right;
+}
+
+/* Bot Mesajlarının Aşağıdan Süzülerek Gelmesi */
+@keyframes botMessageSlide {
+  0% {
+    opacity: 0;
+    transform: translateY(15px) scale(0.96);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Kullanıcı Mesajlarının Baloncuk Gibi Pop Ederek Çıkması */
+@keyframes userMessageSlide {
+  0% {
+    opacity: 0;
+    transform: translateY(10px) scale(0.92);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Modal Pencere Açılış Animasyonu */
+@keyframes modalScaleUp {
+  0% {
+    opacity: 0;
+    transform: scale(0.85) translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* ==========================================
+   3. BUTON VE İNPUT MİKRO-ETKİLEŞİMLERİ
+   ========================================== */
+
+/* Gönder Butonu Efekti */
+.send-btn {
+  transition: all 0.2s ease;
+}
+
+.send-btn:hover {
+  transform: translateY(-2px) scale(1.03);
+  box-shadow: 0 4px 12px rgba(255, 255, 255, 0.2);
+}
+
+.send-btn:active {
+  transform: translateY(0) scale(0.96);
+}
+
+/* Kapatma (X) Butonu Efekti */
+.close-btn {
+  transition: all 0.2s ease;
+}
+
+.close-btn:hover {
+  transform: rotate(90deg) scale(1.15);
+  color: #ff5f56;
+}
+
+/* İnput Odaklanma Efekti */
+.chat-input {
+  transition: all 0.25s ease;
+}
+
+.chat-input:focus {
+  border-color: rgba(255, 255, 255, 0.3);
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.08);
+}
