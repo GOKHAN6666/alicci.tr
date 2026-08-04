@@ -86,7 +86,7 @@ app.get('/', (req, res) => {
 });
 
 // ==========================================
-// 1. ALICCI AI CHATBOT ENDPOINT (chatLimiter Korumalı)
+// 1. ALICCI AI CHATBOT ENDPOINT (Düzeltilmiş ve Optimize Edilmiş)
 // ==========================================
 app.post('/api/chat', chatLimiter, async (req, res) => {
     let userLastMessage = "";
@@ -120,40 +120,33 @@ app.post('/api/chat', chatLimiter, async (req, res) => {
                 `;
             }
 
-            // 2. Dinamik Sistem Talimatı (Güncellenmiş Kesin Kurallar)
-            const systemInstruction = `Sen ALICCI e-ticaret markasının uzman satış ve stil danışmanısın.
-`MARKA ADI KURALLARI (EN YÜKSEK ÖNCELİK):
-- Marka adını metin içinde HER ZAMAN ve İSTİSNASIZ tam büyük harflerle "ALICCI" olarak yazacaksın.
-- KESİNLİKLE "Alicci" veya "alicci" kelimelerini kullanma.
+            // 2. Dinamik Sistem Talimatı (Kesin ve Net Yapılandırılmış)
+            const systemInstruction = `Sen ALICCI e-ticaret markasının lüks satış ve stil danışmanısın.
 
-MAĞAZAMIZDAKİ GÜNCEL ÜRÜN BİLGİSİ:
+KRİTİK MARKA YAZIM KURALI:
+- Marka adını metin içinde HER ZAMAN tam büyük harfle "ALICCI" olarak yazacaksın. Kesinlikle "Alicci" veya "alicci" yazma.
+
+GÜNCEL ÜRÜN BİLGİSİ:
 ${productDetailsText}
 
-SİSTEM VE DAVRANIŞ KURALLARI:
+İLETİŞİM VE DAVRANIŞ KURALLARI:
+1. İLK GİRİŞ VE SELAMLA:
+   - Kullanıcı "selam", "slm", "merhaba" derse sadece kibarca karşıla ve neye ihtiyacı olduğunu sor.
+   - Asla "Ürünlerimiz hakkında bilgi almak ister misiniz?" veya "İlgileniyor musunuz?" gibi ucu kapalı izin soruları sorma!
 
-1. İLK SELAMLAMA KURALI:
-   - Kullanıcı "selam", "merhaba", "slm" gibi bir giriş yaptığında; asla "Ürünlerimiz hakkında bilgi almak ister misiniz?" gibi ucu kapalı sorular sorarak izin isteme.
-   - Doğrudan kibar ve kısa bir karşılık ver. Örnek: "Merhaba! ALICCI'ye hoş geldiniz. Size nasıl yardımcı olabilirim?"
+2. ÜRÜN BİLGİSİ SUNUMU VE YÖNLENDİRME:
+   - Kullanıcı "evet", "olur", "ürün hakkında bilgi", "ilgilenirim" derse VEYA ürün sorduğunda; TEKRAR İZİN İSTEME ("Tanıtmak isterim", "İster misiniz?" DEME).
+   - Doğrudan ürünün adını, özelliklerini, kumaşını ve fiyatını şık bir dille anlat.
+   - Bilgiyi verdikten hemen sonra kullanıcıyı doğrudan sipariş vermeye veya beden seçmeye davet et.
 
-2. ÜRÜN SUNUMU VE BİLGİ VERME (DÖNGÜ VE İZİN YASAK):
-   - Müşteri ürün bilgisi istediğinde, "evet", "olur", "bilgi ver", "ilgilenirim" dediginde TEKRAR İZİN İSTEME ("Tanıtmak isterim", "İlgileniyor musunuz?", "İncelemek ister misiniz?" deme).
-   - Ürünün özelliklerini, kumaşını ve fiyatını bir Mağaza Danışmanı gibi doğrudan, havalı ve çekici bir dille anlat.
-   - Bilgiyi verdikten hemen sonra kullanıcıyı beden seçmeye veya sepetine eklemeye davet et.
+3. TEKRARLAYAN KALIP YASAĞI:
+   - Mesaj sonlarına otomatik "Nasıl yardımcı olabilirim?" veya "İlgileniyor musunuz?" ekleme.
+   - Yanıtların kısa, öz ve maksimum 2-3 cümle olsun.
 
-3. KALIP VE OTOMATİK CÜMLE YASAĞI:
-   - Her mesajın sonuna ezbere "Nasıl yardımcı olabilirim?" veya "İlgileniyor musunuz?" cümlelerini yapıştırma.
-   - Yanıtların doğal, akıcı ve maksimum 2-3 cümle uzunluğunda olsun.
+4. SİPARİŞ VE KARGO:
+   - Kargo/sipariş durumu sorulursa kullanıcıyı sitemizdeki 'Kargo Takip' alanına yönlendir.`;
 
-4. YAZIM HATALARI VE GÜNLÜK DİL:
-   - Müşterinin yazım hatalarını ("ilgileirim", "meraba", "slm" vb.) anla ve doğal cevap ver.
-   - Sadece "asdfghj", "qwerty" gibi tamamen anlamsız harf yığınlarında kibarca anlamadığını belirt.
-
-5. KARGO VE SİPARİŞ TAKİBİ:
-   - Kargo durumu sorulursa kullanıcıyı doğrudan sitedeki kargo takip alanına/butonuna yönlendir.
-
-6. BİLGİ DOĞRULUĞU:
-   - Fiyat, stok ve ürün özellikleri konusunda sana verilen veri dışına asla çıkma.`
-            // 3. Düzeltilmiş Geçmiş (History) Yapılandırması
+            // 3. Geçmiş (History) Yapılandırması
             const messages = [
                 { role: "system", content: systemInstruction }
             ];
@@ -165,12 +158,12 @@ SİSTEM VE DAVRANIŞ KURALLARI:
 
                     const role = (msg.sender === 'user' || msg.role === 'user') ? 'user' : 'assistant';
                     
-                    // İlk karşılama mesajını atla (varsa)
+                    // İlk bot karşılama mesajını atla
                     if (messages.length === 1 && role === 'assistant') {
                         continue;
                     }
 
-                    // Aynı rolden üst üste mesaj eklenmesini engelle (Groq format zorunluluğu)
+                    // Üst üste aynı rolden mesaj girmesini engelle
                     if (messages[messages.length - 1].role !== role) {
                         messages.push({
                             role: role,
@@ -185,11 +178,11 @@ SİSTEM VE DAVRANIŞ KURALLARI:
                 messages.push({ role: "user", content: userLastMessage });
             }
 
-            // Groq API İsteği (Llama 3.3 Modeli)
+            // Groq API İsteği (Temperature 0.2 yapıldı - kurallara sıkı uyması için)
             const completion = await groq.chat.completions.create({
                 messages: messages,
                 model: "llama-3.3-70b-versatile",
-                temperature: 0.4
+                temperature: 0.2
             });
 
             const reply = completion.choices[0]?.message?.content;
@@ -203,17 +196,17 @@ SİSTEM VE DAVRANIŞ KURALLARI:
         console.warn("AI Servis Hatası (Yedek Yerel Cevap Veriliyor):", error.message);
     }
 
-    // KOTA VEYA API HATASI DURUMUNDA ÇALIŞAN YEREL MOTOR (Fallback)
+    // YEDEK MOTOR (Fallback)
     const lowerMsg = userLastMessage.toLowerCase();
     let fallbackReply = "Şu anda canlı destek yoğunluğumuz bulunuyor. Sorularınız için alicci.tr@gmail.com e-posta gönderebilirsiniz.";
 
     if (lowerMsg.includes("alc-") || lowerMsg.includes("kargo")) {
         fallbackReply = "Siparişinizin durumunu sitemizdeki 'Kargo Takip' butonuna tıklayarak bakabilirsiniz.";
-    } else if (lowerMsg.includes("fiyat") || lowerMsg.includes("ürün") || lowerMsg.includes("kaç tl")) {
-        fallbackReply = "Güncel ürün detaylarımız ve fiyat bilgimiz için sitemizi inceleyebilir veya müşteri hizmetlerimizle iletişime geçebilirsiniz.";
+    } else if (lowerMsg.includes("fiyat") || lowerMsg.includes("ürün") || lowerMsg.includes("kaç tl") || lowerMsg.includes("bilgi")) {
+        fallbackReply = "Öne çıkan ALICCI ürünümüz %100 pamuklu olup 150 TL'dir. Sipariş vermek için sepetinize ekleyebilirsiniz.";
     } else if (lowerMsg.includes("iade") || lowerMsg.includes("değişim")) {
         fallbackReply = "İade ve değişim işlemlerinizi 14 gün içinde alicci.tr@gmail.com üzerinden iletişime geçerek başlatabilirsiniz.";
-    } else if (lowerMsg.includes("merhaba") || lowerMsg.includes("selam")) {
+    } else if (lowerMsg.includes("merhaba") || lowerMsg.includes("selam") || lowerMsg.includes("slm")) {
         fallbackReply = "Merhaba! ALICCI Müşteri Hizmetleri'ne hoş geldiniz. Size nasıl yardımcı olabilirim?";
     }
 
