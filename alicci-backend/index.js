@@ -86,7 +86,7 @@ app.get('/', (req, res) => {
 });
 
 // ==========================================
-// 1. ALICCI AI CHATBOT ENDPOINT (Tam Optimize Yapı)
+// 1. ALICCI AI CHATBOT ENDPOINT (Tam Korumalı)
 // ==========================================
 app.post('/api/chat', chatLimiter, async (req, res) => {
     let userLastMessage = "";
@@ -94,7 +94,6 @@ app.post('/api/chat', chatLimiter, async (req, res) => {
     try {
         const { history, message } = req.body;
         
-        // Kullanıcının son mesajını alma
         if (message) {
             userLastMessage = message;
         } else if (history && Array.isArray(history) && history.length > 0) {
@@ -107,7 +106,6 @@ app.post('/api/chat', chatLimiter, async (req, res) => {
         }
 
         if (groq) {
-            // 1. Supabase'den güncel ürün bilgisini çekiyoruz
             const product = await getProductData();
 
             let productDetailsText = "Şu an sistemde aktif ürün bilgisi bulunamadı.";
@@ -120,26 +118,26 @@ app.post('/api/chat', chatLimiter, async (req, res) => {
                 `;
             }
 
-            // 2. Dinamik Sistem Talimatı (Kesin Kurallar ve Kalıp Yasağı)
-            const systemInstruction = `GÖREV: ALICCI markasının lüks satış ve stil asistanısın.
+            // Sert Kurallı System Prompt (Soru Sorma Yasağı ve Dil Koruması)
+            const systemInstruction = `GÖREV: ALICCI e-ticaret markasının satış asistanısın.
 
-YASAKLAR (KESİNLİKLE YAPMA):
-- "Ben ALICCI e-ticaret markasının uzman satış ve stil danışmanıyım" veya "ALICCI Destek Asistanı'na hoş geldiniz" gibi kalıp tanıtım cümleleri KURMA.
-- "Ürünlerimiz hakkında bilgi almak ister misiniz?", "İncelemek ister misiniz?", "İlgileniyor musunuz?" sorularını ASLA SORMA.
-- Her mesajın sonuna ezbere "Nasıl yardımcı olabilirim?" veya "İlgileniyor musunuz?" ekleme.
+DİL VE İÇERİK KURALLARI:
+- SADECE Türkçe cevap ver. Kesinlikle Çince, İngilizce veya yabancı karakter kullanma.
+
+SORU SORMA YASAĞI (KESİNLİKLE UYULACAK):
+- Cevaplarının sonunda KESİNLİKLE soru sorma! ("İlgilenir misiniz?", "İlginizi çekti mi?", "İster misiniz?", "Nasıl yardımcı olabilirim?" gibi sorular YASAKTIR).
+- Yanıtlarında SORU İŞARETİ (?) KULLANMA.
 
 GÜNCEL ÜRÜN BİLGİSİ:
 ${productDetailsText}
 
-SÜRÜŞ VE YANIT KURALLARI:
-1. Müşteri "selam", "slm", "merhaba" derse sadece kısaca kibarca karşıla ve neye ihtiyacı olduğunu sor.
-2. Müşteri "isterim", "evet", "ürün hakkında bilgi", "bilgi" derse veya ürün sorarsa:
-   - TEKRAR İZİN İSTEME. Doğrudan ürünün adını, %100 pamuklu kumaş özelliğini, fiyatını ve stok durumunu anlat.
-   - Bilgiyi verdikten hemen sonra kullanıcıyı beden seçmeye veya sepetine eklemeye davet et.
-3. Yanıtların doğal, akıcı, çekici ve maksimum 2-3 cümle uzunluğunda olsun.
-4. Kargo/sipariş durumu sorulursa kullanıcıyı sitemizdeki 'Kargo Takip' alanına yönlendir.`;
+SÜRÜŞ VE DİLOG AKIŞI:
+1. Müşteri "selam", "slm", "merhaba" derse: Doğrudan "Merhaba! ALICCI'ye hoş geldiniz, size nasıl yardımcı olabilirim." de.
+2. Müşteri "isterim", "evet", "ilgilenirim", "ürün bilgisi" derse veya ürün sorarsa:
+   - Tekrar izin isteme. Doğrudan ürün adını, %100 pamuklu olduğunu, fiyatını ve stok miktarını söyle.
+   - Cümleni "Bedeninizi seçip sepetinize ekleyebilirsiniz." diyerek bitir.
+3. Yanıtların noktayla bitsin ve maksimum 2 kısa cümle olsun.`;
 
-            // 3. Geçmiş (History) Yapılandırması
             const messages = [
                 { role: "system", content: systemInstruction }
             ];
@@ -151,12 +149,10 @@ SÜRÜŞ VE YANIT KURALLARI:
 
                     const role = (msg.sender === 'user' || msg.role === 'user') ? 'user' : 'assistant';
                     
-                    // İlk bot karşılama mesajını atla
                     if (messages.length === 1 && role === 'assistant') {
                         continue;
                     }
 
-                    // Üst üste aynı rolden mesaj girmesini engelle (Groq gereksinimi)
                     if (messages[messages.length - 1].role !== role) {
                         messages.push({
                             role: role,
@@ -166,12 +162,10 @@ SÜRÜŞ VE YANIT KURALLARI:
                 }
             }
 
-            // Kullanıcının attığı son mesaj dizide yoksa ekle
             if (messages[messages.length - 1]?.role !== 'user') {
                 messages.push({ role: "user", content: userLastMessage });
             }
 
-            // Groq API İsteği (Temperature 0.1: Kesin kural takibi için düşürüldü)
             const completion = await groq.chat.completions.create({
                 messages: messages,
                 model: "llama-3.3-70b-versatile",
@@ -181,9 +175,14 @@ SÜRÜŞ VE YANIT KURALLARI:
             let reply = completion.choices[0]?.message?.content;
 
             if (reply) {
-                // KOD SEVİYESİNDE %100 KESİN MARKA DÜZELTMESİ (Regex):
-                // Yapay zeka ne yazarsa yazsın, "Alicci" / "alicci" kelimelerini doğrudan büyük harfli "ALICCI"ya dönüştürür.
+                // 1. Çince ve Asya karakterlerini otomatik temizle (目前 gibi hataları siler)
+                reply = reply.replace(/[\u4e00-\u9fa5]/g, "");
+
+                // 2. Marka adını %100 BÜYÜK HARFE zorla
                 reply = reply.replace(/alicci/gi, "ALICCI");
+
+                // 3. Çift boşlukları ve kenar boşluklarını düzelt
+                reply = reply.replace(/\s+/g, " ").trim();
 
                 return res.json({ reply });
             }
@@ -199,8 +198,8 @@ SÜRÜŞ VE YANIT KURALLARI:
 
     if (lowerMsg.includes("alc-") || lowerMsg.includes("kargo")) {
         fallbackReply = "Siparişinizin durumunu sitemizdeki 'Kargo Takip' butonuna tıklayarak bakabilirsiniz.";
-    } else if (lowerMsg.includes("fiyat") || lowerMsg.includes("ürün") || lowerMsg.includes("kaç tl") || lowerMsg.includes("bilgi")) {
-        fallbackReply = "Öne çıkan ALICCI ürünümüz %100 pamuklu olup 150 TL'dir. Sipariş vermek için sepetinize ekleyebilirsiniz.";
+    } else if (lowerMsg.includes("fiyat") || lowerMsg.includes("ürün") || lowerMsg.includes("kaç tl") || lowerMsg.includes("bilgi") || lowerMsg.includes("isterim") || lowerMsg.includes("ilgilenirim")) {
+        fallbackReply = "Öne çıkan ALICCI ürünümüz %100 pamuklu olup 150 TL'dir. Bedeninizi seçip sepetinize ekleyebilirsiniz.";
     } else if (lowerMsg.includes("iade") || lowerMsg.includes("değişim")) {
         fallbackReply = "İade ve değişim işlemlerinizi 14 gün içinde alicci.tr@gmail.com üzerinden iletişime geçerek başlatabilirsiniz.";
     } else if (lowerMsg.includes("merhaba") || lowerMsg.includes("selam") || lowerMsg.includes("slm")) {
