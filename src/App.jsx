@@ -187,7 +187,7 @@ function Chatbot({ isOpen, setIsOpen }) {
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Bir soru sorun veya ALC- kargo kodu..."
+            placeholder="Bir soru sorun "
             className="chatbot-input"
           />
           <button
