@@ -3,16 +3,13 @@ const cors = require('cors');
 const Iyzipay = require('iyzipay');
 const Groq = require("groq-sdk");
 const { createClient } = require('@supabase/supabase-js');
-const rateLimit = require('express-rate-limit');
 require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Render/Vercel reverse-proxy arkasında doğru IP tespiti için
 app.set('trust proxy', 1);
 
-// CORS Ayarları (Vercel frontend adresine tam yetki)
 app.use(cors({
     origin: ['https://alicci-tr.vercel.app', 'http://localhost:5173'],
     methods: ['GET', 'POST'],
@@ -21,19 +18,6 @@ app.use(cors({
 
 app.use(express.json());
 
-// ==========================================
-// SPAM KORUMASI (Rate Limiter Ayarı)
-// ==========================================
-const chatLimiter = rateLimit({
-    windowMs: 1 * 60 * 1000, // 1 dakikalık zaman penceresi
-    max: 10, // Aynı IP adresinden 1 dakikada en fazla 10 mesaj atılabilir
-    message: {
-        reply: "Çok fazla mesaj gönderdiniz. Lütfen 1 dakika bekleyip tekrar deneyiniz."
-    },
-    standardHeaders: true,
-    legacyHeaders: false,
-});
-
 // Iyzico Bağlantı Ayarları
 const iyzipay = new Iyzipay({
     apiKey: process.env.IYZICO_API_KEY || '',
@@ -41,7 +25,7 @@ const iyzipay = new Iyzipay({
     uri: 'https://sandbox-api.iyzipay.com'
 });
 
-// Groq AI Güvenli Başlatma
+// Groq AI Başlatma
 let groq = null;
 if (process.env.GROQ_API_KEY) {
     try {
@@ -57,7 +41,6 @@ const supabase = createClient(
     process.env.SUPABASE_ANON_KEY || ''
 );
 
-// Supabase'den 'products' tablosundaki tek ürünü çeken fonksiyon
 async function getProductData() {
     try {
         if (!process.env.SUPABASE_URL || !process.env.SUPABASE_ANON_KEY) {
@@ -80,15 +63,14 @@ async function getProductData() {
     }
 }
 
-// Temel test rotası
 app.get('/', (req, res) => {
     res.send('ALICCI Backend Aktif ve Çalışıyor! 🚀');
 });
 
 // ==========================================
-// 1. ALICCI AI CHATBOT ENDPOINT (Tam Korumalı)
+// 1. ALICCI AI CHATBOT ENDPOINT
 // ==========================================
-app.post('/api/chat', chatLimiter, async (req, res) => {
+app.post('/api/chat', async (req, res) => {
     let userLastMessage = "";
 
     try {
@@ -118,22 +100,21 @@ app.post('/api/chat', chatLimiter, async (req, res) => {
                 `;
             }
 
-            // Sert Kurallı System Prompt (Soru Sorma Yasağı ve Dil Koruması)
-            const systemInstruction = `GÖREV: ALICCI e-ticaret markasının satış asistanısın.
+            const systemInstruction = `GÖREV: ALICCI markasının satış asistanısın.
 
-DİL VE İÇERİK KURALLARI:
+DİL KURALLARI:
 - SADECE Türkçe cevap ver. Kesinlikle Çince, İngilizce veya yabancı karakter kullanma.
 
-SORU SORMA YASAĞI (KESİNLİKLE UYULACAK):
-- Cevaplarının sonunda KESİNLİKLE soru sorma! ("İlgilenir misiniz?", "İlginizi çekti mi?", "İster misiniz?", "Nasıl yardımcı olabilirim?" gibi sorular YASAKTIR).
+YASAKLAR:
+- Cevaplarının sonunda KESİNLİKLE soru sorma! ("İlgilenir misiniz?", "İlginizi çekti mi?", "İster misiniz?" gibi sorular YASAKTIR).
 - Yanıtlarında SORU İŞARETİ (?) KULLANMA.
 
 GÜNCEL ÜRÜN BİLGİSİ:
 ${productDetailsText}
 
-SÜRÜŞ VE DİLOG AKIŞI:
+DİYALOG AKIŞI:
 1. Müşteri "selam", "slm", "merhaba" derse: Doğrudan "Merhaba! ALICCI'ye hoş geldiniz, size nasıl yardımcı olabilirim." de.
-2. Müşteri "isterim", "evet", "ilgilenirim", "ürün bilgisi" derse veya ürün sorarsa:
+2. Müşteri "isterim", "evet", "ilgilenirim", "daha fazla bilgi", "ürün bilgisi" derse veya ürün sorarsa:
    - Tekrar izin isteme. Doğrudan ürün adını, %100 pamuklu olduğunu, fiyatını ve stok miktarını söyle.
    - Cümleni "Bedeninizi seçip sepetinize ekleyebilirsiniz." diyerek bitir.
 3. Yanıtların noktayla bitsin ve maksimum 2 kısa cümle olsun.`;
@@ -175,13 +156,13 @@ SÜRÜŞ VE DİLOG AKIŞI:
             let reply = completion.choices[0]?.message?.content;
 
             if (reply) {
-                // 1. Çince ve Asya karakterlerini otomatik temizle (目前 gibi hataları siler)
+                // 1. Çince ve yabancı karakter temizliği
                 reply = reply.replace(/[\u4e00-\u9fa5]/g, "");
 
-                // 2. Marka adını %100 BÜYÜK HARFE zorla
+                // 2. Marka adını KESİN BÜYÜK HARFE zorlama
                 reply = reply.replace(/alicci/gi, "ALICCI");
 
-                // 3. Çift boşlukları ve kenar boşluklarını düzelt
+                // 3. Boşluk düzenleme
                 reply = reply.replace(/\s+/g, " ").trim();
 
                 return res.json({ reply });
@@ -189,7 +170,7 @@ SÜRÜŞ VE DİLOG AKIŞI:
         }
 
     } catch (error) {
-        console.warn("AI Servis Hatası (Yedek Yerel Cevap Veriliyor):", error.message);
+        console.warn("AI Servis Hatası:", error.message);
     }
 
     // YEDEK MOTOR (Fallback)
@@ -215,7 +196,6 @@ SÜRÜŞ VE DİLOG AKIŞI:
 app.post('/api/iyzico-checkout', (req, res) => {
     try {
         const { basketItems, totalPrice, buyerInfo } = req.body;
-
         const formattedPrice = parseFloat(totalPrice || 0).toFixed(2);
 
         const request = {
@@ -306,7 +286,6 @@ app.post('/payment-callback', (req, res) => {
     });
 });
 
-// Sunucuyu başlat
 app.listen(PORT, () => {
     console.log(`Sunucu ${PORT} portunda çalışıyor...`);
 });
