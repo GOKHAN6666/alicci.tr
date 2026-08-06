@@ -1,4 +1,4 @@
-
+                
 
 /* Google Fonts */
 @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Inter:wght@300;400;500&display=swap');
@@ -3354,4 +3354,49 @@ header, .header, nav {
   transform: none !important;
   z-index: 99999 !important;
 }
+/* ==========================================
+   EKSİK MESAJ ANİMASYONLARI VE HİZALAMA DÜZELTMESİ
+   ========================================== */
 
+/* Kullanıcı Mesaj Kayma Animasyonu */
+@keyframes userMessageSlide {
+  from {
+    opacity: 0;
+    transform: translateY(12px) translateX(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) translateX(0);
+  }
+}
+
+/* Asistan Mesaj Kayma Animasyonu */
+@keyframes botMessageSlide {
+  from {
+    opacity: 0;
+    transform: translateY(12px) translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) translateX(0);
+  }
+}
+
+/* Baloncuk Giriş / Boşluk Çakışmalarını Sıfırlama */
+.chat-messages-container .message-bubble,
+.chat-body .message-bubble,
+.message-user,
+.message-bot {
+  margin-right: 0 !important;
+  margin-left: 0 !important;
+  box-sizing: border-box !important;
+}
+
+/* Mesaj Alanı Kaydırma ve Dış Kaymayı Engelleme */
+.chat-messages-container,
+.chatbot-messages,
+.chat-body {
+  width: 100% !important;
+  max-width: 100% !important;
+  overflow-x: hidden !important;
+}
