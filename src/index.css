@@ -3028,7 +3028,7 @@ body.dark-mode .chatbot-send-btn {
 .chatbot-toggle-btn,
 .ai-toggle-btn,
 .ai-chat-button {
-  z-index: 30 !important;
+  z-index: 30 
 }
 
 /* 2. Menü Açıldığında Ekranı Kaplayan Karartma/Buğulama Katmanı (Overlay) */
