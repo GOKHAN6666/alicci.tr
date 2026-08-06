@@ -203,7 +203,7 @@ function Chatbot({ isOpen, setIsOpen }) {
 
       {/* 2. Açma/Kapama Balon Butonu */}
       <button
-        onClick={() => setIsOpen()}
+        onClick={() => setIsOpen(!isOpen)}
         className={`chatbot-toggle-btn ${isOpen ? 'open' : ''}`}
         aria-label="Sohbeti Aç/Kapat"
       >
@@ -513,7 +513,7 @@ function App() {
         localStorage.setItem("alicciCartItems", JSON.stringify(cartItems));
     }, [cartItems]);
 
-    // SCROLL ENGELLEME (no-scroll) EFEKTİ (isChatbotOpen DAHİL EDİLDİ)
+    // SCROLL ENGELLEME (no-scroll) EFEKTİ
     useEffect(() => {
         const isAnyModalOpen = selectedProduct || showOrderOptionsModal || showConfirmationModal || showTrackingModal || isCartOpen || isMobileMenuOpen || showSizeCalcModal || isSizeCalcClosing || showIyzicoModal || isIyzicoClosing || isChatbotOpen;
         if (isAnyModalOpen) {
@@ -970,7 +970,7 @@ function App() {
                 @keyframes slide-down { from { transform: scale(1) translateY(0); opacity: 1; } to { transform: scale(0.95) translateY(20px); opacity: 0; } }
                 @keyframes cart-slide-out { from { transform: translateX(0); opacity: 1; } to { transform: translateX(100%); opacity: 0; } }
 
-                /* CHATBOT STİLLERİ */
+                /* CHATBOT STİLLERİ VE ANİMASYONLARI */
                 .chatbot-container {
                     position: fixed;
                     bottom: 24px;
@@ -1065,9 +1065,17 @@ function App() {
                 body.dark-mode .chatbot-messages {
                     background-color: #121212;
                 }
+                
+                /* MESAJ EFEKTİ BURADA */
                 .chatbot-message-wrapper {
                     display: flex;
+                    animation: fade-in-up 0.3s ease forwards;
                 }
+                @keyframes fade-in-up {
+                    from { opacity: 0; transform: translateY(10px); }
+                    to { opacity: 1; transform: translateY(0); }
+                }
+
                 .chatbot-message-wrapper.user {
                     justify-content: flex-end;
                 }
@@ -1166,6 +1174,7 @@ function App() {
                     font-size: 12px;
                     outline: none;
                     color: #000;
+                    box-sizing: border-box;
                 }
                 body.dark-mode .chatbot-input {
                     background-color: #252525;
@@ -1181,6 +1190,7 @@ function App() {
                     cursor: pointer;
                     font-size: 12px;
                     transition: opacity 0.2s;
+                    box-sizing: border-box;
                 }
                 body.dark-mode .chatbot-send-btn {
                     background-color: #fff;
@@ -1190,6 +1200,8 @@ function App() {
                     opacity: 0.4;
                     cursor: not-allowed;
                 }
+
+                /* CHATBOT TOGGLE BUTON PULSE ANİMASYONU */
                 .chatbot-toggle-btn {
                     background-color: #000;
                     color: #fff;
@@ -1204,14 +1216,29 @@ function App() {
                     height: 56px;
                     transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s;
                     float: right;
+                    animation: pulse-soft 2s infinite;
                 }
+                @keyframes pulse-soft {
+                    0% { box-shadow: 0 10px 25px rgba(0,0,0,0.3), 0 0 0 0 rgba(0, 0, 0, 0.3); }
+                    70% { box-shadow: 0 10px 25px rgba(0,0,0,0.3), 0 0 0 15px rgba(0, 0, 0, 0); }
+                    100% { box-shadow: 0 10px 25px rgba(0,0,0,0.3), 0 0 0 0 rgba(0, 0, 0, 0); }
+                }
+
                 body.dark-mode .chatbot-toggle-btn {
                     background-color: #fff;
                     color: #000;
                     border-color: #fff;
+                    animation: pulse-soft-dark 2s infinite;
                 }
+                @keyframes pulse-soft-dark {
+                    0% { box-shadow: 0 10px 25px rgba(0,0,0,0.5), 0 0 0 0 rgba(255, 255, 255, 0.3); }
+                    70% { box-shadow: 0 10px 25px rgba(0,0,0,0.5), 0 0 0 15px rgba(255, 255, 255, 0); }
+                    100% { box-shadow: 0 10px 25px rgba(0,0,0,0.5), 0 0 0 0 rgba(255, 255, 255, 0); }
+                }
+
                 .chatbot-toggle-btn.open {
                     transform: rotate(90deg);
+                    animation: none;
                 }
                 .chatbot-toggle-btn svg {
                     width: 24px;
