@@ -4,14 +4,21 @@ import "./index.css";
 import { Analytics } from "@vercel/analytics/react"; 
 import { supabase } from "./supabaseclient";
 
+// ==========================================
+// BACKEND SUNUCU ADRESİ
+// ==========================================
 const BACKEND_URL = "https://alicci-backend-us.onrender.com"; 
 
+// Hızlı Kısayol Butonları
 const quickActions = [
   { key: 'tracking', label: '📦 Kargo Takibi' },
   { key: 'size', label: '📏 Beden Rehberi' },
   { key: 'returns', label: '🔄 İade & Değişim' }
 ];
 
+// ==========================================
+// AKILLI ALICCI DESTEK CHATBOT BİLEŞENİ
+// ==========================================
 function Chatbot({ isOpen, setIsOpen }) {
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
@@ -31,6 +38,7 @@ function Chatbot({ isOpen, setIsOpen }) {
     }
   }, [messages, isTyping, isOpen]);
 
+  // AI Yanıt Vermezse veya Bağlantı Koparsa Devreye Girecek Yedek Kural Motoru
   const generateFallbackResponse = (userText) => {
     const text = userText.toLowerCase();
 
@@ -107,7 +115,11 @@ function Chatbot({ isOpen, setIsOpen }) {
 
   return (
     <div className="chatbot-container">
+      
+      {/* 1. Chat Penceresi */}
       <div className={`chatbot-window ${isOpen ? 'open' : ''}`}>
+        
+        {/* Header */}
         <div className="chatbot-header">
           <div>
             <h3 className="chatbot-title">ALICCI AI ASSISTANT</h3>
@@ -125,6 +137,7 @@ function Chatbot({ isOpen, setIsOpen }) {
           </button>
         </div>
 
+        {/* Mesaj Alanı */}
         <div className="chatbot-messages">
           {messages.map((msg) => (
             <div
@@ -149,6 +162,7 @@ function Chatbot({ isOpen, setIsOpen }) {
           <div ref={messagesEndRef} />
         </div>
 
+        {/* Hızlı Kısayollar */}
         <div className="chatbot-quick-actions">
           {quickActions.map((action) => (
             <button
@@ -161,6 +175,7 @@ function Chatbot({ isOpen, setIsOpen }) {
           ))}
         </div>
 
+        {/* Input Alanı */}
         <form 
           onSubmit={(e) => {
             e.preventDefault();
@@ -172,7 +187,7 @@ function Chatbot({ isOpen, setIsOpen }) {
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Bir soru sorun"
+            placeholder="Bir soru sorun "
             className="chatbot-input"
           />
           <button
@@ -183,8 +198,10 @@ function Chatbot({ isOpen, setIsOpen }) {
             Gönder
           </button>
         </form>
+
       </div>
 
+      {/* 2. Açma/Kapama Balon Butonu */}
       <button
         onClick={() => setIsOpen()}
         className={`chatbot-toggle-btn ${isOpen ? 'open' : ''}`}
@@ -200,6 +217,7 @@ function Chatbot({ isOpen, setIsOpen }) {
           </svg>
         )}
       </button>
+
     </div>
   );
 }
@@ -300,6 +318,7 @@ function App() {
     const [isLoading, setIsLoading] = useState(true);
     const [isDarkMode, setIsDarkMode] = useState(false);
     
+    // AI Chatbot State'i
     const [isChatbotOpen, setIsChatbotOpen] = useState(false);
 
     const [showSizeCalcModal, setShowSizeCalcModal] = useState(false);
@@ -323,6 +342,7 @@ function App() {
     const [trackingError, setTrackingError] = useState("");
     const [isTrackingLoading, setIsTrackingLoading] = useState(false);
 
+    // Iyzico Entegrasyon State'leri
     const [showIyzicoModal, setShowIyzicoModal] = useState(false);
     const [isIyzicoClosing, setIsIyzicoClosing] = useState(false);
     const [isIyzicoLoading, setIsIyzicoLoading] = useState(false);
@@ -333,6 +353,7 @@ function App() {
     const WHATSAPP_NUMBER = "905511903118";
     const INSTAGRAM_USERNAME = "alicci.official";
 
+    // AI Chatbot Açma/Kapama ve Diğer Modalları Temizleme Yönetimi
     const toggleChatbot = (explicitState) => {
         const nextState = typeof explicitState === 'boolean' ? explicitState : !isChatbotOpen;
         if (nextState) {
@@ -354,14 +375,15 @@ function App() {
 
     useEffect(() => {
         if (BACKEND_URL) {
+            console.log("Backend uyandırma sinyali gönderiliyor...");
             fetch(BACKEND_URL)
                 .then((res) => {
                     if (res.ok) {
-                        console.log("Backend uyanık ve hazır ⚡");
+                        console.log("Backend başarıyla uyandırıldı ve hazır! ⚡");
                     }
                 })
                 .catch((err) => {
-                    console.warn("Backend bekleniyor:", err);
+                    console.warn("Backend uyandırılırken bir sorun oluştu (uykuda olabilir, uyanıyor):", err);
                 });
         }
     }, []);
@@ -388,6 +410,14 @@ function App() {
         setCouponInput("");
         setAppliedCouponCode("");
     }, [cartItems]);
+
+    useEffect(() => {
+        const preventInstallPrompt = (e) => {
+            e.preventDefault();
+        };
+        window.addEventListener("beforeinstallprompt", preventInstallPrompt);
+        return () => window.removeEventListener("beforeinstallprompt", preventInstallPrompt);
+    }, []);
 
     useEffect(() => {
         const savedTheme = localStorage.getItem("darkMode") === "true";
@@ -473,6 +503,7 @@ function App() {
             try {
                 setCartItems(JSON.parse(storedCartItems));
             } catch (e) {
+                console.error("Sepet verisi yüklenirken hata:", e);
                 localStorage.removeItem("alicciCartItems");
             }
         }
@@ -482,6 +513,7 @@ function App() {
         localStorage.setItem("alicciCartItems", JSON.stringify(cartItems));
     }, [cartItems]);
 
+    // SCROLL ENGELLEME (no-scroll) EFEKTİ (isChatbotOpen DAHİL EDİLDİ)
     useEffect(() => {
         const isAnyModalOpen = selectedProduct || showOrderOptionsModal || showConfirmationModal || showTrackingModal || isCartOpen || isMobileMenuOpen || showSizeCalcModal || isSizeCalcClosing || showIyzicoModal || isIyzicoClosing || isChatbotOpen;
         if (isAnyModalOpen) {
@@ -803,13 +835,17 @@ function App() {
         }
 
         if (appliedCouponCode) {
-            await supabase
+            const { error: couponError } = await supabase
                 .from('coupons')
                 .update({ 
                     is_used: true, 
                     used_at: new Date().toISOString()
                 })
                 .eq('code', appliedCouponCode);
+
+            if (couponError) {
+                console.error("Kupon güncellenirken bir hata oluştu:", couponError);
+            }
         }
 
         if (platform === "whatsapp") {
@@ -926,6 +962,649 @@ function App() {
     return (
         <>
             <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+
+            <style>{`
+                @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+                @keyframes fade-out { from { opacity: 1; } to { opacity: 0; } }
+                @keyframes slide-up { from { transform: scale(0.95) translateY(20px); opacity: 0; } to { transform: scale(1) translateY(0); opacity: 1; } }
+                @keyframes slide-down { from { transform: scale(1) translateY(0); opacity: 1; } to { transform: scale(0.95) translateY(20px); opacity: 0; } }
+                @keyframes cart-slide-out { from { transform: translateX(0); opacity: 1; } to { transform: translateX(100%); opacity: 0; } }
+
+                /* CHATBOT STİLLERİ */
+                .chatbot-container {
+                    position: fixed;
+                    bottom: 24px;
+                    right: 24px;
+                    z-index: 9999999;
+                    font-family: sans-serif;
+                }
+                .chatbot-window {
+                    position: absolute;
+                    bottom: 70px;
+                    right: 0;
+                    width: 340px;
+                    height: 480px;
+                    background-color: #fff;
+                    border-radius: 16px;
+                    box-shadow: 0 20px 40px rgba(0,0,0,0.25);
+                    border: 1px solid #e5e5e5;
+                    display: flex;
+                    flex-direction: column;
+                    overflow: hidden;
+                    opacity: 0;
+                    transform: translateY(20px) scale(0.9);
+                    pointer-events: none;
+                    transform-origin: bottom right;
+                    transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1), transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+                }
+                body.dark-mode .chatbot-window {
+                    background-color: #1a1a1a;
+                    border-color: #333;
+                    color: #fff;
+                }
+                .chatbot-window.open {
+                    opacity: 1;
+                    transform: translateY(0) scale(1);
+                    pointer-events: all;
+                }
+                .chatbot-header {
+                    background-color: #000;
+                    color: #fff;
+                    padding: 14px 18px;
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                }
+                body.dark-mode .chatbot-header {
+                    background-color: #111;
+                    border-bottom: 1px solid #222;
+                }
+                .chatbot-title {
+                    margin: 0;
+                    font-size: 12px;
+                    font-weight: bold;
+                    letter-spacing: 1px;
+                    color: #fff;
+                }
+                .chatbot-status {
+                    margin: 3px 0 0 0;
+                    font-size: 10px;
+                    color: #34d399;
+                    display: flex;
+                    align-items: center;
+                    gap: 4px;
+                }
+                .chatbot-status-dot {
+                    width: 6px;
+                    height: 6px;
+                    border-radius: 50%;
+                    background-color: #34d399;
+                    display: inline-block;
+                }
+                .chatbot-close-btn {
+                    background: none;
+                    border: none;
+                    color: #aaa;
+                    font-size: 16px;
+                    cursor: pointer;
+                    padding: 4px;
+                }
+                .chatbot-close-btn:hover {
+                    color: #fff;
+                }
+                .chatbot-messages {
+                    flex: 1;
+                    padding: 14px;
+                    overflow-y: auto;
+                    background-color: #f9f9f9;
+                    display: flex;
+                    flex-direction: column;
+                    gap: 10px;
+                    font-size: 12px;
+                }
+                body.dark-mode .chatbot-messages {
+                    background-color: #121212;
+                }
+                .chatbot-message-wrapper {
+                    display: flex;
+                }
+                .chatbot-message-wrapper.user {
+                    justify-content: flex-end;
+                }
+                .chatbot-message-wrapper.bot {
+                    justify-content: flex-start;
+                }
+                .chatbot-message-bubble {
+                    max-width: 82%;
+                    padding: 10px 14px;
+                    border-radius: 14px;
+                    line-height: 1.4;
+                    box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+                }
+                .chatbot-message-bubble.user {
+                    background-color: #000;
+                    color: #fff;
+                    border: none;
+                }
+                body.dark-mode .chatbot-message-bubble.user {
+                    background-color: #fff;
+                    color: #000;
+                }
+                .chatbot-message-bubble.bot {
+                    background-color: #fff;
+                    color: #111;
+                    border: 1px solid #eee;
+                }
+                body.dark-mode .chatbot-message-bubble.bot {
+                    background-color: #222;
+                    color: #eee;
+                    border-color: #333;
+                }
+                .chatbot-typing-indicator {
+                    background-color: #fff;
+                    border: 1px solid #eee;
+                    padding: 8px 12px;
+                    border-radius: 12px;
+                    color: #888;
+                }
+                body.dark-mode .chatbot-typing-indicator {
+                    background-color: #222;
+                    border-color: #333;
+                    color: #aaa;
+                }
+                .chatbot-quick-actions {
+                    padding: 8px;
+                    background-color: #fff;
+                    border-top: 1px solid #eee;
+                    display: flex;
+                    gap: 6px;
+                    overflow-x: auto;
+                }
+                body.dark-mode .chatbot-quick-actions {
+                    background-color: #1a1a1a;
+                    border-color: #2d2d2d;
+                }
+                .chatbot-quick-btn {
+                    font-size: 11px;
+                    background-color: #f0f0f0;
+                    color: #333;
+                    padding: 6px 12px;
+                    border-radius: 20px;
+                    border: none;
+                    cursor: pointer;
+                    white-space: nowrap;
+                    transition: background-color 0.2s;
+                }
+                body.dark-mode .chatbot-quick-btn {
+                    background-color: #2a2a2a;
+                    color: #ddd;
+                }
+                .chatbot-quick-btn:hover {
+                    background-color: #e0e0e0;
+                }
+                body.dark-mode .chatbot-quick-btn:hover {
+                    background-color: #3a3a3a;
+                }
+                .chatbot-input-form {
+                    padding: 10px;
+                    background-color: #fff;
+                    border-top: 1px solid #eee;
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                }
+                body.dark-mode .chatbot-input-form {
+                    background-color: #1a1a1a;
+                    border-color: #2d2d2d;
+                }
+                .chatbot-input {
+                    flex: 1;
+                    padding: 8px 12px;
+                    background-color: #f4f4f4;
+                    border: 1px solid #ddd;
+                    border-radius: 20px;
+                    font-size: 12px;
+                    outline: none;
+                    color: #000;
+                }
+                body.dark-mode .chatbot-input {
+                    background-color: #252525;
+                    border-color: #3d3d3d;
+                    color: #fff;
+                }
+                .chatbot-send-btn {
+                    background-color: #000;
+                    color: #fff;
+                    border: none;
+                    padding: 8px 14px;
+                    border-radius: 20px;
+                    cursor: pointer;
+                    font-size: 12px;
+                    transition: opacity 0.2s;
+                }
+                body.dark-mode .chatbot-send-btn {
+                    background-color: #fff;
+                    color: #000;
+                }
+                .chatbot-send-btn:disabled {
+                    opacity: 0.4;
+                    cursor: not-allowed;
+                }
+                .chatbot-toggle-btn {
+                    background-color: #000;
+                    color: #fff;
+                    border-radius: 50%;
+                    box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+                    border: 1px solid #333;
+                    cursor: pointer;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    width: 56px;
+                    height: 56px;
+                    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s;
+                    float: right;
+                }
+                body.dark-mode .chatbot-toggle-btn {
+                    background-color: #fff;
+                    color: #000;
+                    border-color: #fff;
+                }
+                .chatbot-toggle-btn.open {
+                    transform: rotate(90deg);
+                }
+                .chatbot-toggle-btn svg {
+                    width: 24px;
+                    height: 24px;
+                }
+
+                @keyframes avatar-breathe {
+                    0%, 100% { transform: scale(1); }
+                    50% { transform: scale(1.04); }
+                }
+
+                @keyframes avatar-head-bob {
+                    0%, 100% { transform: translateY(0); }
+                    50% { transform: translateY(-2px); }
+                }
+
+                @keyframes avatar-arm-sway-left {
+                    0%, 100% { transform: rotate(0deg); }
+                    50% { transform: rotate(-8deg); }
+                }
+
+                @keyframes avatar-arm-sway-right {
+                    0%, 100% { transform: rotate(0deg); }
+                    50% { transform: rotate(8deg); }
+                }
+
+                .avatar-breathing-layer {
+                    animation: avatar-breathe 2s ease-in-out infinite;
+                    transform-origin: bottom center;
+                }
+                .avatar-head {
+                    animation: avatar-head-bob 2s ease-in-out infinite;
+                    transform-origin: 18px 11px;
+                }
+                .avatar-arm-left {
+                    animation: avatar-arm-sway-left 2s ease-in-out infinite;
+                    transform-origin: 8.5px 22.5px;
+                }
+                .avatar-arm-right {
+                    animation: avatar-arm-sway-right 2s ease-in-out infinite;
+                    transform-origin: 27.5px 22.5px;
+                }
+
+                .product-card.reveal {
+                    opacity: 0;
+                    transform: translateY(40px) scale(0.98);
+                    transition: opacity 0.85s cubic-bezier(0.16, 1, 0.3, 1), 
+                                transform 0.85s cubic-bezier(0.16, 1, 0.3, 1);
+                    position: relative;
+                }
+                .product-card.reveal.active {
+                    opacity: 1;
+                    transform: translateY(0) scale(1);
+                }
+
+                .product-card.sold-out {
+                    opacity: 0.55;
+                }
+                .sold-out-badge {
+                    position: absolute;
+                    top: 12px;
+                    left: 12px;
+                    background-color: #ff3b30;
+                    color: #fff;
+                    font-size: 10px;
+                    font-weight: 800;
+                    padding: 5px 10px;
+                    letter-spacing: 1.5px;
+                    text-transform: uppercase;
+                    z-index: 10;
+                    border-radius: 2px;
+                    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+                }
+                .size-select button.size-sold-out {
+                    opacity: 0.35;
+                    text-decoration: line-through;
+                    position: relative;
+                    cursor: not-allowed;
+                    background-color: rgba(0,0,0,0.05);
+                }
+                body.dark-mode .size-select button.size-sold-out {
+                    background-color: rgba(255,255,255,0.05);
+                }
+
+                .marquee-wrapper {
+                    width: 100%;
+                    overflow: hidden;
+                    background-color: #000;
+                    color: #fff;
+                    padding: 10px 0;
+                    user-select: none;
+                    display: flex;
+                    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+                }
+                body.dark-mode .marquee-wrapper {
+                    background-color: #111;
+                    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+                }
+                .marquee-track {
+                    display: flex;
+                    width: max-content;
+                    animation: marquee-anim 25s linear infinite;
+                }
+                .marquee-track span {
+                    font-size: 11px;
+                    font-weight: 700;
+                    letter-spacing: 2.5px;
+                    text-transform: uppercase;
+                    white-space: nowrap;
+                    padding-right: 40px;
+                    flex-shrink: 0;
+                }
+                @keyframes marquee-anim {
+                    0% { transform: translateX(0); }
+                    100% { transform: translateX(-50%); }
+                }
+
+                .backdrop-blur-sm {
+                    backdrop-filter: blur(4px) !important;
+                    -webkit-backdrop-filter: blur(4px) !important;
+                }
+
+                nav, html body nav {
+                    display: flex !important;
+                    flex-direction: row !important;
+                    justify-content: space-between !important;
+                    align-items: center !important;
+                    width: 100% !important;
+                    padding: 15px 20px !important;
+                    box-sizing: border-box !important;
+                    background-color: #fff !important;
+                    position: relative !important;
+                    z-index: 999999 !important;
+                }
+                body.dark-mode nav, html body.dark-mode nav {
+                    background-color: #111 !important;
+                }
+                nav h1 {
+                    margin: 0 !important;
+                    font-size: 24px !important;
+                }
+
+                .cart-panel { z-index: 1000001 !important; }
+                .cart-panel.closing { animation: cart-slide-out 0.3s ease forwards !important; }
+                .toast-container { z-index: 9999999 !important; }
+
+                .tracking-search-box {
+                    display: flex !important;
+                    flex-direction: row !important;
+                    align-items: center !important;
+                    gap: 10px !important;
+                    width: 100% !important;
+                    margin-bottom: 15px !important;
+                    box-sizing: border-box !important;
+                }
+                .tracking-search-box input {
+                    flex: 1 !important;
+                    width: 100% !important;
+                    min-width: 120px !important;
+                    padding: 12px !important;
+                    border: 1px solid #ccc !important;
+                    border-radius: 4px !important;
+                    color: #000 !important;
+                    background-color: #fff !important;
+                    user-select: text !important;
+                    -webkit-user-select: text !important;
+                    pointer-events: auto !important;
+                    box-sizing: border-box !important;
+                }
+                .tracking-search-box button {
+                    width: auto !important;
+                    padding: 12px 25px !important;
+                    background: #000 !important;
+                    color: #fff !important;
+                    border: none !important;
+                    border-radius: 4px !important;
+                    cursor: pointer !important;
+                    white-space: nowrap !important;
+                    flex-shrink: 0 !important;
+                    box-sizing: border-box !important;
+                }
+                body.dark-mode .tracking-search-box button {
+                    background: #fff !important;
+                    color: #000 !important;
+                }
+
+                .animated-truck-road {
+                    position: relative;
+                    width: 100%;
+                    height: 40px;
+                    background: rgba(128, 128, 128, 0.08);
+                    border-radius: 6px;
+                    margin-top: 15px;
+                    overflow: hidden;
+                }
+                .animated-truck-road::before {
+                    content: "";
+                    position: absolute;
+                    bottom: 8px;
+                    left: 0;
+                    width: 100%;
+                    height: 2px;
+                    background: repeating-linear-gradient(90deg, #ccc, #ccc 10px, transparent 10px, transparent 20px);
+                }
+                body.dark-mode .animated-truck-road::before {
+                    background: repeating-linear-gradient(90deg, #555, #555 10px, transparent 10px, transparent 20px);
+                }
+                .animated-truck {
+                    position: absolute;
+                    bottom: 10px;
+                    left: -50px;
+                    animation: truck-drive 10s linear infinite;
+                    display: flex;
+                    align-items: center;
+                }
+                .animated-truck.waiting {
+                    left: 20px !important; 
+                    animation: none !important;
+                }
+                .animated-truck svg {
+                    animation: truck-bounce 0.4s ease-in-out infinite alternate;
+                }
+                .animated-truck.waiting svg {
+                    animation: truck-idle 0.25s ease-in-out infinite alternate;
+                }
+                @keyframes truck-drive {
+                    0% { left: -50px; }
+                    100% { left: 105%; }
+                }
+                @keyframes truck-bounce {
+                    0% { transform: translateY(0) rotate(0deg); }
+                    100% { transform: translateY(-2px) rotate(1deg); }
+                }
+                @keyframes truck-idle {
+                    0% { transform: translateY(0); }
+                    100% { transform: translateY(-1.5px); }
+                }
+
+                nav .nav-controls, html body nav .nav-controls { 
+                    display: flex !important; 
+                    align-items: center !important; 
+                    gap: 15px !important;
+                    margin-left: auto !important;
+                    position: relative !important;
+                    inset: auto !important;
+                }
+                
+                .hamburger, nav .hamburger, html body nav .hamburger {
+                    display: none !important;
+                    cursor: pointer !important;
+                    align-items: center !important;
+                    justify-content: center !important;
+                    position: relative !important;
+                    top: auto !important;
+                    left: auto !important;
+                    right: auto !important;
+                    bottom: auto !important;
+                    margin: 0 !important;
+                    transform: none !important;
+                    z-index: 5 !important;
+                }
+
+                .find-my-size-btn, .size-disclaimer, .size-calc-modal-title, .size-calc-result-box {
+                    font-family: 'Poppins', sans-serif !important;
+                }
+
+                @media (max-width: 768px) {
+                    .marquee-track span {
+                        font-size: 10px;
+                        letter-spacing: 2px;
+                        padding-right: 30px;
+                    }
+
+                    nav .hamburger, html body nav .hamburger { 
+                        display: flex !important; 
+                    }
+                    nav .theme-toggle-btn, html body nav .theme-toggle-btn { 
+                        display: none !important; 
+                    }
+                    
+                    .mobile-theme-toggle { 
+                        display: block !important; 
+                        margin-top: 10px; 
+                        padding-top: 15px; 
+                        border-top: 1px solid rgba(128, 128, 128, 0.2); 
+                        color: inherit; 
+                        font-weight: bold; 
+                    }
+                    
+                    nav ul.nav-menu, html body nav .nav-menu, html body nav ul {
+                        display: flex !important;
+                        flex-direction: column !important;
+                        justify-content: flex-start !important;
+                        position: fixed !important;
+                        top: 0 !important;
+                        right: 0 !important;
+                        width: 280px !important;
+                        height: 100vh !important;
+                        background-color: #fff !important;
+                        margin: 0 !important;
+                        padding: 80px 0 0 0 !important;
+                        box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1) !important;
+                        z-index: 1000000 !important;
+                        box-sizing: border-box !important;
+                        
+                        transform: translateX(100%) !important;
+                        opacity: 0 !important;
+                        visibility: hidden !important;
+                        transition: transform 0.35s cubic-bezier(0.32, 0.94, 0.6, 1), opacity 0.3s ease, visibility 0.35s !important;
+                    }
+                    
+                    body.dark-mode nav ul.nav-menu, body.dark-mode html body nav .nav-menu { 
+                        background-color: #1a1a1a !important; 
+                        color: #fff !important; 
+                    }
+                    
+                    nav ul.nav-menu.open, html body nav .nav-menu.open { 
+                        transform: translateX(0) !important; 
+                        opacity: 1 !important;
+                        visibility: visible !important;
+                    }
+                    nav ul.nav-menu.closing, html body nav .nav-menu.closing { 
+                        transform: translateX(100%) !important; 
+                        opacity: 0 !important;
+                        transition: transform 0.35s cubic-bezier(0.4, 0, 1, 1), opacity 0.3s ease !important;
+                    }
+
+                    nav ul.nav-menu li, html body nav .nav-menu li {
+                        width: 100% !important;
+                        padding: 18px 25px !important;
+                        text-align: left !important;
+                        box-sizing: border-box !important;
+                        border-bottom: 1px solid rgba(128, 128, 128, 0.1) !important;
+                        list-style: none !important;
+                        cursor: pointer !important;
+                    }
+                    nav ul.nav-menu li:hover, html body nav .nav-menu li:hover {
+                        background-color: rgba(128, 128, 128, 0.05) !important;
+                    }
+                    
+                    .menu-backdrop { 
+                        position: fixed !important;
+                        top: 0 !important;
+                        left: 0 !important;
+                        width: 100vw !important;
+                        height: 100vh !important;
+                        background-color: rgba(0, 0, 0, 0.25) !important;
+                        backdrop-filter: blur(8px) !important;
+                        -webkit-backdrop-filter: blur(8px) !important;
+                        z-index: 99998 !important;
+                    }
+                }
+
+                @media (min-width: 769px) { 
+                    .mobile-theme-toggle, 
+                    nav ul.nav-menu li.mobile-theme-toggle, 
+                    html body nav .nav-menu li.mobile-theme-toggle { 
+                        display: none !important; 
+                    }
+                    
+                    nav ul.nav-menu, html body nav .nav-menu {
+                        display: flex !important;
+                        flex-direction: row !important;
+                        gap: 35px !important;
+                        list-style: none !important;
+                        margin: 0 !important;
+                        padding: 0 !important;
+                        position: absolute !important;
+                        left: 50% !important;
+                        top: 50% !important;
+                        transform: translate(-50%, -50%) !important;
+                        opacity: 1 !important;
+                        visibility: visible !important;
+                        width: auto !important;
+                        height: auto !important;
+                        background: transparent !important;
+                        box-shadow: none !important;
+                    }
+                    nav ul.nav-menu li, html body nav .nav-menu li {
+                        cursor: pointer !important;
+                        width: auto !important;
+                        padding: 0 !important;
+                        border: none !important;
+                        letter-spacing: 0.5px !important;
+                        display: inline-block !important;
+                        transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1) !important;
+                    }
+                    nav ul.nav-menu li:hover, html body nav .nav-menu li:hover {
+                        opacity: 0.55 !important; 
+                        transform: translateY(-1px) !important; 
+                    }
+                }
+            `}</style>
 
             <nav>
                 <h1>ALICCI</h1>
@@ -1470,8 +2149,37 @@ function App() {
                                 <p><strong>Kargo Firması:</strong> {searchedOrder.cargo_company || '-'}</p>
                                 <p><strong>Kargo Takip No:</strong> {searchedOrder.cargo_tracker_code || '-'}</p>
                                 <p><strong>Toplam Tutar:</strong> {searchedOrder.total_price} TL</p>
+
+                                {searchedOrder.status === "Kargoda" ? (
+                                    <div className="animated-truck-road">
+                                        <div className="animated-truck">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="20" viewBox="0 0 24 24" fill="none" stroke={isDarkMode ? "#fff" : "#000"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                <rect x="1" y="3" width="15" height="13"></rect>
+                                                <polygon points="16 8 20 8 23 11 23 16 16 16 8"></polygon>
+                                                <circle cx="5.5" cy="18.5" r="2.5"></circle>
+                                                <circle cx="18.5" cy="18.5" r="2.5"></circle>
+                                            </svg>
+                                        </div>
+                                    </div>
+                                ) : searchedOrder.status === "Onay Bekleniyor" ? (
+                                    <div className="animated-truck-road">
+                                        <div className="animated-truck waiting">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="20" viewBox="0 0 24 24" fill="none" stroke="#ff9500" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                <rect x="1" y="3" width="15" height="13"></rect>
+                                                <polygon points="16 8 20 8 23 11 23 16 16 16 8"></polygon>
+                                                <circle cx="5.5" cy="18.5" r="2.5"></circle>
+                                                <circle cx="18.5" cy="18.5" r="2.5"></circle>
+                                            </svg>
+                                        </div>
+                                    </div>
+                                ) : null}
                             </div>
                         )}
+
+                        <div className="contact-dm-buttons tracking-dm-buttons" style={{ marginTop: '20px', borderTop: '1px solid rgba(128,128,128,0.2)', paddingTop: '15px' }}>
+                            <p style={{ fontSize: '12px', marginBottom: '10px' }}>Sorun mu yaşıyorsunuz? Doğrudan destek alın:</p>
+                            <a href={`https://wa.me/${WHATSAPP_NUMBER}`} target="_blank" rel="noopener noreferrer" className="themed-social-button whatsapp-contact">WhatsApp Destek</a>
+                        </div>
                     </div>
                 </div>
             )}
@@ -1538,7 +2246,9 @@ function App() {
                 </div>
             )}
 
+            {/* Akıllı Müşteri Destek Chatbot Bileşeni */}
             <Chatbot isOpen={isChatbotOpen} setIsOpen={toggleChatbot} />
+
             <Analytics />
         </>
     );
