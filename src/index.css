@@ -3249,96 +3249,109 @@ header, .header {
   /* Animasyonu uygula */
   animation: botMessageSlide 0.35s ease-out forwards;
 }
+/* ==========================================
+   KATMAN (Z-INDEX) VE MODAL SIRALAMASI
+   ========================================== */
+
+/* 1. Sayfa Header / Navbar */
+header, .header, nav {
+  z-index: 100 !important;
+}
+
+/* 2. Kapalı AI Chat Açma Butonu (Ekranın en alt katmanında kalır) */
+.chatbot-toggle-btn,
+.ai-toggle-btn,
+.ai-chat-button {
+  position: fixed !important;
+  bottom: 25px !important;
+  right: 25px !important;
+  z-index: 30 !important;
+}
+
+/* 3. Menü veya Modal Açıldığında Ekranı Kaplayan Siyah Karartma (Backdrop) */
+.modal-backdrop,
+.modal-overlay,
+.backdrop,
+.menu-backdrop {
+  position: fixed !important;
+  inset: 0 !important;
+  background-color: rgba(0, 0, 0, 0.65) !important;
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  z-index: 9998 !important; /* AI butonunun (30) üstüne geçer */
+}
+
+/* 4. Açılan Ana Modallar (Kargo Takip, Ürün Detay, Sepet ve Açık AI Chat) */
+.modal-content-base,
+.product-modal,
+.cart-panel,
+.chatbot-window,
+.chat-container,
+.ai-chat-window {
+  z-index: 9999 !important; /* Karartmanın (9998) üstünde durur */
+}
+
+/* 5. Mobil Menü Çekmecesi */
+.nav-menu.open,
+.mobile-menu-drawer {
+  z-index: 10000 !important;
+}
 
 
 /* ==========================================
-   2. HAREKETLİ ANİMASYONLAR (ANIMATIONS)
+   AI CHAT KUTUSU DÜZENLEMESİ
    ========================================== */
 
-/* Sohbet Penceresinin Açılış Animasyonu */
-.chat-modal-open {
-  animation: modalScaleUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  transform-origin: bottom right;
+.chatbot-window,
+.chat-container,
+.ai-chat-window {
+  position: fixed !important;
+  bottom: 25px !important;
+  right: 25px !important;
+  width: 380px !important;
+  max-width: calc(100vw - 40px) !important;
+  height: 550px !important;
+  max-height: calc(100vh - 100px) !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  border-radius: 12px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
-/* Bot Mesajlarının Aşağıdan Süzülerek Gelmesi */
-@keyframes botMessageSlide {
-  0% {
-    opacity: 0;
-    transform: translateY(15px) scale(0.96);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
+/* Chat Mesaj Alanı ve Boşluk Düzeltmesi */
+.chat-messages-container,
+.chatbot-messages,
+.chat-body {
+  flex: 1 !important;
+  padding: 16px 12px !important;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow-y: auto !important;
 }
 
-/* Kullanıcı Mesajlarının Baloncuk Gibi Pop Ederek Çıkması */
-@keyframes userMessageSlide {
-  0% {
-    opacity: 0;
-    transform: translateY(10px) scale(0.92);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
+/* Mesaj Baloncuklarının Genişliği */
+.message-bubble,
+.chat-message {
+  max-width: 88% !important;
+  padding: 10px 14px;
+  border-radius: 12px;
+  word-break: break-word;
 }
 
-/* Modal Pencere Açılış Animasyonu */
-@keyframes modalScaleUp {
-  0% {
-    opacity: 0;
-    transform: scale(0.85) translateY(20px);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
-}
 
 /* ==========================================
-   3. BUTON VE İNPUT MİKRO-ETKİLEŞİMLERİ
+   TOAST (BİLDİRİM) TEK TİP STİL
    ========================================== */
 
-/* Gönder Butonu Efekti */
-.send-btn {
-  transition: all 0.2s ease;
-}
-
-.send-btn:hover {
-  transform: translateY(-2px) scale(1.03);
-  box-shadow: 0 4px 12px rgba(255, 255, 255, 0.2);
-}
-
-.send-btn:active {
-  transform: translateY(0) scale(0.96);
-}
-
-/* Kapatma (X) Butonu Efekti */
-.close-btn {
-  transition: all 0.2s ease;
-}
-
-.close-btn:hover {
-  transform: rotate(90deg) scale(1.15);
-  color: #ff5f56;
-}
-
-/* İnput Odaklanma Efekti */
-.chat-input {
-  transition: all 0.25s ease;
-}
-
-.chat-input:focus {
-  border-color: rgba(255, 255, 255, 0.3);
-  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.08);
-}
+.toast-container,
 .toast-notification {
-  position: fixed;
-  bottom: 24px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 9999;
-  white-space: nowrap;
+  position: fixed !important;
+  bottom: 24px !important;
+  right: 20px !important;
+  left: auto !important;
+  transform: none !important;
+  z-index: 99999 !important;
 }
+
