@@ -3339,3 +3339,10 @@ header, .header, nav {
     transform: translateY(0) translateX(0);
   }
 }
+.toast-container {
+    position: fixed;
+    bottom: 100px; /* Chatbot butonunun üst seviyesine taşır */
+    right: 20px;
+    z-index: 1000020;
+    pointer-events: none;
+}
