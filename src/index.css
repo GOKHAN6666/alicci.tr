@@ -3368,3 +3368,22 @@ header, .header, nav {
   align-items: center;
   gap: 8px;
 }
+/* 1. Sağ taraftaki 70px'lik devasa boşluk kısıtlamasını kaldırıyoruz */
+.chatbot-message-bubble, 
+.chatbot-preview-container {
+  margin-right: 0 !important;
+}
+
+/* 2. Kapsayıcı alanın padding değerini dengeliyoruz */
+.chat-messages-container {
+  padding: 12px 10px !important;
+}
+
+/* 3. Mesaj balonlarının genişliğini kısıtlamadan tam kaplamasını sağlıyoruz */
+.chat-message,
+.message-bubble,
+.chatbot-message-bubble {
+  width: 100% !important;
+  max-width: 100% !important; /* Eğer baloncukların sağ/sol ayrımı belirgin kalsın istersen %95 yapabilirsin */
+  box-sizing: border-box !important;
+}
