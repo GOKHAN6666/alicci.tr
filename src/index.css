@@ -3461,3 +3461,39 @@ header, .header, nav {
   height: 14px;
   font-size: 12px;
 }
+.cart-checkout-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 20px;
+  width: 100%;
+}
+
+.iyzico-btn {
+  width: 100%;
+  padding: 16px;
+  background-color: #000000;
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.iyzico-btn:hover {
+  background-color: #222222;
+}
+
+.iyzico-btn:active {
+  transform: scale(0.99);
+}
+
+.payment-trust-badge {
+  text-align: center;
+  font-size: 11px;
+  color: #666666;
+  margin-top: 4px;
+}
