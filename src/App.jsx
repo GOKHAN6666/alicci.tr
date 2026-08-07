@@ -203,7 +203,7 @@ function Chatbot({ isOpen, setIsOpen }) {
 
       {/* 2. Açma/Kapama Balon Butonu */}
       <button
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={() => setIsOpen()}
         className={`chatbot-toggle-btn ${isOpen ? 'open' : ''}`}
         aria-label="Sohbeti Aç/Kapat"
       >
@@ -245,52 +245,41 @@ const getRecommendedSize = (height, weight, fitPreference) => {
     return baseSize;
 };
 
+// ==========================================
+// YENİLENMİŞ YUMUŞAK GEÇİŞLİ & YUKARI KALKAN PRODUCT CARD
+// ==========================================
 const ProductCard = ({ product, openProductModal, closeCart }) => {
-    const [hoveredImageIndex, setHoveredImageIndex] = useState(0);
-
-    const handleMouseMove = (e) => {
-        if (!product || !product.image || product.image.length <= 1) {
-            setHoveredImageIndex(0);
-            return;
-        }
-
-        const { currentTarget } = e;
-        const { left, width } = currentTarget.getBoundingClientRect();
-        const mouseX = e.clientX - left;
-        const segmentWidth = width / product.image.length;
-        let newIndex = Math.floor(mouseX / segmentWidth);
-        newIndex = Math.max(0, Math.min(newIndex, product.image.length - 1));
-
-        if (newIndex !== hoveredImageIndex) {
-            setHoveredImageIndex(newIndex);
-        }
-    };
-
-    const handleMouseLeave = () => {
-        setHoveredImageIndex(0);
-    };
-
     const handleClick = () => {
         if (closeCart) closeCart();
         openProductModal(product);
     };
 
     const isCompletelySoldOut = product.stock === 0;
+    const primaryImg = product.image && product.image[0] ? product.image[0] : "/logo.png";
+    const secondaryImg = product.image && product.image[1] ? product.image[1] : primaryImg;
 
     return (
         <div
             className={`product-card reveal ${isCompletelySoldOut ? "sold-out" : ""}`}
             onClick={handleClick}
-            onMouseMove={handleMouseMove}
-            onMouseLeave={handleMouseLeave}
         >
             {isCompletelySoldOut && <div className="sold-out-badge">TÜKENDİ</div>}
-            <img
-                src={product.image ? product.image[hoveredImageIndex] : "/logo.png"}
-                alt={product.name}
-                className="product-card-image"
-                loading="lazy"
-            />
+            
+            <div className="product-image-wrapper">
+                <img
+                    src={primaryImg}
+                    alt={product.name}
+                    className="product-card-image primary"
+                    loading="lazy"
+                />
+                <img
+                    src={secondaryImg}
+                    alt={`${product.name} Hover`}
+                    className="product-card-image secondary"
+                    loading="lazy"
+                />
+            </div>
+
             <div className="info">
                 <h4>{product.name}</h4>
                 <p>{product.price} TL</p>
@@ -513,7 +502,7 @@ function App() {
         localStorage.setItem("alicciCartItems", JSON.stringify(cartItems));
     }, [cartItems]);
 
-    // SCROLL ENGELLEME (no-scroll) EFEKTİ
+    // SCROLL ENGELLEME (no-scroll) EFEKTİ (isChatbotOpen DAHİL EDİLDİ)
     useEffect(() => {
         const isAnyModalOpen = selectedProduct || showOrderOptionsModal || showConfirmationModal || showTrackingModal || isCartOpen || isMobileMenuOpen || showSizeCalcModal || isSizeCalcClosing || showIyzicoModal || isIyzicoClosing || isChatbotOpen;
         if (isAnyModalOpen) {
@@ -970,7 +959,55 @@ function App() {
                 @keyframes slide-down { from { transform: scale(1) translateY(0); opacity: 1; } to { transform: scale(0.95) translateY(20px); opacity: 0; } }
                 @keyframes cart-slide-out { from { transform: translateX(0); opacity: 1; } to { transform: translateX(100%); opacity: 0; } }
 
-                /* CHATBOT STİLLERİ VE ANİMASYONLARI */
+                /* PRODUCT CARD YUKARI KALKMA VE FADE-IN STİLLERİ */
+                .product-card {
+                    cursor: pointer;
+                    position: relative;
+                }
+                .product-card.reveal {
+                    opacity: 0;
+                    transform: translateY(40px) scale(0.98);
+                    transition: opacity 0.85s cubic-bezier(0.16, 1, 0.3, 1), 
+                                transform 0.85s cubic-bezier(0.16, 1, 0.3, 1),
+                                box-shadow 0.3s ease;
+                }
+                .product-card.reveal.active {
+                    opacity: 1;
+                    transform: translateY(0) scale(1);
+                }
+                .product-card.reveal.active:hover {
+                    transform: translateY(-6px);
+                    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
+                }
+                body.dark-mode .product-card.reveal.active:hover {
+                    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.4);
+                }
+
+                .product-image-wrapper {
+                    position: relative;
+                    width: 100%;
+                    overflow: hidden;
+                    border-radius: 4px;
+                }
+                .product-card-image {
+                    width: 100%;
+                    display: block;
+                    transition: opacity 0.4s ease;
+                }
+                .product-card-image.secondary {
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    opacity: 0;
+                }
+                .product-card:hover .product-card-image.secondary {
+                    opacity: 1;
+                }
+                .product-card:hover .product-card-image.primary {
+                    opacity: 0;
+                }
+
+                /* CHATBOT STİLLERİ */
                 .chatbot-container {
                     position: fixed;
                     bottom: 24px;
@@ -1065,17 +1102,9 @@ function App() {
                 body.dark-mode .chatbot-messages {
                     background-color: #121212;
                 }
-                
-                /* MESAJ EFEKTİ BURADA */
                 .chatbot-message-wrapper {
                     display: flex;
-                    animation: fade-in-up 0.3s ease forwards;
                 }
-                @keyframes fade-in-up {
-                    from { opacity: 0; transform: translateY(10px); }
-                    to { opacity: 1; transform: translateY(0); }
-                }
-
                 .chatbot-message-wrapper.user {
                     justify-content: flex-end;
                 }
@@ -1174,7 +1203,6 @@ function App() {
                     font-size: 12px;
                     outline: none;
                     color: #000;
-                    box-sizing: border-box;
                 }
                 body.dark-mode .chatbot-input {
                     background-color: #252525;
@@ -1190,7 +1218,6 @@ function App() {
                     cursor: pointer;
                     font-size: 12px;
                     transition: opacity 0.2s;
-                    box-sizing: border-box;
                 }
                 body.dark-mode .chatbot-send-btn {
                     background-color: #fff;
@@ -1200,8 +1227,6 @@ function App() {
                     opacity: 0.4;
                     cursor: not-allowed;
                 }
-
-                /* CHATBOT TOGGLE BUTON PULSE ANİMASYONU */
                 .chatbot-toggle-btn {
                     background-color: #000;
                     color: #fff;
@@ -1216,29 +1241,14 @@ function App() {
                     height: 56px;
                     transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s;
                     float: right;
-                    animation: pulse-soft 2s infinite;
                 }
-                @keyframes pulse-soft {
-                    0% { box-shadow: 0 10px 25px rgba(0,0,0,0.3), 0 0 0 0 rgba(0, 0, 0, 0.3); }
-                    70% { box-shadow: 0 10px 25px rgba(0,0,0,0.3), 0 0 0 15px rgba(0, 0, 0, 0); }
-                    100% { box-shadow: 0 10px 25px rgba(0,0,0,0.3), 0 0 0 0 rgba(0, 0, 0, 0); }
-                }
-
                 body.dark-mode .chatbot-toggle-btn {
                     background-color: #fff;
                     color: #000;
                     border-color: #fff;
-                    animation: pulse-soft-dark 2s infinite;
                 }
-                @keyframes pulse-soft-dark {
-                    0% { box-shadow: 0 10px 25px rgba(0,0,0,0.5), 0 0 0 0 rgba(255, 255, 255, 0.3); }
-                    70% { box-shadow: 0 10px 25px rgba(0,0,0,0.5), 0 0 0 15px rgba(255, 255, 255, 0); }
-                    100% { box-shadow: 0 10px 25px rgba(0,0,0,0.5), 0 0 0 0 rgba(255, 255, 255, 0); }
-                }
-
                 .chatbot-toggle-btn.open {
                     transform: rotate(90deg);
-                    animation: none;
                 }
                 .chatbot-toggle-btn svg {
                     width: 24px;
@@ -1280,18 +1290,6 @@ function App() {
                 .avatar-arm-right {
                     animation: avatar-arm-sway-right 2s ease-in-out infinite;
                     transform-origin: 27.5px 22.5px;
-                }
-
-                .product-card.reveal {
-                    opacity: 0;
-                    transform: translateY(40px) scale(0.98);
-                    transition: opacity 0.85s cubic-bezier(0.16, 1, 0.3, 1), 
-                                transform 0.85s cubic-bezier(0.16, 1, 0.3, 1);
-                    position: relative;
-                }
-                .product-card.reveal.active {
-                    opacity: 1;
-                    transform: translateY(0) scale(1);
                 }
 
                 .product-card.sold-out {
