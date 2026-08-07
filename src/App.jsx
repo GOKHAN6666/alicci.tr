@@ -597,7 +597,7 @@ function App() {
     };
 
     const nextModalImage = (e) => {
-        e.stopPropagation();
+        if (e) e.stopPropagation();
         if (selectedProduct && selectedProduct.image) {
             setCurrentModalImageIndex((prevIndex) =>
                 (prevIndex + 1) % selectedProduct.image.length
@@ -606,7 +606,7 @@ function App() {
     };
 
     const prevModalImage = (e) => {
-        e.stopPropagation();
+        if (e) e.stopPropagation();
         if (selectedProduct && selectedProduct.image) {
             setCurrentModalImageIndex((prevIndex) =>
                 (prevIndex - 1 + selectedProduct.image.length) % selectedProduct.image.length
@@ -958,6 +958,122 @@ function App() {
                 @keyframes slide-up { from { transform: scale(0.95) translateY(20px); opacity: 0; } to { transform: scale(1) translateY(0); opacity: 1; } }
                 @keyframes slide-down { from { transform: scale(1) translateY(0); opacity: 1; } to { transform: scale(0.95) translateY(20px); opacity: 0; } }
                 @keyframes cart-slide-out { from { transform: translateX(0); opacity: 1; } to { transform: translateX(100%); opacity: 0; } }
+
+                /* LÜKS YUMUŞAK GEÇİŞ VE GLASSMORPHISM ANIMASYONLARI */
+                @keyframes fadeIn {
+                    from {
+                        opacity: 0.35;
+                        transform: scale(0.985);
+                    }
+                    to {
+                        opacity: 1;
+                        transform: scale(1);
+                    }
+                }
+
+                .animate-fadeIn {
+                    animation: fadeIn 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+                }
+
+                .product-modal-image-wrapper {
+                    position: relative;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    width: 100%;
+                    overflow: hidden;
+                    border-radius: 12px;
+                    background: rgba(0, 0, 0, 0.02);
+                }
+                body.dark-mode .product-modal-image-wrapper {
+                    background: rgba(255, 255, 255, 0.02);
+                }
+
+                /* GLASSMORPHISM GEZİNME BUTONLARI */
+                .modal-nav-glass-btn {
+                    position: absolute;
+                    top: 50%;
+                    transform: translateY(-50%);
+                    width: 42px;
+                    height: 42px;
+                    border-radius: 50%;
+                    background: rgba(255, 255, 255, 0.45);
+                    backdrop-filter: blur(12px);
+                    -webkit-backdrop-filter: blur(12px);
+                    border: 1px solid rgba(255, 255, 255, 0.5);
+                    color: #111;
+                    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    cursor: pointer;
+                    opacity: 0;
+                    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+                    z-index: 10;
+                }
+
+                .product-modal-image-wrapper:hover .modal-nav-glass-btn {
+                    opacity: 1;
+                }
+
+                .modal-nav-glass-btn.left {
+                    left: 12px;
+                }
+
+                .modal-nav-glass-btn.right {
+                    right: 12px;
+                }
+
+                .modal-nav-glass-btn:hover {
+                    background: rgba(255, 255, 255, 0.85);
+                    transform: translateY(-50%) scale(1.08);
+                }
+
+                .modal-nav-glass-btn:active {
+                    transform: translateY(-50%) scale(0.95);
+                }
+
+                body.dark-mode .modal-nav-glass-btn {
+                    background: rgba(0, 0, 0, 0.45);
+                    border: 1px solid rgba(255, 255, 255, 0.15);
+                    color: #fff;
+                }
+
+                body.dark-mode .modal-nav-glass-btn:hover {
+                    background: rgba(0, 0, 0, 0.8);
+                }
+
+                /* GEZİNME NOKTALARI (DOTS) */
+                .modal-image-dots {
+                    position: absolute;
+                    bottom: 12px;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    display: flex;
+                    align-items: center;
+                    gap: 6px;
+                    z-index: 10;
+                    padding: 4px 8px;
+                    background: rgba(0, 0, 0, 0.25);
+                    backdrop-filter: blur(8px);
+                    -webkit-backdrop-filter: blur(8px);
+                    border-radius: 20px;
+                }
+
+                .modal-dot {
+                    height: 6px;
+                    width: 6px;
+                    border-radius: 50%;
+                    background: rgba(255, 255, 255, 0.5);
+                    cursor: pointer;
+                    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+                }
+
+                .modal-dot.active {
+                    width: 18px;
+                    border-radius: 10px;
+                    background: #ffffff;
+                }
 
                 /* PRODUCT CARD YUKARI KALKMA VE FADE-IN STİLLERİ */
                 .product-card {
@@ -1812,21 +1928,60 @@ function App() {
                         <button className="close-modal close-modal-small" onClick={closeProductModal}>&times;</button>
                         {selectedProduct && (
                             <div className="product-modal-content-wrapper">
+                                {/* LÜKS CAM EFEKTLİ (GLASSMORPHISM) & ANIMASYONLU GÖRSEL GALERİSİ */}
                                 <div className="product-modal-image-wrapper">
                                     <img 
+                                        key={currentModalImageIndex}
                                         src={selectedProduct.image ? selectedProduct.image[currentModalImageIndex] : "/logo.png"} 
                                         alt={selectedProduct.name} 
-                                        className="product-modal-image zoomable-image" 
+                                        className="product-modal-image zoomable-image animate-fadeIn" 
                                         style={{ maxHeight: '60vh', width: 'auto', maxWidth: '100%', objectFit: 'contain' }} 
                                         loading="lazy"
                                     />
+                                    
                                     {selectedProduct.image && selectedProduct.image.length > 1 && (
-                                        <div className="modal-image-navigation">
-                                            <button className="modal-nav-arrow left" onClick={prevModalImage}>&#x2039;</button>
-                                            <button className="modal-nav-arrow right" onClick={nextModalImage}>&#x203A;</button>
-                                        </div>
+                                        <>
+                                            {/* Sol Buton */}
+                                            <button 
+                                                type="button"
+                                                className="modal-nav-glass-btn left" 
+                                                onClick={prevModalImage}
+                                                aria-label="Önceki Görsel"
+                                            >
+                                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                    <polyline points="15 18 9 12 15 6"></polyline>
+                                                </svg>
+                                            </button>
+
+                                            {/* Sağ Buton */}
+                                            <button 
+                                                type="button"
+                                                className="modal-nav-glass-btn right" 
+                                                onClick={nextModalImage}
+                                                aria-label="Sonraki Görsel"
+                                            >
+                                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                    <polyline points="9 18 15 12 9 6"></polyline>
+                                                </svg>
+                                            </button>
+
+                                            {/* Alt İndikatör Noktaları */}
+                                            <div className="modal-image-dots">
+                                                {selectedProduct.image.map((_, idx) => (
+                                                    <span
+                                                        key={idx}
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setCurrentModalImageIndex(idx);
+                                                        }}
+                                                        className={`modal-dot ${idx === currentModalImageIndex ? "active" : ""}`}
+                                                    />
+                                                ))}
+                                            </div>
+                                        </>
                                     )}
                                 </div>
+
                                 <div className="product-info-mobile-order" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
                                     <h2>{selectedProduct.name}</h2>
                                     <p className="desc">{selectedProduct.description || "Bu ürün ALICCI koleksiyonunun zarif parçalarındandır."}</p>
