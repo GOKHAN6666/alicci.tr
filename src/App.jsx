@@ -1615,6 +1615,16 @@ function App() {
                     z-index: 5 !important;
                 }
 
+                .secondary-checkout-btn {
+                    margin-top: 10px !important;
+                    background-color: transparent !important;
+                    color: inherit !important;
+                    border: 1px solid rgba(128, 128, 128, 0.4) !important;
+                }
+                .secondary-checkout-btn:hover {
+                    background-color: rgba(128, 128, 128, 0.1) !important;
+                }
+
                 .find-my-size-btn, .size-disclaimer, .size-calc-modal-title, .size-calc-result-box {
                     font-family: 'Poppins', sans-serif !important;
                 }
@@ -1855,7 +1865,15 @@ function App() {
                         {discount > 0 && <span className="discount-label"> (%{(discount * 100)} İndirim Uygulandı)</span>}
                     </div>
                 )}
-                <button onClick={handleCheckout}>Sepeti Onayla</button>
+                {cartItems.length > 0 && (
+                    <>
+                        <button onClick={handleCheckout}>Güvenli Kart İle Öde (Iyzico)</button>
+                        <button className="secondary-checkout-btn" onClick={() => {
+                            closeCart();
+                            setShowOrderOptionsModal(true);
+                        }}>WhatsApp / DM ile Sipariş Ver</button>
+                    </>
+                )}
                 <button className="close-modal close-modal-small" onClick={closeCart}>
                     &times;
                 </button>
