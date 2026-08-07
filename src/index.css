@@ -3518,3 +3518,20 @@ header, .header, nav {
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   }
 }
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 1000;
+  transition: all 0.3s ease;
+  background-color: transparent;
+}
+
+/* Scroll edildiğinde eklenecek sınıf */
+.navbar.scrolled {
+  background-color: rgba(255, 255, 255, 0.7); /* Yarı saydam olmalı */
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px); /* Safari desteği */
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
