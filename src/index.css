@@ -3545,3 +3545,33 @@ header, .header, nav {
     max-width: 500px;
     width: 90%;
 }
+/* Temel Navbar Stili */
+.navbar-main {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  z-index: 1000;
+  transition: background-color 0.3s ease, backdrop-filter 0.3s ease, box-shadow 0.3s ease;
+  background-color: transparent; /* Sayfada en tepedeyken arka plan yok */
+}
+
+/* Scroll Edildiğinde Devreye Giren Efekt (Açık Tema) */
+.navbar-main.scrolled {
+  background-color: rgba(255, 255, 255, 0.75) !important; /* Yarı saydam beyaz */
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important; /* Safari & iOS desteği */
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+}
+
+/* Scroll Edildiğinde Devreye Giren Efekt (Karanlık Tema) */
+.dark .navbar-main.scrolled,
+body.dark-mode .navbar-main.scrolled {
+  background-color: rgba(18, 18, 18, 0.75) !important; /* Yarı saydam siyah */
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
