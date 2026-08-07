@@ -3461,3 +3461,40 @@ header, .header, nav {
   height: 14px;
   font-size: 12px;
 }
+/* index.css */
+
+.slider-btn {
+  /* Genişlik ve Yükseklik */
+  width: 28px !important;
+  height: 28px !important;
+  min-width: 28px !important;
+  min-height: 28px !important;
+  
+  /* Butonu tam yuvarlak yapar ve padding'i sıfırlar */
+  padding: 0 !important;
+  border-radius: 50% !important;
+  border: none !important;
+  
+  /* Arka plan ve Ortallama */
+  background-color: rgba(200, 200, 200, 0.7) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  
+  /* Yazı/Metin Ok Kullanıyorsan (‹ ›) */
+  font-size: 14px !important;
+  line-height: 1 !important;
+  color: #333 !important;
+}
+
+/* Eğer butonun içinde SVG ikon (Lucide-react, React-icons vb.) kullanıyorsan */
+.slider-btn svg {
+  width: 14px !important;
+  height: 14px !important;
+  pointer-events: none;
+}
+
+.slider-btn:hover {
+  background-color: rgba(180, 180, 180, 0.9) !important;
+}
