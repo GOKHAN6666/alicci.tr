@@ -187,7 +187,7 @@ function Chatbot({ isOpen, setIsOpen }) {
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Bir soru sorun "
+            placeholder="Bir soru sorun..."
             className="chatbot-input"
           />
           <button
@@ -502,9 +502,9 @@ function App() {
         localStorage.setItem("alicciCartItems", JSON.stringify(cartItems));
     }, [cartItems]);
 
-    // SCROLL ENGELLEME (no-scroll) EFEKTİ (isChatbotOpen DAHİL EDİLDİ)
+    // SCROLL ENGELLEME (no-scroll) EFEKTİ
     useEffect(() => {
-        const isAnyModalOpen = selectedProduct || showOrderOptionsModal || showConfirmationModal || showTrackingModal || isCartOpen || isMobileMenuOpen || showSizeCalcModal || isSizeCalcClosing || showIyzicoModal || isIyzicoClosing || isChatbotOpen;
+        const isAnyModalOpen = selectedProduct || showOrderOptionsModal || showConfirmationModal || showTrackingModal || isCartOpen || isMobileMenuOpen || showSizeCalcModal || isSizeCalcClosing || showIyzicoModal || isIyzicoClosing;
         if (isAnyModalOpen) {
             document.body.classList.add('no-scroll');
         } else {
@@ -513,7 +513,7 @@ function App() {
         return () => {
             document.body.classList.remove('no-scroll');
         };
-    }, [selectedProduct, showOrderOptionsModal, showConfirmationModal, showTrackingModal, isCartOpen, isMobileMenuOpen, showSizeCalcModal, isSizeCalcClosing, showIyzicoModal, isIyzicoClosing, isChatbotOpen]);
+    }, [selectedProduct, showOrderOptionsModal, showConfirmationModal, showTrackingModal, isCartOpen, isMobileMenuOpen, showSizeCalcModal, isSizeCalcClosing, showIyzicoModal, isIyzicoClosing]);
 
     useEffect(() => {
         if (!showIyzicoModal || !iyzicoFormHtml) return;
