@@ -3442,3 +3442,22 @@ header, .header, nav {
 .animate-fadeIn {
   animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
+.slider-arrow-btn {
+  width: 30px;            /* Boyutu küçültüldü */
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(255, 255, 255, 0.7); /* Hafif şeffaf arka plan */
+  border: none;
+  cursor: pointer;
+}
+
+/* İçindeki ikon/ok işareti boyutu */
+.slider-arrow-btn svg,
+.slider-arrow-btn i {
+  width: 14px;
+  height: 14px;
+  font-size: 12px;
+}
