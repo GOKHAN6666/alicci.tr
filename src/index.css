@@ -3535,3 +3535,13 @@ header, .header, nav {
   -webkit-backdrop-filter: blur(12px); /* Safari desteği */
   border-bottom: 1px solid rgba(0, 0, 0, 0.05);
 }
+/* index.css sonundaki düzeltme */
+.modal-content-base {
+    background: #ffffff;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    position: relative;
+    max-width: 500px;
+    width: 90%;
+}
