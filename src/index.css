@@ -3541,3 +3541,21 @@ body.dark-mode nav.nav-transparent:hover,
 html body.dark-mode nav.nav-transparent:hover {
     background-color: rgba(17, 17, 17, 0.85) !important;
 }
+/* Navbar ve dış kapsayıcısını kesin olarak şeffaf yapar */
+header.nav-transparent,
+nav.nav-transparent,
+.navbar.nav-transparent {
+    background: rgba(255, 255, 255, 0.2) !important;
+    background-color: rgba(255, 255, 255, 0.2) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+    box-shadow: none !important;
+    border: none !important;
+}
+
+/* Karanlık Mod Kullanılıyorsa */
+body.dark-mode header.nav-transparent,
+body.dark-mode nav.nav-transparent {
+    background: rgba(0, 0, 0, 0.3) !important;
+    background-color: rgba(0, 0, 0, 0.3) !important;
+}
