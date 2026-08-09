@@ -3497,3 +3497,14 @@ header, .header, nav {
   color: #666666;
   margin-top: 4px;
 }
+/* Normal Navbar Görünümü */
+.navbar {
+  background-color: #ffffff;
+  transition: opacity 0.3s ease, pointer-events 0.3s ease;
+}
+
+/* Modal Açıldığında Eklenecek Şeffaflık Sınıfı */
+.navbar-transparent {
+  opacity: 0.3; /* İsteğine göre 0 yapıp tamamen de gizleyebilirsin */
+  pointer-events: none; /* Şeffafken yanlışlıkla tıklanmaları engeller */
+}
