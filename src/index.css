@@ -3445,7 +3445,7 @@ header, .header, nav {
 .slider-arrow-btn {
   width: 30px;            /* Boyutu küçültüldü */
   height: 30px;
-  border-radius: 50
+  border-radius: 50;
   display: flex;
   align-items: center;
   justify-content: center;
