@@ -3508,3 +3508,36 @@ header, .header, nav {
   opacity: 0.3; /* İsteğine göre 0 yapıp tamamen de gizleyebilirsin */
   pointer-events: none; /* Şeffafken yanlışlıkla tıklanmaları engeller */
 }
+/* Navbar için yumuşak geçiş animasyonu */
+nav, html body nav {
+    transition: background-color 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+                backdrop-filter 0.4s ease,
+                opacity 0.4s ease,
+                box-shadow 0.4s ease !important;
+}
+
+/* Modal açıldığında uygulanacak şeffaf & cam (glassmorphism) efekti */
+nav.nav-transparent, html body nav.nav-transparent {
+    background-color: rgba(255, 255, 255, 0.12) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+    box-shadow: none !important;
+    opacity: 0.35;
+}
+
+/* Kullanıcı fareyle şeffaf navbar'ın üzerine geldiğinde belirginleşsin */
+nav.nav-transparent:hover, html body nav.nav-transparent:hover {
+    opacity: 1;
+    background-color: rgba(255, 255, 255, 0.75) !important;
+}
+
+/* Karanlık Mod (Dark Mode) Şeffaflık Uyumu */
+body.dark-mode nav.nav-transparent, 
+html body.dark-mode nav.nav-transparent {
+    background-color: rgba(0, 0, 0, 0.2) !important;
+}
+
+body.dark-mode nav.nav-transparent:hover, 
+html body.dark-mode nav.nav-transparent:hover {
+    background-color: rgba(17, 17, 17, 0.85) !important;
+}
