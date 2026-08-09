@@ -3409,7 +3409,7 @@ header, .header, nav {
 .product-img {
   width: 100%;
   display: block;
-  transition: opacity 0.4s ease; /* Pat diye değişmeyi önleyen yumuşak geçiş */
+  transition: opacity 0.7s ease; /* Pat diye değişmeyi önleyen yumuşak geçiş */
 }
 
 /* İkinci resim başlangıçta ilk resmin arkasında ve görünmez durur */
@@ -3430,7 +3430,7 @@ header, .header, nav {
 }
 @keyframes fadeIn {
   from {
-    opacity: 0.4;
+    opacity: 0.7;
     transform: scale(0.99);
   }
   to {
@@ -3440,12 +3440,12 @@ header, .header, nav {
 }
 
 .animate-fadeIn {
-  animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: fadeIn 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 .slider-arrow-btn {
   width: 30px;            /* Boyutu küçültüldü */
   height: 30px;
-  border-radius: 50%;
+  border-radius: 50
   display: flex;
   align-items: center;
   justify-content: center;
