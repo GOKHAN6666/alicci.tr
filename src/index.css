@@ -3497,18 +3497,3 @@ header, .header, nav {
   color: #666666;
   margin-top: 4px;
 }
-/* Modal kartının dış kapsayıcısı */
-.product-modal-content {
-  max-height: 90vh; /* Ekran yüksekliğinin %90'ını geçmesin */
-  overflow: hidden;  /* Sağdaki scroll çubuğunu tamamen gizler */
-}
-
-/* Sağ taraftaki metin alanı */
-.product-modal-description {
-  display: -webkit-box;
-  -webkit-line-clamp: 4; /* Metni en fazla 4 satırda keser ve sonuna ... koyar */
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  font-size: 14px;
-  line-height: 1.5;
-}
