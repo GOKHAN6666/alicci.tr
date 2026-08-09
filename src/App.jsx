@@ -4,22 +4,6 @@ import "./index.css";
 import { Analytics } from "@vercel/analytics/react"; 
 import { supabase } from "./supabaseclient";
 
-// Modalın açık olup olmadığını kontrol eden state
-const [isModalOpen, setIsModalOpen] = useState(false);
-
-return (
-  <>
-    {/* isModalOpen true ise navbar-transparent class'ı eklenir */}
-    <nav className={`navbar ${isModalOpen ? 'navbar-transparent' : ''}`}>
-      {/* Logo ve Menü Linkleri (Ana Sayfa, Ürünler vs.) */}
-    </nav>
-
-    {/* Modal Bileşeni */}
-    {isModalOpen && (
-      <ProductModal closeModal={() => setIsModalOpen(false)} />
-    )}
-  </>
-);
 // ==========================================
 // BACKEND SUNUCU ADRESİ
 // ==========================================
