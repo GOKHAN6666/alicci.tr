@@ -8,7 +8,7 @@
 /* --- Firefox & Modern Standartlar --- */
 * {
   scrollbar-width: thin; /* 'auto' veya 'thin' */
-  scrollbar-color: #0f172a #3b82f6; /* [Çubuk Rengi] [Arka Plan Rengi] */
+  scrollbar-color: #0f172a #f1f5f9; /* [Çubuk Rengi] [Arka Plan Rengi] */
 }
 
 /* --- Chrome, Safari, Edge (WebKit) --- */
