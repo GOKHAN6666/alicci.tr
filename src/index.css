@@ -5,6 +5,42 @@
 * {
   -webkit-tap-highlight-color: transparent;
 }
+/* --- Firefox & Modern Standartlar --- */
+* {
+  scrollbar-width: thin; /* 'auto' veya 'thin' */
+  scrollbar-color: #3b82f6 #0f172a; /* [Çubuk Rengi] [Arka Plan Rengi] */
+}
+
+/* --- Chrome, Safari, Edge (WebKit) --- */
+
+/* Scrollbar Genişliği */
+::-webkit-scrollbar {
+  width: 8px;  /* Dikey kaydırma çubuğu genişliği */
+  height: 8px; /* Yatay kaydırma çubuğu yüksekliği */
+}
+
+/* Kaydırma Yolu (Arka Plan) */
+::-webkit-scrollbar-track {
+  background: #0f172a; /* Sitenizin arka plan rengine göre ayarlayabilirsiniz */
+  border-radius: 8px;
+}
+
+/* Hareket Eden Çubuk (Thumb) */
+::-webkit-scrollbar-thumb {
+  background: #3b82f6; /* Ana tema renginiz */
+  border-radius: 8px;
+  transition: background 0.2s ease;
+}
+
+/* Çubuğun Üzerine Gelindiğinde (Hover) */
+::-webkit-scrollbar-thumb:hover {
+  background: #2563eb; /* Bir ton daha koyu renk */
+}
+
+/* Çubuğa Tıklandığında (Active) */
+::-webkit-scrollbar-thumb:active {
+  background: #1d4ed8;
+}
 /* Reset ve Temel Ayarlar */
 * {
     margin: 0;
