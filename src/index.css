@@ -5,6 +5,12 @@
 * {
   -webkit-tap-highlight-color: transparent;
 }
+.glass-header {
+  background: rgba(15, 23, 42, 0.75); /* Yarı saydam arka plan */
+  backdrop-filter: blur(12px); /* Arkadaki içeriği bulanıklaştırır */
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
 /* --- Firefox & Modern Standartlar --- */
 * {
   scrollbar-width: thin; /* 'auto' veya 'thin' */
