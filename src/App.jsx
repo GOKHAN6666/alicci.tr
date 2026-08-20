@@ -310,6 +310,10 @@ function App() {
     // AI Chatbot State'i
     const [isChatbotOpen, setIsChatbotOpen] = useState(false);
 
+    // Yasal Sayfalar Modal State'i
+    const [activeLegalModal, setActiveLegalModal] = useState(null); // 'terms', 'privacy', 'returns', 'contact'
+    const [isLegalClosing, setIsLegalClosing] = useState(false);
+
     const [showSizeCalcModal, setShowSizeCalcModal] = useState(false);
     const [isSizeCalcClosing, setIsSizeCalcClosing] = useState(false);
     const [modalTiltStyle, setModalTiltStyle] = useState({});
@@ -341,6 +345,9 @@ function App() {
 
     const WHATSAPP_NUMBER = "905511903118";
     const INSTAGRAM_USERNAME = "alicci.official";
+    const STORE_EMAIL = "destek@alicci.com";
+    const STORE_PHONE = "+90 551 190 31 18";
+    const STORE_ADDRESS = "Nispetiye Mah. Aytar Cad. No: 12/A, Beşiktaş / İstanbul, Türkiye";
 
     // AI Chatbot Açma/Kapama ve Diğer Modalları Temizleme Yönetimi
     const toggleChatbot = (explicitState) => {
@@ -353,8 +360,23 @@ function App() {
             setShowOrderOptionsModal(false);
             setIsMobileMenuOpen(false);
             setShowIyzicoModal(false);
+            setActiveLegalModal(null);
         }
         setIsChatbotOpen(nextState);
+    };
+
+    const openLegalModal = (type) => {
+        setIsChatbotOpen(false);
+        setActiveLegalModal(type);
+        setIsLegalClosing(false);
+    };
+
+    const closeLegalModal = () => {
+        setIsLegalClosing(true);
+        setTimeout(() => {
+            setActiveLegalModal(null);
+            setIsLegalClosing(false);
+        }, 300);
     };
 
     const showToast = (message) => {
@@ -504,7 +526,7 @@ function App() {
 
     // SCROLL ENGELLEME (no-scroll) EFEKTİ
     useEffect(() => {
-        const isAnyModalOpen = selectedProduct || showOrderOptionsModal || showConfirmationModal || showTrackingModal || isCartOpen || isMobileMenuOpen || showSizeCalcModal || isSizeCalcClosing || showIyzicoModal || isIyzicoClosing;
+        const isAnyModalOpen = selectedProduct || showOrderOptionsModal || showConfirmationModal || showTrackingModal || isCartOpen || isMobileMenuOpen || showSizeCalcModal || isSizeCalcClosing || showIyzicoModal || isIyzicoClosing || activeLegalModal;
         if (isAnyModalOpen) {
             document.body.classList.add('no-scroll');
         } else {
@@ -513,7 +535,7 @@ function App() {
         return () => {
             document.body.classList.remove('no-scroll');
         };
-    }, [selectedProduct, showOrderOptionsModal, showConfirmationModal, showTrackingModal, isCartOpen, isMobileMenuOpen, showSizeCalcModal, isSizeCalcClosing, showIyzicoModal, isIyzicoClosing]);
+    }, [selectedProduct, showOrderOptionsModal, showConfirmationModal, showTrackingModal, isCartOpen, isMobileMenuOpen, showSizeCalcModal, isSizeCalcClosing, showIyzicoModal, isIyzicoClosing, activeLegalModal]);
 
     useEffect(() => {
         if (!showIyzicoModal || !iyzicoFormHtml) return;
@@ -1121,6 +1143,102 @@ function App() {
                 }
                 .product-card:hover .product-card-image.primary {
                     opacity: 0;
+                }
+
+                /* YENİ GELİŞMİŞ FOOTER STİLLERİ */
+                .site-footer {
+                    background-color: #0d0d0d;
+                    color: #fff;
+                    padding: 60px 20px 25px;
+                    border-top: 1px solid rgba(255, 255, 255, 0.1);
+                    font-family: 'Poppins', sans-serif;
+                    margin-top: 60px;
+                }
+                body.dark-mode .site-footer {
+                    background-color: #050505;
+                    border-top-color: rgba(255, 255, 255, 0.05);
+                }
+                .footer-container {
+                    max-width: 1200px;
+                    margin: 0 auto;
+                    display: grid;
+                    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+                    gap: 40px;
+                }
+                .footer-column h4 {
+                    font-size: 14px;
+                    font-weight: 700;
+                    letter-spacing: 1.5px;
+                    text-transform: uppercase;
+                    margin-bottom: 20px;
+                    color: #ffffff;
+                    position: relative;
+                }
+                .footer-column h4::after {
+                    content: '';
+                    display: block;
+                    width: 24px;
+                    height: 2px;
+                    background: #ffffff;
+                    margin-top: 6px;
+                }
+                .footer-column p {
+                    font-size: 12.5px;
+                    color: #aaa;
+                    line-height: 1.7;
+                    margin: 0 0 10px 0;
+                }
+                .footer-column ul {
+                    list-style: none;
+                    padding: 0;
+                    margin: 0;
+                }
+                .footer-column ul li {
+                    margin-bottom: 12px;
+                }
+                .footer-column ul li button, .footer-column ul li a {
+                    background: none;
+                    border: none;
+                    color: #aaa;
+                    font-size: 13px;
+                    cursor: pointer;
+                    padding: 0;
+                    text-align: left;
+                    transition: color 0.2s ease, transform 0.2s ease;
+                    text-decoration: none;
+                    display: inline-block;
+                }
+                .footer-column ul li button:hover, .footer-column ul li a:hover {
+                    color: #fff;
+                    transform: translateX(4px);
+                }
+                .footer-bottom {
+                    max-width: 1200px;
+                    margin: 40px auto 0;
+                    padding-top: 20px;
+                    border-top: 1px solid rgba(255, 255, 255, 0.08);
+                    display: flex;
+                    flex-wrap: wrap;
+                    justify-content: space-between;
+                    align-items: center;
+                    font-size: 12px;
+                    color: #777;
+                }
+                .legal-modal-body {
+                    line-height: 1.7;
+                    font-size: 13px;
+                    color: inherit;
+                    text-align: left;
+                    max-height: 65vh;
+                    overflow-y: auto;
+                    padding-right: 10px;
+                }
+                .legal-modal-body h3 {
+                    font-size: 15px;
+                    margin-top: 18px;
+                    margin-bottom: 8px;
+                    font-weight: 700;
+                    letter-spacing: 0.5px;
                 }
 
                 /* CHATBOT STİLLERİ */
@@ -1933,12 +2051,205 @@ function App() {
                 </section>
             </main>
 
-            <footer>
-                <p>&copy; 2026 ALICCI. Tüm Hakları Saklıdır.</p>
-                <div className="instagram">
-                    <a href={`https://www.instagram.com/${INSTAGRAM_USERNAME}`} target="_blank" rel="noopener noreferrer">Instagram</a>
+            {/* ==========================================
+                GÜNCELLENMİŞ AKTİF MÜŞTERİ YASAL FOOTER
+               ========================================== */}
+            <footer className="site-footer">
+                <div className="footer-container">
+                    
+                    {/* Kolon 1: Marka & Açıklama */}
+                    <div className="footer-column">
+                        <h4>ALICCI</h4>
+                        <p>Zamansız sokak modası ve lüks giyim anlayışını premium %100 pamuklu kumaşlarla birleştiriyoruz.</p>
+                        <p style={{ marginTop: '15px', opacity: 0.7 }}>📍 Nispetiye Mah. Aytar Cad. No:12/A, Beşiktaş / İstanbul</p>
+                    </div>
+
+                    {/* Kolon 2: Müşteri Hizmetleri & Kısayollar */}
+                    <div className="footer-column">
+                        <h4>Müşteri Hizmetleri</h4>
+                        <ul>
+                            <li><button onClick={() => handleNavLinkClick("products")}>Ürün Koleksiyonu</button></li>
+                            <li><button onClick={openTrackingModal}>Kargo Takibi & Sorgulama</button></li>
+                            <li><button onClick={() => openLegalModal('returns')}>İade & Değişim Koşulları</button></li>
+                            <li><button onClick={() => openLegalModal('contact')}>İletişim & Açık Adres</button></li>
+                        </ul>
+                    </div>
+
+                    {/* Kolon 3: Yasal Sözleşmeler & Politikalar */}
+                    <div className="footer-column">
+                        <h4>Yasal Sayfalar</h4>
+                        <ul>
+                            <li><button onClick={() => openLegalModal('terms')}>Mesafeli Satış Sözleşmesi</button></li>
+                            <li><button onClick={() => openLegalModal('privacy')}>Gizlilik ve Çerez Politikası</button></li>
+                            <li><button onClick={() => openLegalModal('returns')}>İptal ve İade Sözleşmesi</button></li>
+                        </ul>
+                    </div>
+
+                    {/* Kolon 4: İletişim Kanalları */}
+                    <div className="footer-column">
+                        <h4>Bize Ulaşın</h4>
+                        <p><strong>Telefon:</strong> <a href={`tel:${WHATSAPP_NUMBER}`} style={{ color: '#aaa', textDecoration: 'none' }}>{STORE_PHONE}</a></p>
+                        <p><strong>E-posta:</strong> <a href={`mailto:${STORE_EMAIL}`} style={{ color: '#aaa', textDecoration: 'none' }}>{STORE_EMAIL}</a></p>
+                        <p><strong>Sosyal:</strong> <a href={`https://www.instagram.com/${INSTAGRAM_USERNAME}`} target="_blank" rel="noopener noreferrer" style={{ color: '#fff', textDecoration: 'underline' }}>@{INSTAGRAM_USERNAME}</a></p>
+                        <p style={{ fontSize: '11px', marginTop: '10px', color: '#777' }}>Hafta içi 09:00 - 18:00 arası aktif canlı destek.</p>
+                    </div>
+
+                </div>
+
+                <div className="footer-bottom">
+                    <p>&copy; 2026 ALICCI. Tüm Hakları Saklıdır.</p>
+                    <p style={{ fontSize: '11px', opacity: 0.6 }}>256-bit SSL Güvenli Ödeme Altyapısı</p>
                 </div>
             </footer>
+
+            {/* ==========================================
+                YASAL POLİTİKALAR & İLETİŞİM MODALI
+               ========================================== */}
+            {(activeLegalModal || isLegalClosing) && (
+                <div 
+                    className="modal-backdrop" 
+                    onClick={closeLegalModal}
+                    style={{ 
+                        zIndex: 1000008, 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        justifyContent: 'center',
+                        animation: isLegalClosing ? "fade-out 0.3s ease forwards" : "fade-in 0.3s ease forwards"
+                    }}
+                >
+                    <div 
+                        className="modal-content-base legal-modal" 
+                        onClick={(e) => e.stopPropagation()} 
+                        style={{ 
+                            maxWidth: '650px', 
+                            width: '90%',
+                            padding: '30px', 
+                            borderRadius: '12px',
+                            backgroundColor: isDarkMode ? '#1a1a1a' : '#ffffff',
+                            color: isDarkMode ? '#ffffff' : '#111111',
+                            boxShadow: '0 25px 60px rgba(0,0,0,0.3)',
+                            border: isDarkMode ? '1px solid #333' : '1px solid #eee',
+                            animation: isLegalClosing ? "slide-down 0.3s ease forwards" : "slide-up 0.3s ease forwards"
+                        }}
+                    >
+                        <button 
+                            className="close-modal close-modal-small" 
+                            onClick={closeLegalModal}
+                            style={{ color: isDarkMode ? '#fff' : '#000' }}
+                        >
+                            &times;
+                        </button>
+
+                        {/* 1. MESAFELİ SATIŞ SÖZLEŞMESİ */}
+                        {activeLegalModal === 'terms' && (
+                            <div>
+                                <h2 style={{ fontSize: '18px', fontWeight: '800', marginBottom: '15px', textTransform: 'uppercase' }}>
+                                    Mesafeli Satış Sözleşmesi
+                                </h2>
+                                <div className="legal-modal-body">
+                                    <h3>1. TARAFLAR</h3>
+                                    <p>İşbu Sözleşme, <strong>ALICCI Tekstil & Moda</strong> (Satıcı) ile alicci.com adresi üzerinden sipariş oluşturan Müşteri (Alıcı) arasında kurulmuştur.</p>
+
+                                    <h3>2. SATICI BİLGİLERİ</h3>
+                                    <p><strong>Unvan:</strong> ALICCI Brand</p>
+                                    <p><strong>Adres:</strong> {STORE_ADDRESS}</p>
+                                    <p><strong>E-Posta:</strong> {STORE_EMAIL}</p>
+                                    <p><strong>Telefon:</strong> {STORE_PHONE}</p>
+
+                                    <h3>3. KONU</h3>
+                                    <p>İşbu sözleşmenin konusu, ALICI'nın SATICI'ya ait web sitesinden elektronik ortamda siparişini yaptığı ürünün satışı ve teslimi ile ilgili 6502 sayılı Tüketicinin Korunması Hakkında Kanun hükümleri gereğince tarafların hak ve yükümlülüklerinin saptanmasıdır.</p>
+
+                                    <h3>4. TESLİMAT VE SEVKİYAT</h3>
+                                    <p>Sipariş edilen ürünler, onay aşamasından sonra en geç 24-48 saat içerisinde anlaşmalı kargo şirketine teslim edilir. Kargo takip bilgileri kullanıcıya SMS ve E-posta yoluyla iletilir.</p>
+
+                                    <h3>5. CAYMA HAKKI</h3>
+                                    <p>ALICI, sözleşme konusu ürünün kendisine veya gösterdiği adresteki kişi/kuruluşa tesliminden itibaren <strong>14 (ondört) gün</strong> içinde hiçbir hukuki ve cezai sorumluluk üstlenmeksizin cayma hakkını kullanabilir.</p>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* 2. GİZLİLİK VE ÇEREZ POLİTİKASI */}
+                        {activeLegalModal === 'privacy' && (
+                            <div>
+                                <h2 style={{ fontSize: '18px', fontWeight: '800', marginBottom: '15px', textTransform: 'uppercase' }}>
+                                    Gizlilik ve Çerez Politikası
+                                </h2>
+                                <div className="legal-modal-body">
+                                    <h3>1. KİŞİSEL VERİLERİN KORUNMASI</h3>
+                                    <p>ALICCI olarak kişisel verilerinizin güvenliğine yüksek önem veriyoruz. 6698 sayılı KVKK kapsamında, alışveriş yaparken paylaştığınız ad, soyad, e-posta, teslimat adresi ve telefon numaranız yalnızca siparişinizin tamamlanması amacıyla işlenir.</p>
+
+                                    <h3>2. ÖDEME GÜVENLİĞİ (256-BIT SSL)</h3>
+                                    <p>Kredi kartı bilgileriniz hiçbir şekilde ALICCI sunucularında saklanmaz. Ödeme işlemleri doğrudan 256-bit SSL sertifikalı Iyzico altyapısı üzerinden bankanızla sizin aranızda gerçekleşir.</p>
+
+                                    <h3>3. ÇEREZ (COOKIE) KULLANIMI</h3>
+                                    <p>Web sitemizde alışveriş deneyiminizi iyileştirmek, sepetinizi hatırlamak ve oturum tercihlerinizi kaydetmek amacıyla çerezler kullanılmaktadır. Dilediğiniz zaman tarayıcı ayarlarınızdan çerezleri engelleyebilirsiniz.</p>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* 3. İPTAL VE İADE KOŞULLARI */}
+                        {activeLegalModal === 'returns' && (
+                            <div>
+                                <h2 style={{ fontSize: '18px', fontWeight: '800', marginBottom: '15px', textTransform: 'uppercase' }}>
+                                    İptal ve İade Koşulları
+                                </h2>
+                                <div className="legal-modal-body">
+                                    <h3>1. İADE ŞARTLARI</h3>
+                                    <p>ALICCI'dan satın aldığınız ürünleri, teslimat tarihinden itibaren <strong>14 gün</strong> içerisinde sebep göstermeksizin iade edebilir veya beden değişimi yapabilirsiniz.</p>
+
+                                    <h3>2. İADE KOŞULLARI</h3>
+                                    <p>• İade edilecek ürünlerin kullanılmamış, yıkanmamış, etiketi sökülmemiş ve tekrar satılabilir özelliğini kaybetmemiş olması gerekmektedir.</p>
+                                    <p>• Ürün ile birlikte gönderilen orijinal ambalaj ve faturanın da iade paketinde bulunması zorunludur.</p>
+
+                                    <h3>3. İADE SÜRECİ</h3>
+                                    <p>İade talebinizi web sitemizdeki İletişim sayfasından veya WhatsApp Destek hattımızdan bize bildirebilirsiniz. Tarafınıza iletilecek iade kargo kodu ile ürünü ücretsiz geri gönderebilirsiniz.</p>
+
+                                    <h3>4. ÜCRET İADESİ</h3>
+                                    <p>İade edilen ürün depomuza ulaşıp kontrol edildikten sonra 3 iş günü içerisinde ücret iadesi bankanıza aktarılır. Banka prosedürlerine bağlı olarak hesabınıza yansıması 2-5 gün sürebilir.</p>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* 4. İLETİŞİM VE DETAYLAR */}
+                        {activeLegalModal === 'contact' && (
+                            <div>
+                                <h2 style={{ fontSize: '18px', fontWeight: '800', marginBottom: '15px', textTransform: 'uppercase' }}>
+                                    Kurumsal İletişim Bilgileri
+                                </h2>
+                                <div className="legal-modal-body">
+                                    <p>Sorularınız, iş birlikleri veya sipariş desteği için aşağıdaki iletişim kanallarından bize ulaşabilirsiniz:</p>
+                                    
+                                    <h3>AÇIK ADRES</h3>
+                                    <p>📍 {STORE_ADDRESS}</p>
+
+                                    <h3>E-POSTA ADRESİ</h3>
+                                    <p>✉️ {STORE_EMAIL}</p>
+
+                                    <h3>MÜŞTERİ HİZMETLERİ & WHATSAPP</h3>
+                                    <p>📞 {STORE_PHONE}</p>
+
+                                    <h3>ÇALIŞMA SAATLERİ</h3>
+                                    <p>⏰ Pazartesi - Cuma: 09:00 - 18:00</p>
+                                    <p>⏰ Cumartesi: 10:00 - 15:00</p>
+
+                                    <div style={{ marginTop: '20px' }}>
+                                        <a 
+                                            href={`https://wa.me/${WHATSAPP_NUMBER}`} 
+                                            target="_blank" 
+                                            rel="noopener noreferrer" 
+                                            className="themed-social-button whatsapp-contact"
+                                            style={{ textDecoration: 'none', display: 'inline-block', textAlign: 'center' }}
+                                        >
+                                            WhatsApp Üzerinden Canlı Destek Al
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                    </div>
+                </div>
+            )}
 
             {(selectedProduct || isProductClosing) && (
                 <div className="modal-backdrop" onClick={closeProductModal} style={{ animation: isProductClosing ? "fade-out 0.3s ease forwards" : "fade-in 0.3s ease forwards" }}>
@@ -2299,19 +2610,19 @@ function App() {
                                 WhatsApp ile Sipariş Ver
                             </button>
                             <button className="themed-social-button instagram-contact" onClick={() => handleCreateOrder("instagram")}>
-                                Instagram ile Sipariş Ver
+                                Instagram DM ile Sipariş Ver
                             </button>
                         </div>
                     </div>
                 </div>
             )}
 
-            {(showTrackingModal || isTrackingClosing) && (
-                <div className="modal-backdrop" onClick={closeTrackingModal} style={{ animation: isTrackingClosing ? "fade-out 0.3s ease forwards" : "fade-in 0.3s ease forwards" }}>
-                    <div className="modal-content-base tracking-modal" onClick={(e) => e.stopPropagation()} style={{ animation: isTrackingClosing ? "slide-down 0.3s ease forwards" : "slide-up 0.3s ease forwards" }}>
+            {showTrackingModal && (
+                <div className="modal-backdrop" style={{ animation: isTrackingClosing ? "fade-out 0.3s ease forwards" : "fade-in 0.3s ease forwards" }} onClick={closeTrackingModal}>
+                    <div className="modal-content-base tracking-modal-content" style={{ animation: isTrackingClosing ? "slide-down 0.3s ease forwards" : "slide-up 0.3s ease forwards" }} onClick={(e) => e.stopPropagation()}>
                         <button className="close-modal close-modal-small" onClick={closeTrackingModal}>&times;</button>
-                        <h2>Kargo Takip</h2>
-                        <p style={{ fontSize: '12px', opacity: 0.7, marginBottom: '15px' }}>Sipariş durumunuzu öğrenmek için ALC-XXXXXX kodunuzu girin.</p>
+                        <h2>Kargo Takip Paneli</h2>
+                        <p style={{ fontSize: '13px', marginBottom: '15px', opacity: 0.8 }}>Sipariş verirken size verilen ALC ile başlayan sipariş kodunu giriniz.</p>
                         
                         <div className="tracking-search-box">
                             <input 
@@ -2319,98 +2630,134 @@ function App() {
                                 placeholder="Örn: ALC-123456" 
                                 value={trackingCodeInput}
                                 onChange={(e) => setTrackingCodeInput(e.target.value)}
-                                onKeyDown={(e) => e.key === 'Enter' && handleTrackOrder()}
                             />
                             <button onClick={handleTrackOrder} disabled={isTrackingLoading}>
-                                {isTrackingLoading ? "Sorgulanıyor..." : "Sorgula"}
+                                {isTrackingLoading ? (
+                                    <><span className="spinner"></span> Sorgulanıyor...</>
+                                ) : (
+                                    "Sorgula"
+                                )}
                             </button>
                         </div>
 
-                        {trackingError && <p style={{ color: '#ff3b30', fontSize: '12px', marginTop: '10px' }}>{trackingError}</p>}
+                        {trackingError && <p style={{ color: 'red', fontSize: '13px' }}>{trackingError}</p>}
 
                         {searchedOrder && (
-                            <div className="tracking-result-box" style={{ marginTop: '20px', textAlign: 'left', background: isDarkMode ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)', padding: '15px', borderRadius: '8px', border: isDarkMode ? '1px solid #333' : '1px solid #eee' }}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-                                    <span style={{ fontWeight: 'bold', fontSize: '14px' }}>Sipariş Kodu: {searchedOrder.order_code}</span>
+                            <div className="tracking-result tracking-result-wrapper" style={{ background: 'rgba(128,128,128,0.1)', padding: '15px', borderRadius: '4px', textAlign: 'left', marginTop: '15px' }}>
+                                <p><strong>Sipariş Kodu:</strong> {searchedOrder.order_code}</p>
+                                <p><strong>Durum:</strong> 
                                     <span style={{ 
-                                        padding: '4px 8px', 
-                                        borderRadius: '4px', 
-                                        fontSize: '11px', 
+                                        color: searchedOrder.status === 'Kargoda' || searchedOrder.status === 'Teslim Edildi' ? '#34c759' : 
+                                               searchedOrder.status === 'İptal Edildi' ? '#ff3b30' : '#ff9500', 
                                         fontWeight: 'bold',
-                                        backgroundColor: searchedOrder.status === 'Kargoya Verildi' ? '#34d399' : '#f59e0b',
-                                        color: '#000'
+                                        marginLeft: '5px'
                                     }}>
-                                        {searchedOrder.status || 'Hazırlanıyor'}
+                                        {searchedOrder.status}
                                     </span>
-                                </div>
-                                <p style={{ fontSize: '12px', margin: '5px 0' }}><strong>Toplam Tutar:</strong> {searchedOrder.total_price} TL</p>
-                                {searchedOrder.cargo_firm && <p style={{ fontSize: '12px', margin: '5px 0' }}><strong>Kargo Firması:</strong> {searchedOrder.cargo_firm}</p>}
-                                {searchedOrder.tracking_number && <p style={{ fontSize: '12px', margin: '5px 0' }}><strong>Takip Numarası:</strong> {searchedOrder.tracking_number}</p>}
+                                </p>
+                                <p><strong>Kargo Firması:</strong> {searchedOrder.cargo_company || '-'}</p>
+                                <p><strong>Kargo Takip No:</strong> {searchedOrder.cargo_tracker_code || '-'}</p>
+                                <p><strong>Toplam Tutar:</strong> {searchedOrder.total_price} TL</p>
 
-                                <div className="animated-truck-road">
-                                    <div className={`animated-truck ${searchedOrder.status === 'Kargoya Verildi' ? '' : 'waiting'}`}>
-                                        <svg width="28" height="20" viewBox="0 0 24 24" fill="none" stroke={isDarkMode ? "#fff" : "#000"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                            <rect x="1" y="3" width="15" height="13"></rect>
-                                            <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
-                                            <circle cx="5.5" cy="18.5" r="2.5"></circle>
-                                            <circle cx="18.5" cy="18.5" r="2.5"></circle>
-                                        </svg>
+                                {searchedOrder.status === "Kargoda" ? (
+                                    <div className="animated-truck-road">
+                                        <div className="animated-truck">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="20" viewBox="0 0 24 24" fill="none" stroke={isDarkMode ? "#fff" : "#000"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                <rect x="1" y="3" width="15" height="13"></rect>
+                                                <polygon points="16 8 20 8 23 11 23 16 16 16 8"></polygon>
+                                                <circle cx="5.5" cy="18.5" r="2.5"></circle>
+                                                <circle cx="18.5" cy="18.5" r="2.5"></circle>
+                                            </svg>
+                                        </div>
                                     </div>
-                                </div>
+                                ) : searchedOrder.status === "Onay Bekleniyor" ? (
+                                    <div className="animated-truck-road">
+                                        <div className="animated-truck waiting">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="20" viewBox="0 0 24 24" fill="none" stroke="#ff9500" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                <rect x="1" y="3" width="15" height="13"></rect>
+                                                <polygon points="16 8 20 8 23 11 23 16 16 16 8"></polygon>
+                                                <circle cx="5.5" cy="18.5" r="2.5"></circle>
+                                                <circle cx="18.5" cy="18.5" r="2.5"></circle>
+                                            </svg>
+                                        </div>
+                                    </div>
+                                ) : null}
                             </div>
                         )}
-                    </div>
-                </div>
-            )}
 
-            {(showIyzicoModal || isIyzicoClosing) && (
-                <div className="modal-backdrop" onClick={closeIyzicoModal} style={{ animation: isIyzicoClosing ? "fade-out 0.3s ease forwards" : "fade-in 0.3s ease forwards", zIndex: 1000002 }}>
-                    <div className="modal-content-base iyzico-modal" onClick={(e) => e.stopPropagation()} style={{ animation: isIyzicoClosing ? "slide-down 0.3s ease forwards" : "slide-up 0.3s ease forwards", maxWidth: '500px', width: '90%', maxHeight: '85vh', overflowY: 'auto' }}>
-                        <button className="close-modal close-modal-small" onClick={closeIyzicoModal}>&times;</button>
-                        <h3 style={{ marginBottom: '15px', textAlign: 'center' }}>Güvenli Ödeme (Iyzico)</h3>
-                        {isIyzicoLoading ? (
-                            <div style={{ textAlign: 'center', padding: '40px 0' }}>
-                                <p>Ödeme formu yükleniyor, lütfen bekleyin...</p>
-                            </div>
-                        ) : (
-                            <div id="iyzipay-checkout-form" className="responsive" dangerouslySetInnerHTML={{ __html: iyzicoFormHtml }}></div>
-                        )}
+                        <div className="contact-dm-buttons tracking-dm-buttons" style={{ marginTop: '20px', borderTop: '1px solid rgba(128,128,128,0.2)', paddingTop: '15px' }}>
+                            <p style={{ fontSize: '12px', marginBottom: '10px' }}>Sorun mu yaşıyorsunuz? Doğrudan destek alın:</p>
+                            <a href={`https://wa.me/${WHATSAPP_NUMBER}`} target="_blank" rel="noopener noreferrer" className="themed-social-button whatsapp-contact">WhatsApp Destek</a>
+                        </div>
                     </div>
                 </div>
             )}
 
             {showConfirmationModal && (
                 <div className="modal-backdrop" onClick={closeConfirmationModal}>
-                    <div className="modal-content-base confirmation-modal" onClick={(e) => e.stopPropagation()}>
+                    <div className="modal-content-base order-confirmation" onClick={(e) => e.stopPropagation()}>
                         <button className="close-modal close-modal-small" onClick={closeConfirmationModal}>&times;</button>
-                        <h2>Siparişiniz Alındı!</h2>
-                        <p>Sipariş kodunuz kopyalandı. WhatsApp veya Instagram üzerinden temsilcimiz ile paylaşarak ödemenizi tamamlayabilirsiniz.</p>
-                        <button onClick={closeConfirmationModal} style={{ marginTop: '15px' }}>Tamam</button>
+                        <h2>Yönlendiriliyorsunuz...</h2>
+                        <p>Siparişinizi tamamlamak için lütfen açılan uygulamada mesajı <strong>göndermeyi unutmayın.</strong></p>
+                        <button onClick={closeConfirmationModal}>Anladım</button>
                     </div>
                 </div>
             )}
 
+            {(showIyzicoModal || isIyzicoClosing) && (
+                <div 
+                    className="fixed inset-0 z-[1000010] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm transition-opacity duration-300"
+                    style={{ 
+                        animation: isIyzicoClosing ? "fade-out 0.3s ease forwards" : "fade-in 0.3s ease forwards"
+                    }}
+                    onClick={closeIyzicoModal}
+                >
+                    <div 
+                        className="relative w-full max-w-[550px] max-h-[90vh] overflow-y-auto bg-white dark:bg-[#1a1a1a] rounded-lg p-6 shadow-2xl border border-gray-100 dark:border-[#333] transition-all duration-300"
+                        style={{ 
+                            animation: isIyzicoClosing ? "slide-down 0.3s cubic-bezier(0.32, 0.94, 0.6, 1) forwards" : "slide-up 0.3s cubic-bezier(0.32, 0.94, 0.6, 1) forwards"
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <button 
+                            className="absolute top-4 right-4 text-2xl font-bold cursor-pointer hover:opacity-70 dark:text-white text-black bg-transparent border-none outline-none"
+                            onClick={closeIyzicoModal}
+                        >
+                            &times;
+                        </button>
+                        
+                        <h3 className="text-lg font-extrabold uppercase tracking-wider mb-1 dark:text-white text-black font-sans">
+                            ALICCI GÜVENLİ ÖDEME
+                        </h3>
+                        <p className="text-xs opacity-60 mb-6 dark:text-gray-400 text-gray-600 font-sans">
+                            256-bit SSL korumalı Iyzico altyapısıyla ödemenizi güvenle tamamlayın.
+                        </p>
+
+                        {isIyzicoLoading ? (
+                            <div className="flex flex-col items-center justify-center py-16 gap-4">
+                                <div className="w-8 h-8 border-4 border-black dark:border-white border-t-transparent rounded-full animate-spin"></div>
+                                <p className="text-sm font-semibold opacity-75 font-sans">Ödeme formu hazırlanıyor, lütfen bekleyin...</p>
+                            </div>
+                        ) : (
+                            <div 
+                                id="iyzipay-checkout-form" 
+                                className="responsive w-full min-h-[300px]"
+                                dangerouslySetInnerHTML={{ __html: iyzicoFormHtml }}
+                            />
+                        )}
+                    </div>
+                </div>
+            )}
+            
             {toast && (
-                <div className="toast-container" style={{
-                    position: 'fixed',
-                    bottom: '20px',
-                    left: '50%',
-                    transform: 'translateX(-50%)',
-                    backgroundColor: isDarkMode ? '#fff' : '#000',
-                    color: isDarkMode ? '#000' : '#fff',
-                    padding: '12px 24px',
-                    borderRadius: '30px',
-                    fontSize: '13px',
-                    fontWeight: '600',
-                    boxShadow: '0 10px 25px rgba(0,0,0,0.2)',
-                    zIndex: 9999999,
-                    animation: 'fade-in 0.3s ease'
-                }}>
-                    {toast}
+                <div className="toast-container">
+                    <div className="toast-message">{toast}</div>
                 </div>
             )}
 
+            {/* Akıllı Müşteri Destek Chatbot Bileşeni */}
             <Chatbot isOpen={isChatbotOpen} setIsOpen={toggleChatbot} />
+
             <Analytics />
         </>
     );
