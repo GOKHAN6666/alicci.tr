@@ -2299,19 +2299,19 @@ function App() {
                                 WhatsApp ile Sipariş Ver
                             </button>
                             <button className="themed-social-button instagram-contact" onClick={() => handleCreateOrder("instagram")}>
-                                Instagram DM ile Sipariş Ver
+                                Instagram ile Sipariş Ver
                             </button>
                         </div>
                     </div>
                 </div>
             )}
 
-            {showTrackingModal && (
-                <div className="modal-backdrop" style={{ animation: isTrackingClosing ? "fade-out 0.3s ease forwards" : "fade-in 0.3s ease forwards" }} onClick={closeTrackingModal}>
-                    <div className="modal-content-base tracking-modal-content" style={{ animation: isTrackingClosing ? "slide-down 0.3s ease forwards" : "slide-up 0.3s ease forwards" }} onClick={(e) => e.stopPropagation()}>
+            {(showTrackingModal || isTrackingClosing) && (
+                <div className="modal-backdrop" onClick={closeTrackingModal} style={{ animation: isTrackingClosing ? "fade-out 0.3s ease forwards" : "fade-in 0.3s ease forwards" }}>
+                    <div className="modal-content-base tracking-modal" onClick={(e) => e.stopPropagation()} style={{ animation: isTrackingClosing ? "slide-down 0.3s ease forwards" : "slide-up 0.3s ease forwards" }}>
                         <button className="close-modal close-modal-small" onClick={closeTrackingModal}>&times;</button>
-                        <h2>Kargo Takip Paneli</h2>
-                        <p style={{ fontSize: '13px', marginBottom: '15px', opacity: 0.8 }}>Sipariş verirken size verilen ALC ile başlayan sipariş kodunu giriniz.</p>
+                        <h2>Kargo Takip</h2>
+                        <p style={{ fontSize: '12px', opacity: 0.7, marginBottom: '15px' }}>Sipariş durumunuzu öğrenmek için ALC-XXXXXX kodunuzu girin.</p>
                         
                         <div className="tracking-search-box">
                             <input 
@@ -2319,134 +2319,98 @@ function App() {
                                 placeholder="Örn: ALC-123456" 
                                 value={trackingCodeInput}
                                 onChange={(e) => setTrackingCodeInput(e.target.value)}
+                                onKeyDown={(e) => e.key === 'Enter' && handleTrackOrder()}
                             />
                             <button onClick={handleTrackOrder} disabled={isTrackingLoading}>
-                                {isTrackingLoading ? (
-                                    <><span className="spinner"></span> Sorgulanıyor...</>
-                                ) : (
-                                    "Sorgula"
-                                )}
+                                {isTrackingLoading ? "Sorgulanıyor..." : "Sorgula"}
                             </button>
                         </div>
 
-                        {trackingError && <p style={{ color: 'red', fontSize: '13px' }}>{trackingError}</p>}
+                        {trackingError && <p style={{ color: '#ff3b30', fontSize: '12px', marginTop: '10px' }}>{trackingError}</p>}
 
                         {searchedOrder && (
-                            <div className="tracking-result tracking-result-wrapper" style={{ background: 'rgba(128,128,128,0.1)', padding: '15px', borderRadius: '4px', textAlign: 'left', marginTop: '15px' }}>
-                                <p><strong>Sipariş Kodu:</strong> {searchedOrder.order_code}</p>
-                                <p><strong>Durum:</strong> 
+                            <div className="tracking-result-box" style={{ marginTop: '20px', textAlign: 'left', background: isDarkMode ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)', padding: '15px', borderRadius: '8px', border: isDarkMode ? '1px solid #333' : '1px solid #eee' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                                    <span style={{ fontWeight: 'bold', fontSize: '14px' }}>Sipariş Kodu: {searchedOrder.order_code}</span>
                                     <span style={{ 
-                                        color: searchedOrder.status === 'Kargoda' || searchedOrder.status === 'Teslim Edildi' ? '#34c759' : 
-                                               searchedOrder.status === 'İptal Edildi' ? '#ff3b30' : '#ff9500', 
+                                        padding: '4px 8px', 
+                                        borderRadius: '4px', 
+                                        fontSize: '11px', 
                                         fontWeight: 'bold',
-                                        marginLeft: '5px'
+                                        backgroundColor: searchedOrder.status === 'Kargoya Verildi' ? '#34d399' : '#f59e0b',
+                                        color: '#000'
                                     }}>
-                                        {searchedOrder.status}
+                                        {searchedOrder.status || 'Hazırlanıyor'}
                                     </span>
-                                </p>
-                                <p><strong>Kargo Firması:</strong> {searchedOrder.cargo_company || '-'}</p>
-                                <p><strong>Kargo Takip No:</strong> {searchedOrder.cargo_tracker_code || '-'}</p>
-                                <p><strong>Toplam Tutar:</strong> {searchedOrder.total_price} TL</p>
+                                </div>
+                                <p style={{ fontSize: '12px', margin: '5px 0' }}><strong>Toplam Tutar:</strong> {searchedOrder.total_price} TL</p>
+                                {searchedOrder.cargo_firm && <p style={{ fontSize: '12px', margin: '5px 0' }}><strong>Kargo Firması:</strong> {searchedOrder.cargo_firm}</p>}
+                                {searchedOrder.tracking_number && <p style={{ fontSize: '12px', margin: '5px 0' }}><strong>Takip Numarası:</strong> {searchedOrder.tracking_number}</p>}
 
-                                {searchedOrder.status === "Kargoda" ? (
-                                    <div className="animated-truck-road">
-                                        <div className="animated-truck">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="20" viewBox="0 0 24 24" fill="none" stroke={isDarkMode ? "#fff" : "#000"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                <rect x="1" y="3" width="15" height="13"></rect>
-                                                <polygon points="16 8 20 8 23 11 23 16 16 16 8"></polygon>
-                                                <circle cx="5.5" cy="18.5" r="2.5"></circle>
-                                                <circle cx="18.5" cy="18.5" r="2.5"></circle>
-                                            </svg>
-                                        </div>
+                                <div className="animated-truck-road">
+                                    <div className={`animated-truck ${searchedOrder.status === 'Kargoya Verildi' ? '' : 'waiting'}`}>
+                                        <svg width="28" height="20" viewBox="0 0 24 24" fill="none" stroke={isDarkMode ? "#fff" : "#000"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                            <rect x="1" y="3" width="15" height="13"></rect>
+                                            <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
+                                            <circle cx="5.5" cy="18.5" r="2.5"></circle>
+                                            <circle cx="18.5" cy="18.5" r="2.5"></circle>
+                                        </svg>
                                     </div>
-                                ) : searchedOrder.status === "Onay Bekleniyor" ? (
-                                    <div className="animated-truck-road">
-                                        <div className="animated-truck waiting">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="20" viewBox="0 0 24 24" fill="none" stroke="#ff9500" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                <rect x="1" y="3" width="15" height="13"></rect>
-                                                <polygon points="16 8 20 8 23 11 23 16 16 16 8"></polygon>
-                                                <circle cx="5.5" cy="18.5" r="2.5"></circle>
-                                                <circle cx="18.5" cy="18.5" r="2.5"></circle>
-                                            </svg>
-                                        </div>
-                                    </div>
-                                ) : null}
+                                </div>
                             </div>
                         )}
+                    </div>
+                </div>
+            )}
 
-                        <div className="contact-dm-buttons tracking-dm-buttons" style={{ marginTop: '20px', borderTop: '1px solid rgba(128,128,128,0.2)', paddingTop: '15px' }}>
-                            <p style={{ fontSize: '12px', marginBottom: '10px' }}>Sorun mu yaşıyorsunuz? Doğrudan destek alın:</p>
-                            <a href={`https://wa.me/${WHATSAPP_NUMBER}`} target="_blank" rel="noopener noreferrer" className="themed-social-button whatsapp-contact">WhatsApp Destek</a>
-                        </div>
+            {(showIyzicoModal || isIyzicoClosing) && (
+                <div className="modal-backdrop" onClick={closeIyzicoModal} style={{ animation: isIyzicoClosing ? "fade-out 0.3s ease forwards" : "fade-in 0.3s ease forwards", zIndex: 1000002 }}>
+                    <div className="modal-content-base iyzico-modal" onClick={(e) => e.stopPropagation()} style={{ animation: isIyzicoClosing ? "slide-down 0.3s ease forwards" : "slide-up 0.3s ease forwards", maxWidth: '500px', width: '90%', maxHeight: '85vh', overflowY: 'auto' }}>
+                        <button className="close-modal close-modal-small" onClick={closeIyzicoModal}>&times;</button>
+                        <h3 style={{ marginBottom: '15px', textAlign: 'center' }}>Güvenli Ödeme (Iyzico)</h3>
+                        {isIyzicoLoading ? (
+                            <div style={{ textAlign: 'center', padding: '40px 0' }}>
+                                <p>Ödeme formu yükleniyor, lütfen bekleyin...</p>
+                            </div>
+                        ) : (
+                            <div id="iyzipay-checkout-form" className="responsive" dangerouslySetInnerHTML={{ __html: iyzicoFormHtml }}></div>
+                        )}
                     </div>
                 </div>
             )}
 
             {showConfirmationModal && (
                 <div className="modal-backdrop" onClick={closeConfirmationModal}>
-                    <div className="modal-content-base order-confirmation" onClick={(e) => e.stopPropagation()}>
+                    <div className="modal-content-base confirmation-modal" onClick={(e) => e.stopPropagation()}>
                         <button className="close-modal close-modal-small" onClick={closeConfirmationModal}>&times;</button>
-                        <h2>Yönlendiriliyorsunuz...</h2>
-                        <p>Siparişinizi tamamlamak için lütfen açılan uygulamada mesajı <strong>göndermeyi unutmayın.</strong></p>
-                        <button onClick={closeConfirmationModal}>Anladım</button>
+                        <h2>Siparişiniz Alındı!</h2>
+                        <p>Sipariş kodunuz kopyalandı. WhatsApp veya Instagram üzerinden temsilcimiz ile paylaşarak ödemenizi tamamlayabilirsiniz.</p>
+                        <button onClick={closeConfirmationModal} style={{ marginTop: '15px' }}>Tamam</button>
                     </div>
                 </div>
             )}
 
-            {(showIyzicoModal || isIyzicoClosing) && (
-                <div 
-                    className="fixed inset-0 z-[1000010] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm transition-opacity duration-300"
-                    style={{ 
-                        animation: isIyzicoClosing ? "fade-out 0.3s ease forwards" : "fade-in 0.3s ease forwards"
-                    }}
-                    onClick={closeIyzicoModal}
-                >
-                    <div 
-                        className="relative w-full max-w-[550px] max-h-[90vh] overflow-y-auto bg-white dark:bg-[#1a1a1a] rounded-lg p-6 shadow-2xl border border-gray-100 dark:border-[#333] transition-all duration-300"
-                        style={{ 
-                            animation: isIyzicoClosing ? "slide-down 0.3s cubic-bezier(0.32, 0.94, 0.6, 1) forwards" : "slide-up 0.3s cubic-bezier(0.32, 0.94, 0.6, 1) forwards"
-                        }}
-                        onClick={(e) => e.stopPropagation()}
-                    >
-                        <button 
-                            className="absolute top-4 right-4 text-2xl font-bold cursor-pointer hover:opacity-70 dark:text-white text-black bg-transparent border-none outline-none"
-                            onClick={closeIyzicoModal}
-                        >
-                            &times;
-                        </button>
-                        
-                        <h3 className="text-lg font-extrabold uppercase tracking-wider mb-1 dark:text-white text-black font-sans">
-                            ALICCI GÜVENLİ ÖDEME
-                        </h3>
-                        <p className="text-xs opacity-60 mb-6 dark:text-gray-400 text-gray-600 font-sans">
-                            256-bit SSL korumalı Iyzico altyapısıyla ödemenizi güvenle tamamlayın.
-                        </p>
-
-                        {isIyzicoLoading ? (
-                            <div className="flex flex-col items-center justify-center py-16 gap-4">
-                                <div className="w-8 h-8 border-4 border-black dark:border-white border-t-transparent rounded-full animate-spin"></div>
-                                <p className="text-sm font-semibold opacity-75 font-sans">Ödeme formu hazırlanıyor, lütfen bekleyin...</p>
-                            </div>
-                        ) : (
-                            <div 
-                                id="iyzipay-checkout-form" 
-                                className="responsive w-full min-h-[300px]"
-                                dangerouslySetInnerHTML={{ __html: iyzicoFormHtml }}
-                            />
-                        )}
-                    </div>
-                </div>
-            )}
-            
             {toast && (
-                <div className="toast-container">
-                    <div className="toast-message">{toast}</div>
+                <div className="toast-container" style={{
+                    position: 'fixed',
+                    bottom: '20px',
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    backgroundColor: isDarkMode ? '#fff' : '#000',
+                    color: isDarkMode ? '#000' : '#fff',
+                    padding: '12px 24px',
+                    borderRadius: '30px',
+                    fontSize: '13px',
+                    fontWeight: '600',
+                    boxShadow: '0 10px 25px rgba(0,0,0,0.2)',
+                    zIndex: 9999999,
+                    animation: 'fade-in 0.3s ease'
+                }}>
+                    {toast}
                 </div>
             )}
 
-            {/* Akıllı Müşteri Destek Chatbot Bileşeni */}
             <Chatbot isOpen={isChatbotOpen} setIsOpen={toggleChatbot} />
-
             <Analytics />
         </>
     );
