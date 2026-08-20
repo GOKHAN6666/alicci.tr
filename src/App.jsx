@@ -2061,7 +2061,7 @@ function App() {
                     <div className="footer-column">
                         <h4>ALICCI</h4>
                         <p>Zamansız sokak modası ve lüks giyim anlayışını premium %100 pamuklu kumaşlarla birleştiriyoruz.</p>
-                        <p style={{ marginTop: '15px', opacity: 0.7 }}>📍 Nispetiye Mah. Aytar Cad. No:12/A, Beşiktaş / İstanbul</p>
+                        <p style={{ marginTop: '15px', opacity: 0.7 }}>📍 Agahefendi Mah. 2504sk. Sorgun / Yozgat</p>
                     </div>
 
                     {/* Kolon 2: Müşteri Hizmetleri & Kısayollar */}
@@ -2091,7 +2091,7 @@ function App() {
                         <p><strong>Telefon:</strong> <a href={`tel:${WHATSAPP_NUMBER}`} style={{ color: '#aaa', textDecoration: 'none' }}>{STORE_PHONE}</a></p>
                         <p><strong>E-posta:</strong> <a href={`mailto:${STORE_EMAIL}`} style={{ color: '#aaa', textDecoration: 'none' }}>{STORE_EMAIL}</a></p>
                         <p><strong>Sosyal:</strong> <a href={`https://www.instagram.com/${INSTAGRAM_USERNAME}`} target="_blank" rel="noopener noreferrer" style={{ color: '#fff', textDecoration: 'underline' }}>@{INSTAGRAM_USERNAME}</a></p>
-                        <p style={{ fontSize: '11px', marginTop: '10px', color: '#777' }}>Hafta içi 09:00 - 18:00 arası aktif canlı destek.</p>
+                        <p style={{ fontSize: '11px', marginTop: '10px', color: '#777' }}>7/24 aktif canlı destek.</p>
                     </div>
 
                 </div>
@@ -2160,7 +2160,7 @@ function App() {
                                     <p>İşbu sözleşmenin konusu, ALICI'nın SATICI'ya ait web sitesinden elektronik ortamda siparişini yaptığı ürünün satışı ve teslimi ile ilgili 6502 sayılı Tüketicinin Korunması Hakkında Kanun hükümleri gereğince tarafların hak ve yükümlülüklerinin saptanmasıdır.</p>
 
                                     <h3>4. TESLİMAT VE SEVKİYAT</h3>
-                                    <p>Sipariş edilen ürünler, onay aşamasından sonra en geç 24-48 saat içerisinde anlaşmalı kargo şirketine teslim edilir. Kargo takip bilgileri kullanıcıya SMS ve E-posta yoluyla iletilir.</p>
+                                    <p>Sipariş edilen ürünler, onay aşamasından sonra en geç 24-48 saat içerisinde anlaşmalı kargo şirketine teslim edilir. Kargo takip bilgileri kullanıcıya SMS veya E-posta yoluyla iletilir.</p>
 
                                     <h3>5. CAYMA HAKKI</h3>
                                     <p>ALICI, sözleşme konusu ürünün kendisine veya gösterdiği adresteki kişi/kuruluşa tesliminden itibaren <strong>14 (ondört) gün</strong> içinde hiçbir hukuki ve cezai sorumluluk üstlenmeksizin cayma hakkını kullanabilir.</p>
