@@ -165,7 +165,7 @@ MÜŞTERİ YÖNLENDİRME AKIŞI:
 
             const completion = await groq.chat.completions.create({
                 messages: messages,
-                model: "llama-3.1-8b-instant",
+                model: "openai/gpt-oss-120b", // <-- HATA VEREN KISIM BURADA GÜNCELLENDİ
                 temperature: 0.1
             });
 
@@ -302,18 +302,6 @@ app.post('/payment-callback', (req, res) => {
     });
 });
 
-app.listen(PORT, async () => {
+app.listen(PORT, () => {
     console.log(`Sunucu ${PORT} portunda çalışıyor...`);
-    
-    // Groq üzerindeki aktif modelleri Render loglarına yazdırır
-    if (groq) {
-        try {
-            const modelsList = await groq.models.list();
-            console.log("=== AKTİF GROQ MODELLERİNİZ ===");
-            modelsList.data.forEach(m => console.log("MODEL ID:", m.id));
-            console.log("===============================");
-        } catch (err) {
-            console.error("Model listesi alınamadı:", err.message);
-        }
-    }
 });
