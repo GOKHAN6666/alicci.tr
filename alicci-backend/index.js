@@ -302,6 +302,18 @@ app.post('/payment-callback', (req, res) => {
     });
 });
 
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
     console.log(`Sunucu ${PORT} portunda çalışıyor...`);
+    
+    // Groq üzerindeki aktif modelleri Render loglarına yazdırır
+    if (groq) {
+        try {
+            const modelsList = await groq.models.list();
+            console.log("=== AKTİF GROQ MODELLERİNİZ ===");
+            modelsList.data.forEach(m => console.log("MODEL ID:", m.id));
+            console.log("===============================");
+        } catch (err) {
+            console.error("Model listesi alınamadı:", err.message);
+        }
+    }
 });
