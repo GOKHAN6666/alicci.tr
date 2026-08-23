@@ -165,7 +165,7 @@ MÜŞTERİ YÖNLENDİRME AKIŞI:
 
             const completion = await groq.chat.completions.create({
                 messages: messages,
-                model: "llama-3.3-70b-versatile",
+                model: "gpt-oss-120b",
                 temperature: 0.1
             });
 
