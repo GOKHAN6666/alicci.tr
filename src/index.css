@@ -226,35 +226,336 @@ nav ul.nav-menu li button:hover {
     display: none; /* Masaüstünde gizle */
 }
 
-/* Hero */
-.hero {
-    text-align: center;
-    padding: 80px 20px;
-    background-color: #f1f1f1;
-}
+/* =========================================================
+   ALICCI — SCROLL DRIVEN IMMERSIVE HERO
+   ========================================================= */
 
-.hero h2 {
-    font-size: 32px;
-    margin-bottom: 10px;
-}
-
-.hero p {
-    font-size: 18px;
-    margin-bottom: 20px;
-}
-
-.hero button {
-    padding: 10px 24px;
-    background-color: #111;
+.hero-scroll-section {
+    position: relative;
+    height: 300vh;
+    background: #090909;
     color: #fff;
-    border: none;
-    font-size: 15px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
+    isolation: isolate;
 }
 
-.hero button:hover {
-    background-color: #333;
+.hero-scroll-sticky {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    min-height: 680px;
+    overflow: hidden;
+    background: #090909;
+}
+
+.hero-scroll-media,
+.hero-scroll-slide {
+    position: absolute;
+    inset: 0;
+}
+
+.hero-scroll-slide {
+    overflow: hidden;
+    opacity: 0;
+    visibility: hidden;
+    transform: scale(1.045);
+    transition:
+        opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1),
+        visibility 0.9s ease,
+        transform 1.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.hero-scroll-slide.is-active {
+    opacity: 1;
+    visibility: visible;
+    transform: scale(1);
+}
+
+.hero-scroll-slide.no-image {
+    background:
+        radial-gradient(circle at 70% 35%, rgba(255,255,255,0.12), transparent 34%),
+        linear-gradient(135deg, #090909 0%, #171717 50%, #050505 100%);
+}
+
+.hero-scroll-image {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+    object-position: center;
+    filter: saturate(0.72) contrast(1.04);
+    transform: scale(1.06);
+    animation: heroKenBurns 9s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.hero-scroll-slide:nth-child(2) .hero-scroll-image {
+    object-position: center 38%;
+}
+
+.hero-scroll-slide:nth-child(3) .hero-scroll-image {
+    object-position: center 48%;
+    filter: grayscale(0.2) saturate(0.65) contrast(1.08);
+}
+
+.hero-scroll-overlay {
+    position: absolute;
+    inset: 0;
+    background:
+        linear-gradient(90deg, rgba(0,0,0,0.68) 0%, rgba(0,0,0,0.25) 48%, rgba(0,0,0,0.08) 100%),
+        linear-gradient(0deg, rgba(0,0,0,0.55) 0%, transparent 38%, rgba(0,0,0,0.18) 100%);
+}
+
+.hero-scroll-content {
+    position: relative;
+    z-index: 3;
+    width: min(1200px, calc(100% - 80px));
+    height: 100%;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+}
+
+.hero-scroll-copy {
+    position: absolute;
+    left: 0;
+    bottom: 15%;
+    width: min(620px, 82%);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(38px);
+    transition:
+        opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1),
+        visibility 0.65s ease,
+        transform 0.85s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.hero-scroll-copy.is-active {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.hero-scroll-eyebrow {
+    display: block;
+    margin-bottom: 18px;
+    color: rgba(255,255,255,0.7);
+    font-family: 'Inter', sans-serif;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.34em;
+}
+
+.hero-scroll-copy h2 {
+    margin: 0 0 18px;
+    color: #fff !important;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(58px, 8vw, 116px);
+    font-weight: 500;
+    line-height: 0.9;
+    letter-spacing: -0.025em;
+}
+
+.hero-scroll-copy p {
+    max-width: 490px;
+    margin: 0 0 30px;
+    color: rgba(255,255,255,0.82) !important;
+    font-family: 'Inter', sans-serif;
+    font-size: clamp(15px, 1.25vw, 18px);
+    line-height: 1.65;
+}
+
+.hero-scroll-copy button {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 22px;
+    border: 1px solid rgba(255,255,255,0.55);
+    border-radius: 0;
+    background: rgba(255,255,255,0.08);
+    color: #fff;
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    transition:
+        background-color 0.3s ease,
+        border-color 0.3s ease,
+        transform 0.3s ease;
+}
+
+.hero-scroll-copy button::after {
+    content: "→";
+    font-size: 16px;
+    line-height: 1;
+    transition: transform 0.3s ease;
+}
+
+.hero-scroll-copy button:hover {
+    background: rgba(255,255,255,0.16);
+    border-color: rgba(255,255,255,0.9);
+    transform: translateY(-2px);
+}
+
+.hero-scroll-copy button:hover::after {
+    transform: translateX(4px);
+}
+
+.hero-scroll-bottom {
+    position: absolute;
+    z-index: 4;
+    left: 50%;
+    bottom: 28px;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    color: rgba(255,255,255,0.6);
+    font-family: 'Inter', sans-serif;
+    font-size: 9px;
+    letter-spacing: 0.28em;
+    white-space: nowrap;
+}
+
+.hero-scroll-line {
+    width: 1px;
+    height: 48px;
+    background: linear-gradient(to bottom, rgba(255,255,255,0.85), transparent);
+    animation: heroScrollLine 1.8s ease-in-out infinite;
+}
+
+.hero-scroll-progress {
+    position: absolute;
+    z-index: 5;
+    right: 30px;
+    top: 50%;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    transform: translateY(-50%);
+}
+
+.hero-scroll-progress span {
+    width: 3px;
+    height: 28px;
+    border-radius: 99px;
+    background: rgba(255,255,255,0.24);
+    transition: height 0.35s ease, background-color 0.35s ease;
+}
+
+.hero-scroll-progress span.active {
+    height: 52px;
+    background: rgba(255,255,255,0.92);
+}
+
+.hero-scroll-index {
+    position: absolute;
+    z-index: 5;
+    right: 30px;
+    bottom: 28px;
+    color: rgba(255,255,255,0.7);
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    letter-spacing: 0.16em;
+}
+
+.hero-scroll-index span {
+    color: rgba(255,255,255,0.35);
+}
+
+@keyframes heroKenBurns {
+    0% { transform: scale(1.06); }
+    100% { transform: scale(1.13); }
+}
+
+@keyframes heroScrollLine {
+    0%, 100% {
+        opacity: 0.35;
+        transform: scaleY(0.75);
+        transform-origin: top;
+    }
+    50% {
+        opacity: 1;
+        transform: scaleY(1);
+        transform-origin: top;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .hero-scroll-slide,
+    .hero-scroll-copy,
+    .hero-scroll-image {
+        transition: none !important;
+        animation: none !important;
+    }
+}
+
+@media (max-width: 768px) {
+    .hero-scroll-section {
+        height: 300vh;
+    }
+
+    .hero-scroll-sticky {
+        height: 100svh;
+        min-height: 620px;
+    }
+
+    .hero-scroll-content {
+        width: calc(100% - 42px);
+    }
+
+    .hero-scroll-copy {
+        bottom: 16%;
+        width: calc(100% - 30px);
+    }
+
+    .hero-scroll-copy h2 {
+        font-size: clamp(52px, 17vw, 82px);
+        line-height: 0.92;
+        max-width: 90%;
+    }
+
+    .hero-scroll-copy p {
+        max-width: 86%;
+        font-size: 14px;
+        margin-bottom: 24px;
+    }
+
+    .hero-scroll-eyebrow {
+        font-size: 9px;
+        letter-spacing: 0.25em;
+    }
+
+    .hero-scroll-progress {
+        right: 18px;
+    }
+
+    .hero-scroll-index {
+        right: 18px;
+        bottom: 22px;
+        font-size: 10px;
+    }
+
+    .hero-scroll-bottom {
+        bottom: 20px;
+    }
+
+    .hero-scroll-image {
+        object-position: 58% center;
+        transform: scale(1.08);
+    }
+
+    .hero-scroll-slide:nth-child(2) .hero-scroll-image {
+        object-position: 42% center;
+    }
+
+    .hero-scroll-overlay {
+        background:
+            linear-gradient(180deg, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.16) 38%, rgba(0,0,0,0.73) 100%),
+            linear-gradient(90deg, rgba(0,0,0,0.18), transparent 75%);
+    }
 }
 
 /* Ürünler */
@@ -3603,156 +3904,16 @@ body.dark-mode nav.nav-transparent {
     background: rgba(0, 0, 0, 0.3) !important;
     background-color: rgba(0, 0, 0, 0.3) !important;
 }
-/* ==========================================
-   YENİ ETKİLEŞİMLİ HERO (GİRİŞ) BÖLÜMÜ
-   ========================================== */
-.hero-interactive {
-    position: relative;
-    width: 100%;
-    min-height: 100vh;
-    background-color: #090a0f; /* Görseldeki gibi koyu, teknolojik arka plan */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-    color: #fff;
-    text-align: center;
-    padding-top: 60px; /* Navbar boşluğu */
+
+
+/* Keep the immersive hero dark in both themes. */
+body.dark-mode .hero-scroll-section,
+.hero-scroll-section {
+    background: #090909 !important;
 }
 
-body.dark-mode .hero-interactive {
-    background-color: #040508;
-}
-
-/* Arka Plan Izgara (Grid) Efekti */
-.hero-grid-overlay {
-    position: absolute;
-    inset: 0;
-    background-image: 
-        linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
-    background-size: 60px 60px;
-    z-index: 1;
-    pointer-events: none; /* Mouse hareketini engellememesi için */
-}
-
-/* Merkez İçerik Konteyneri */
-.hero-content {
-    position: relative;
-    z-index: 10;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    max-width: 800px;
-    padding: 0 20px;
-}
-
-.hero-badge {
-    border: 1px solid rgba(0, 212, 255, 0.3);
-    color: #00d4ff; 
-    padding: 6px 18px;
-    border-radius: 30px;
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 2px;
-    margin-bottom: 25px;
-    background: rgba(0, 212, 255, 0.05);
-}
-
-.hero-title {
-    font-family: 'Poppins', sans-serif;
-    font-size: 5rem;
-    font-weight: 900;
-    line-height: 1.1;
-    margin-bottom: 20px;
-    letter-spacing: -1px;
-    color: #fff;
-}
-
-.hero-title .hero-highlight {
-    color: #00d4ff; /* Smailwolf örneğindeki neon mavi/cyan vurgu rengi */
-    text-shadow: 0 0 25px rgba(0, 212, 255, 0.5); /* Hafif parlama (glow) efekti */
-}
-
-.hero-content p {
-    font-family: 'Inter', sans-serif;
-    font-size: 16px;
-    color: #a0a0a0;
-    margin-bottom: 40px;
-    line-height: 1.7;
-    max-width: 600px;
-}
-
-.hero-action-btn {
-    background: #00d4ff;
-    color: #000;
-    font-family: 'Poppins', sans-serif;
-    font-weight: 800;
-    padding: 16px 36px;
-    border-radius: 4px;
-    border: none;
-    font-size: 14px;
-    letter-spacing: 1px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 0 15px rgba(0, 212, 255, 0.3);
-}
-
-.hero-action-btn:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 5px 25px rgba(0, 212, 255, 0.6);
-    background: #4ae1ff;
-}
-
-/* Yüzen, Fare Takibi Yapan Görseller */
-.hero-floating-item {
-    position: absolute;
-    z-index: 5;
-    transition: transform 0.15s cubic-bezier(0.25, 1, 0.5, 1);
-    pointer-events: none;
-}
-
-.hero-floating-item.left {
-    left: 2%;
-    top: 25%;
-    width: 320px;
-    transform: rotate(-12deg);
-    /* Derinlik algısı için hafif bulanıklık (Depth of field efekti) */
-    filter: drop-shadow(0 30px 40px rgba(0,0,0,0.7)) blur(3px); 
-    opacity: 0.85;
-}
-
-.hero-floating-item.right {
-    right: 2%;
-    bottom: 15%;
-    width: 380px;
-    transform: rotate(15deg);
-    filter: drop-shadow(0 30px 40px rgba(0,0,0,0.7));
-}
-
-.hero-floating-item img {
-    width: 100%;
-    height: auto;
-    object-fit: contain;
-}
-
-/* Mobil Görünüm Optimizasyonu */
-@media (max-width: 768px) {
-    .hero-title { font-size: 3rem; }
-    
-    /* Yüzen görseller mobilde okunabilirliği bozmaması için arka plana ve silik hale alınır */
-    .hero-floating-item.left {
-        left: -15%;
-        top: 15%;
-        width: 250px;
-        opacity: 0.2;
-        filter: blur(5px);
-    }
-    .hero-floating-item.right {
-        right: -15%;
-        bottom: 25%;
-        width: 280px;
-        opacity: 0.2;
-        filter: blur(5px);
-    }
+.hero-scroll-section h2,
+.hero-scroll-section p,
+.hero-scroll-section span {
+    color: inherit;
 }
