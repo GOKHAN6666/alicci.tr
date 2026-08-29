@@ -304,7 +304,7 @@ nav ul.nav-menu li button:hover {
         linear-gradient(0deg, rgba(0,0,0,0.55) 0%, transparent 38%, rgba(0,0,0,0.18) 100%),
         radial-gradient(120% 100% at 90% 50%, transparent 55%, rgba(0,0,0,0.35) 100%);
 }
-}
+
 
 .hero-scroll-content {
     position: relative;
