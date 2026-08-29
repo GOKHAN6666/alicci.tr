@@ -3603,3 +3603,156 @@ body.dark-mode nav.nav-transparent {
     background: rgba(0, 0, 0, 0.3) !important;
     background-color: rgba(0, 0, 0, 0.3) !important;
 }
+/* ==========================================
+   YENİ ETKİLEŞİMLİ HERO (GİRİŞ) BÖLÜMÜ
+   ========================================== */
+.hero-interactive {
+    position: relative;
+    width: 100%;
+    min-height: 100vh;
+    background-color: #090a0f; /* Görseldeki gibi koyu, teknolojik arka plan */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    color: #fff;
+    text-align: center;
+    padding-top: 60px; /* Navbar boşluğu */
+}
+
+body.dark-mode .hero-interactive {
+    background-color: #040508;
+}
+
+/* Arka Plan Izgara (Grid) Efekti */
+.hero-grid-overlay {
+    position: absolute;
+    inset: 0;
+    background-image: 
+        linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+    background-size: 60px 60px;
+    z-index: 1;
+    pointer-events: none; /* Mouse hareketini engellememesi için */
+}
+
+/* Merkez İçerik Konteyneri */
+.hero-content {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    max-width: 800px;
+    padding: 0 20px;
+}
+
+.hero-badge {
+    border: 1px solid rgba(0, 212, 255, 0.3);
+    color: #00d4ff; 
+    padding: 6px 18px;
+    border-radius: 30px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    margin-bottom: 25px;
+    background: rgba(0, 212, 255, 0.05);
+}
+
+.hero-title {
+    font-family: 'Poppins', sans-serif;
+    font-size: 5rem;
+    font-weight: 900;
+    line-height: 1.1;
+    margin-bottom: 20px;
+    letter-spacing: -1px;
+    color: #fff;
+}
+
+.hero-title .hero-highlight {
+    color: #00d4ff; /* Smailwolf örneğindeki neon mavi/cyan vurgu rengi */
+    text-shadow: 0 0 25px rgba(0, 212, 255, 0.5); /* Hafif parlama (glow) efekti */
+}
+
+.hero-content p {
+    font-family: 'Inter', sans-serif;
+    font-size: 16px;
+    color: #a0a0a0;
+    margin-bottom: 40px;
+    line-height: 1.7;
+    max-width: 600px;
+}
+
+.hero-action-btn {
+    background: #00d4ff;
+    color: #000;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 800;
+    padding: 16px 36px;
+    border-radius: 4px;
+    border: none;
+    font-size: 14px;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 0 15px rgba(0, 212, 255, 0.3);
+}
+
+.hero-action-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 25px rgba(0, 212, 255, 0.6);
+    background: #4ae1ff;
+}
+
+/* Yüzen, Fare Takibi Yapan Görseller */
+.hero-floating-item {
+    position: absolute;
+    z-index: 5;
+    transition: transform 0.15s cubic-bezier(0.25, 1, 0.5, 1);
+    pointer-events: none;
+}
+
+.hero-floating-item.left {
+    left: 2%;
+    top: 25%;
+    width: 320px;
+    transform: rotate(-12deg);
+    /* Derinlik algısı için hafif bulanıklık (Depth of field efekti) */
+    filter: drop-shadow(0 30px 40px rgba(0,0,0,0.7)) blur(3px); 
+    opacity: 0.85;
+}
+
+.hero-floating-item.right {
+    right: 2%;
+    bottom: 15%;
+    width: 380px;
+    transform: rotate(15deg);
+    filter: drop-shadow(0 30px 40px rgba(0,0,0,0.7));
+}
+
+.hero-floating-item img {
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+}
+
+/* Mobil Görünüm Optimizasyonu */
+@media (max-width: 768px) {
+    .hero-title { font-size: 3rem; }
+    
+    /* Yüzen görseller mobilde okunabilirliği bozmaması için arka plana ve silik hale alınır */
+    .hero-floating-item.left {
+        left: -15%;
+        top: 15%;
+        width: 250px;
+        opacity: 0.2;
+        filter: blur(5px);
+    }
+    .hero-floating-item.right {
+        right: -15%;
+        bottom: 25%;
+        width: 280px;
+        opacity: 0.2;
+        filter: blur(5px);
+    }
+}
