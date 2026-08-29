@@ -2013,7 +2013,7 @@ function App() {
                 )}
                 {cartItems.length > 0 && (
                     <>
-                        <button onClick={handleCheckout}>Güvenli Kart İle Öde (Iyzico)</button>
+                        {/* Iyzico ile ödeme şimdilik devre dışı — geri eklemek için handleCheckout butonunu geri koy */}
                         <button className="secondary-checkout-btn" onClick={() => {
                             closeCart();
                             setShowOrderOptionsModal(true);
