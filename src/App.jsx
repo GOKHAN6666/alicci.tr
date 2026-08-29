@@ -9,11 +9,12 @@ import { supabase } from "./supabaseclient";
 // ==========================================
 const BACKEND_URL = "https://alicci-backend-us.onrender.com"; 
 
-// Hızlı Kısayol Butonları
+// Hızlı Kısayol Butonları (Tasarım Dosyası eklendi)
 const quickActions = [
   { key: 'tracking', label: '📦 Kargo Takibi' },
   { key: 'size', label: '📏 Beden Rehberi' },
-  { key: 'returns', label: '🔄 İade & Değişim' }
+  { key: 'returns', label: '🔄 İade & Değişim' },
+  { key: 'design', label: '📂 Tasarım Dosyası' }
 ];
 
 // ==========================================
@@ -28,7 +29,7 @@ function Chatbot({ isOpen, setIsOpen }) {
     {
       id: 1,
       sender: 'bot',
-      text: "Merhaba! ALICCI Destek Asistanı'na hoş geldiniz. Siparişiniz, kargo takibi, beden ölçüleri veya iade koşulları hakkında size nasıl yardımcı olabilirim?"
+      text: "Merhaba! ALICCI Destek Asistanı'na hoş geldiniz. Siparişiniz, kargo takibi, beden ölçüleri, iade koşulları veya marka/tasarım manifestosu hakkında size nasıl yardımcı olabilirim?"
     }
   ]);
 
@@ -67,7 +68,12 @@ function Chatbot({ isOpen, setIsOpen }) {
       return 'Müşteri temsilcilerimize WhatsApp veya Instagram DM üzerinden doğrudan ulaşabilirsiniz. Sayfanın altındaki iletişim butonlarını kullanabilirsiniz.';
     }
 
-    return 'Mesajınızı aldım! Size daha iyi yardımcı olabilmem için kargo kodu (ALC-...), beden, iade veya kumaş kalitesi hakkında bir soru sorabilirsiniz.';
+    // TASARIM DOSYASI ve MANİFESTO entegrasyonu
+    if (text.includes('tasarım') || text.includes('dosya') || text.includes('manifesto') || text.includes('koleksiyon')) {
+      return 'Tasarım Dosyası & Marka Manifestosu: Ürünlerimiz %100 birinci sınıf premium pamuktan, oversize ve modern sokak stili kalıplarıyla üretilir. Her detayda minimalist ve zamansız bir lüks hedeflenmiştir. Sayfanın üst kısmındaki kayan yazıya (duyuru çubuğuna) tıklayarak detaylı manifestomuzu okuyabilirsiniz.';
+    }
+
+    return 'Mesajınızı aldım! Size daha iyi yardımcı olabilmem için kargo kodu (ALC-...), beden, iade, kumaş kalitesi veya tasarım dosyamız hakkında bir soru sorabilirsiniz.';
   };
 
   const handleSend = async (textToSend) => {
@@ -115,11 +121,8 @@ function Chatbot({ isOpen, setIsOpen }) {
 
   return (
     <div className="chatbot-container">
-      
-      {/* 1. Chat Penceresi */}
+      {/* Chat Penceresi */}
       <div className={`chatbot-window ${isOpen ? 'open' : ''}`}>
-        
-        {/* Header */}
         <div className="chatbot-header">
           <div>
             <h3 className="chatbot-title">ALICCI AI ASSISTANT</h3>
@@ -128,22 +131,12 @@ function Chatbot({ isOpen, setIsOpen }) {
               Çevrimiçi • AI Destekli
             </p>
           </div>
-          <button
-            onClick={() => setIsOpen(false)}
-            className="chatbot-close-btn"
-            aria-label="Kapat"
-          >
-            ✕
-          </button>
+          <button onClick={() => setIsOpen(false)} className="chatbot-close-btn" aria-label="Kapat">✕</button>
         </div>
 
-        {/* Mesaj Alanı */}
         <div className="chatbot-messages">
           {messages.map((msg) => (
-            <div
-              key={msg.id}
-              className={`chatbot-message-wrapper ${msg.sender}`}
-            >
+            <div key={msg.id} className={`chatbot-message-wrapper ${msg.sender}`}>
               <div className={`chatbot-message-bubble ${msg.sender}`}>
                 {msg.text.split('**').map((part, idx) => 
                   idx % 2 === 1 ? <strong key={idx}>{part}</strong> : part
@@ -151,89 +144,45 @@ function Chatbot({ isOpen, setIsOpen }) {
               </div>
             </div>
           ))}
-
           {isTyping && (
             <div className="chatbot-message-wrapper bot">
-              <div className="chatbot-typing-indicator">
-                Yazıyor...
-              </div>
+              <div className="chatbot-typing-indicator">Yazıyor...</div>
             </div>
           )}
           <div ref={messagesEndRef} />
         </div>
 
-        {/* Hızlı Kısayollar */}
         <div className="chatbot-quick-actions">
           {quickActions.map((action) => (
-            <button
-              key={action.key}
-              onClick={() => handleSend(action.label)}
-              className="chatbot-quick-btn"
-            >
+            <button key={action.key} onClick={() => handleSend(action.label)} className="chatbot-quick-btn">
               {action.label}
             </button>
           ))}
         </div>
 
-        {/* Input Alanı */}
-        <form 
-          onSubmit={(e) => {
-            e.preventDefault();
-            handleSend();
-          }} 
-          className="chatbot-input-form"
-        >
-          <input
-            type="text"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="Bir soru sorun..."
-            className="chatbot-input"
-          />
-          <button
-            type="submit"
-            disabled={!input.trim()}
-            className="chatbot-send-btn"
-          >
-            Gönder
-          </button>
+        <form onSubmit={(e) => { e.preventDefault(); handleSend(); }} className="chatbot-input-form">
+          <input type="text" value={input} onChange={(e) => setInput(e.target.value)} placeholder="Bir soru sorun..." className="chatbot-input" />
+          <button type="submit" disabled={!input.trim()} className="chatbot-send-btn">Gönder</button>
         </form>
-
       </div>
 
-      {/* 2. Açma/Kapama Balon Butonu */}
-      <button
-        onClick={() => setIsOpen()}
-        className={`chatbot-toggle-btn ${isOpen ? 'open' : ''}`}
-        aria-label="Sohbeti Aç/Kapat"
-      >
+      <button onClick={() => setIsOpen()} className={`chatbot-toggle-btn ${isOpen ? 'open' : ''}`} aria-label="Sohbeti Aç/Kapat">
         {isOpen ? (
-          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-          </svg>
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
         ) : (
-          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 10h.01M12 10h.01M16 10h.01M16 10h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-          </svg>
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 10h.01M12 10h.01M16 10h.01M16 10h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
         )}
       </button>
-
     </div>
   );
 }
 
 const getRecommendedSize = (height, weight, fitPreference) => {
     let baseSize = "M";
-
-    if (height <= 168 && weight <= 54) {
-        baseSize = "S"; 
-    } else if (height <= 176 && weight <= 68) {
-        baseSize = "M"; 
-    } else if (height <= 184 && weight <= 82) {
-        baseSize = "L"; 
-    } else {
-        baseSize = "XL"; 
-    }
+    if (height <= 168 && weight <= 54) { baseSize = "S"; } 
+    else if (height <= 176 && weight <= 68) { baseSize = "M"; } 
+    else if (height <= 184 && weight <= 82) { baseSize = "L"; } 
+    else { baseSize = "XL"; }
 
     if (fitPreference === "oversize") {
         if (baseSize === "S") return "M";
@@ -241,12 +190,11 @@ const getRecommendedSize = (height, weight, fitPreference) => {
         if (baseSize === "L") return "XL";
         return "XXL";
     }
-
     return baseSize;
 };
 
 // ==========================================
-// YENİLENMİŞ YUMUŞAK GEÇİŞLİ & YUKARI KALKAN PRODUCT CARD
+// PRODUCT CARD BİLEŞENİ
 // ==========================================
 const ProductCard = ({ product, openProductModal, closeCart }) => {
     const handleClick = () => {
@@ -259,27 +207,12 @@ const ProductCard = ({ product, openProductModal, closeCart }) => {
     const secondaryImg = product.image && product.image[1] ? product.image[1] : primaryImg;
 
     return (
-        <div
-            className={`product-card reveal ${isCompletelySoldOut ? "sold-out" : ""}`}
-            onClick={handleClick}
-        >
+        <div className={`product-card reveal ${isCompletelySoldOut ? "sold-out" : ""}`} onClick={handleClick}>
             {isCompletelySoldOut && <div className="sold-out-badge">TÜKENDİ</div>}
-            
             <div className="product-image-wrapper">
-                <img
-                    src={primaryImg}
-                    alt={product.name}
-                    className="product-card-image primary"
-                    loading="lazy"
-                />
-                <img
-                    src={secondaryImg}
-                    alt={`${product.name} Hover`}
-                    className="product-card-image secondary"
-                    loading="lazy"
-                />
+                <img src={primaryImg} alt={product.name} className="product-card-image primary" loading="lazy" />
+                <img src={secondaryImg} alt={`${product.name} Hover`} className="product-card-image secondary" loading="lazy" />
             </div>
-
             <div className="info">
                 <h4>{product.name}</h4>
                 <p>{product.price} TL</p>
@@ -310,8 +243,8 @@ function App() {
     // AI Chatbot State'i
     const [isChatbotOpen, setIsChatbotOpen] = useState(false);
 
-    // Yasal Sayfalar Modal State'i
-    const [activeLegalModal, setActiveLegalModal] = useState(null); // 'terms', 'privacy', 'returns', 'contact'
+    // Yasal Sayfalar Modal State'i ('terms', 'privacy', 'returns', 'contact', 'manifesto')
+    const [activeLegalModal, setActiveLegalModal] = useState(null); 
     const [isLegalClosing, setIsLegalClosing] = useState(false);
 
     const [showSizeCalcModal, setShowSizeCalcModal] = useState(false);
@@ -335,7 +268,6 @@ function App() {
     const [trackingError, setTrackingError] = useState("");
     const [isTrackingLoading, setIsTrackingLoading] = useState(false);
 
-    // Iyzico Entegrasyon State'leri
     const [showIyzicoModal, setShowIyzicoModal] = useState(false);
     const [isIyzicoClosing, setIsIyzicoClosing] = useState(false);
     const [isIyzicoLoading, setIsIyzicoLoading] = useState(false);
@@ -349,7 +281,6 @@ function App() {
     const STORE_PHONE = "+90 551 190 31 18";
     const STORE_ADDRESS = "Nispetiye Mah. Aytar Cad. No: 12/A, Beşiktaş / İstanbul, Türkiye";
 
-    // AI Chatbot Açma/Kapama ve Diğer Modalları Temizleme Yönetimi
     const toggleChatbot = (explicitState) => {
         const nextState = typeof explicitState === 'boolean' ? explicitState : !isChatbotOpen;
         if (nextState) {
@@ -386,34 +317,19 @@ function App() {
 
     useEffect(() => {
         if (BACKEND_URL) {
-            console.log("Backend uyandırma sinyali gönderiliyor...");
-            fetch(BACKEND_URL)
-                .then((res) => {
-                    if (res.ok) {
-                        console.log("Backend başarıyla uyandırıldı ve hazır! ⚡");
-                    }
-                })
-                .catch((err) => {
-                    console.warn("Backend uyandırılırken bir sorun oluştu (uykuda olabilir, uyanıyor):", err);
-                });
+            fetch(BACKEND_URL).then(res => {
+                if (res.ok) console.log("Backend başarıyla uyandırıldı ve hazır! ⚡");
+            }).catch(err => console.warn("Backend uyandırılırken bir sorun oluştu", err));
         }
     }, []);
 
     useEffect(() => {
         const observer = new IntersectionObserver((entries) => {
-            entries.forEach((entry) => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add("active");
-                }
-            });
+            entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add("active"); });
         }, { threshold: 0.05 });
-
         const revealElements = document.querySelectorAll(".reveal");
-        revealElements.forEach((el) => observer.observe(el));
-
-        return () => {
-            revealElements.forEach((el) => observer.unobserve(el));
-        };
+        revealElements.forEach(el => observer.observe(el));
+        return () => revealElements.forEach(el => observer.unobserve(el));
     }, [products, isLoading]);
 
     useEffect(() => {
@@ -423,152 +339,80 @@ function App() {
     }, [cartItems]);
 
     useEffect(() => {
-        const preventInstallPrompt = (e) => {
-            e.preventDefault();
-        };
-        window.addEventListener("beforeinstallprompt", preventInstallPrompt);
-        return () => window.removeEventListener("beforeinstallprompt", preventInstallPrompt);
-    }, []);
-
-    useEffect(() => {
         const savedTheme = localStorage.getItem("darkMode") === "true";
         setIsDarkMode(savedTheme);
-        if (savedTheme) {
-            document.body.classList.add("dark-mode");
-        }
+        if (savedTheme) document.body.classList.add("dark-mode");
     }, []);
 
     const toggleDarkMode = () => {
         const newTheme = !isDarkMode;
         setIsDarkMode(newTheme);
         localStorage.setItem("darkMode", newTheme);
-        if (newTheme) {
-            document.body.classList.add("dark-mode");
-        } else {
-            document.body.classList.remove("dark-mode");
-        }
+        if (newTheme) document.body.classList.add("dark-mode");
+        else document.body.classList.remove("dark-mode");
     };
 
     useEffect(() => {
         const fetchProducts = async () => {
             setIsLoading(true);
             const { data, error } = await supabase.from("products").select("*");
-            if (error) {
-                console.error("Ürünler çekilirken hata oluştu:", error);
-            } else {
+            if (!error) {
                 const normalizedData = (data || []).map(prod => {
                     let finalImages = ["/logo.png"]; 
                     const rawImg = prod.image_url || prod.image;
-                    
                     if (rawImg) {
-                        if (Array.isArray(rawImg)) {
-                            finalImages = rawImg;
-                        } else if (typeof rawImg === "string") {
-                            if (rawImg.startsWith("[") && rawImg.endsWith("]")) {
-                                try {
-                                    finalImages = JSON.parse(rawImg);
-                                } catch (e) {
-                                    finalImages = [rawImg];
-                                }
-                            } else {
-                                finalImages = [rawImg];
-                            }
+                        if (Array.isArray(rawImg)) finalImages = rawImg;
+                        else if (typeof rawImg === "string") {
+                            try { finalImages = JSON.parse(rawImg); } 
+                            catch (e) { finalImages = [rawImg]; }
                         }
                     }
-
                     let finalSoldOutSizes = [];
                     if (prod.sold_out_sizes) {
-                        if (Array.isArray(prod.sold_out_sizes)) {
-                            finalSoldOutSizes = prod.sold_out_sizes;
-                        } else if (typeof prod.sold_out_sizes === "string") {
-                            if (prod.sold_out_sizes.startsWith("[") && prod.sold_out_sizes.endsWith("]")) {
-                                try {
-                                    finalSoldOutSizes = JSON.parse(prod.sold_out_sizes);
-                                } catch (e) {
-                                    finalSoldOutSizes = prod.sold_out_sizes.split(",").map(s => s.trim());
-                                }
-                            } else {
-                                finalSoldOutSizes = prod.sold_out_sizes.split(",").map(s => s.trim());
-                            }
-                        }
+                        try { finalSoldOutSizes = Array.isArray(prod.sold_out_sizes) ? prod.sold_out_sizes : JSON.parse(prod.sold_out_sizes); }
+                        catch(e) { finalSoldOutSizes = typeof prod.sold_out_sizes === "string" ? prod.sold_out_sizes.split(",").map(s => s.trim()) : []; }
                     }
-                    
-                    return {
-                        ...prod,
-                        image: finalImages,
-                        sold_out_sizes: finalSoldOutSizes,
-                        stock: prod.stock !== undefined ? Number(prod.stock) : 10
-                    };
+                    return { ...prod, image: finalImages, sold_out_sizes: finalSoldOutSizes, stock: prod.stock !== undefined ? Number(prod.stock) : 10 };
                 });
                 setProducts(normalizedData);
             }
             setIsLoading(false);
         };
-
         fetchProducts();
     }, []);
 
     useEffect(() => {
         const storedCartItems = localStorage.getItem("alicciCartItems");
         if (storedCartItems) {
-            try {
-                setCartItems(JSON.parse(storedCartItems));
-            } catch (e) {
-                console.error("Sepet verisi yüklenirken hata:", e);
-                localStorage.removeItem("alicciCartItems");
-            }
+            try { setCartItems(JSON.parse(storedCartItems)); } catch (e) {}
         }
     }, []);
     
-    useEffect(() => {
-        localStorage.setItem("alicciCartItems", JSON.stringify(cartItems));
-    }, [cartItems]);
+    useEffect(() => { localStorage.setItem("alicciCartItems", JSON.stringify(cartItems)); }, [cartItems]);
 
-    // SCROLL ENGELLEME (no-scroll) EFEKTİ
     useEffect(() => {
         const isAnyModalOpen = selectedProduct || showOrderOptionsModal || showConfirmationModal || showTrackingModal || isCartOpen || isMobileMenuOpen || showSizeCalcModal || isSizeCalcClosing || showIyzicoModal || isIyzicoClosing || activeLegalModal;
-        if (isAnyModalOpen) {
-            document.body.classList.add('no-scroll');
-        } else {
-            document.body.classList.remove('no-scroll');
-        }
-        return () => {
-            document.body.classList.remove('no-scroll');
-        };
+        if (isAnyModalOpen) document.body.classList.add('no-scroll');
+        else document.body.classList.remove('no-scroll');
+        return () => document.body.classList.remove('no-scroll');
     }, [selectedProduct, showOrderOptionsModal, showConfirmationModal, showTrackingModal, isCartOpen, isMobileMenuOpen, showSizeCalcModal, isSizeCalcClosing, showIyzicoModal, isIyzicoClosing, activeLegalModal]);
 
     useEffect(() => {
         if (!showIyzicoModal || !iyzicoFormHtml) return;
-
         const scriptRegex = /<script\b[^>]*>([\s\S]*?)<\/script>/gi;
         const srcRegex = /src=["'](.*?)["']/i;
         let match;
         const scriptsToAppend = [];
-
         while ((match = scriptRegex.exec(iyzicoFormHtml)) !== null) {
             const scriptEl = document.createElement("script");
             scriptEl.type = "text/javascript";
-            
             const srcMatch = match[0].match(srcRegex);
-            if (srcMatch && srcMatch[1]) {
-                scriptEl.src = srcMatch[1];
-            } else {
-                scriptEl.text = match[1];
-            }
+            if (srcMatch && srcMatch[1]) scriptEl.src = srcMatch[1];
+            else scriptEl.text = match[1];
             scriptsToAppend.push(scriptEl);
         }
-
-        scriptsToAppend.forEach((script) => {
-            document.body.appendChild(script);
-        });
-
-        return () => {
-            scriptsToAppend.forEach((script) => {
-                if (document.body.contains(script)) {
-                    document.body.removeChild(script);
-                }
-            });
-        };
+        scriptsToAppend.forEach(script => document.body.appendChild(script));
+        return () => scriptsToAppend.forEach(script => { if (document.body.contains(script)) document.body.removeChild(script); });
     }, [iyzicoFormHtml, showIyzicoModal]);
 
     const openProductModal = (product) => {
@@ -581,19 +425,12 @@ function App() {
 
     const closeProductModal = () => {
         setIsProductClosing(true);
-        setTimeout(() => {
-            setSelectedProduct(null);
-            setIsProductClosing(false);
-        }, 300);
+        setTimeout(() => { setSelectedProduct(null); setIsProductClosing(false); }, 300);
     };
 
     const closeSizeCalcModal = () => {
         setIsSizeCalcClosing(true);
-        setTimeout(() => {
-            setShowSizeCalcModal(false);
-            setIsSizeCalcClosing(false);
-            setModalTiltStyle({}); 
-        }, 300);
+        setTimeout(() => { setShowSizeCalcModal(false); setIsSizeCalcClosing(false); setModalTiltStyle({}); }, 300);
     };
 
     const handleModalMouseMove = (e) => {
@@ -601,10 +438,8 @@ function App() {
         const box = card.getBoundingClientRect();
         const x = e.clientX - box.left - box.width / 2;
         const y = e.clientY - box.top - box.height / 2;
-        
         const rotateX = -(y / (box.height / 2)) * 6;
         const rotateY = (x / (box.width / 2)) * 6;
-        
         setModalTiltStyle({
             transform: `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.015)`,
             transition: "transform 0.08s cubic-bezier(0.25, 1, 0.5, 1)"
@@ -620,64 +455,35 @@ function App() {
 
     const nextModalImage = (e) => {
         if (e) e.stopPropagation();
-        if (selectedProduct && selectedProduct.image) {
-            setCurrentModalImageIndex((prevIndex) =>
-                (prevIndex + 1) % selectedProduct.image.length
-            );
-        }
+        if (selectedProduct?.image) setCurrentModalImageIndex(prev => (prev + 1) % selectedProduct.image.length);
     };
 
     const prevModalImage = (e) => {
         if (e) e.stopPropagation();
-        if (selectedProduct && selectedProduct.image) {
-            setCurrentModalImageIndex((prevIndex) =>
-                (prevIndex - 1 + selectedProduct.image.length) % selectedProduct.image.length
-            );
-        }
+        if (selectedProduct?.image) setCurrentModalImageIndex(prev => (prev - 1 + selectedProduct.image.length) % selectedProduct.image.length);
     };
 
     const handleAddToCart = () => {
-        if (!selectedSize) {
-            showToast("Lütfen bir beden seçin.");
-            return;
-        }
+        if (!selectedSize) return showToast("Lütfen bir beden seçin.");
         if (selectedProduct) {
             const isSizeSoldOut = selectedProduct.sold_out_sizes?.includes(selectedSize);
-            if (selectedProduct.stock === 0 || isSizeSoldOut) {
-                showToast("Bu ürün veya beden maalesef tükendi.");
-                return;
-            }
-
-            const existingItemIndex = cartItems.findIndex(
-                (item) => item.id === selectedProduct.id && item.size === selectedSize
-            );
-
+            if (selectedProduct.stock === 0 || isSizeSoldOut) return showToast("Bu ürün veya beden maalesef tükendi.");
+            const existingItemIndex = cartItems.findIndex(item => item.id === selectedProduct.id && item.size === selectedSize);
             if (existingItemIndex > -1) {
                 const updatedCartItems = [...cartItems];
                 updatedCartItems[existingItemIndex].quantity += 1;
                 setCartItems(updatedCartItems);
             } else {
-                setCartItems([
-                    ...cartItems,
-                    { ...selectedProduct, quantity: 1, size: selectedSize },
-                ]);
+                setCartItems([...cartItems, { ...selectedProduct, quantity: 1, size: selectedSize }]);
             }
-            closeProductModal();
-            setIsChatbotOpen(false);
-            setIsCartOpen(true);
+            closeProductModal(); setIsChatbotOpen(false); setIsCartOpen(true);
         }
     };
 
     const removeFromCart = (itemToRemove) => {
-        const uniqueId = `${itemToRemove.id}-${itemToRemove.size}`;
-        setRemovingId(uniqueId);
-
+        setRemovingId(`${itemToRemove.id}-${itemToRemove.size}`);
         setTimeout(() => {
-            setCartItems(
-                cartItems.filter(
-                    (item) => !(item.id === itemToRemove.id && item.size === itemToRemove.size)
-                )
-            );
+            setCartItems(cartItems.filter(item => !(item.id === itemToRemove.id && item.size === itemToRemove.size)));
             setRemovingId(null);
             showToast("Ürün sepetten kaldırıldı.");
         }, 400);
@@ -685,55 +491,25 @@ function App() {
 
     const closeCart = () => {
         setIsCartClosing(true);
-        setTimeout(() => {
-            setIsCartOpen(false);
-            setIsCartClosing(false);
-        }, 300);
+        setTimeout(() => { setIsCartOpen(false); setIsCartClosing(false); }, 300);
     };
 
     const handleApplyCoupon = async () => {
         const cleanInput = couponInput.trim(); 
         if (!cleanInput) return;
-
         const today = new Date().toISOString().split('T')[0]; 
-
-        const { data, error } = await supabase
-            .from("coupons")
-            .select("*")
-            .ilike("code", cleanInput);
+        const { data, error } = await supabase.from("coupons").select("*").ilike("code", cleanInput);
 
         if (error || !data || data.length === 0) {
-            setDiscount(0);
-            setAppliedCouponCode("");
-            showToast("Geçersiz kupon kodu!");
-            return;
+            setDiscount(0); setAppliedCouponCode(""); return showToast("Geçersiz kupon kodu!");
         }
 
         const coupon = data[0];
+        if (!coupon.is_active) { setDiscount(0); setAppliedCouponCode(""); return showToast("Bu kupon artık geçerli değil!"); }
+        if (coupon.is_used) { setDiscount(0); setAppliedCouponCode(""); return showToast("Bu kupon kodu daha önce kullanılmış!"); }
+        if (coupon.expiry_date && coupon.expiry_date < today) { setDiscount(0); setAppliedCouponCode(""); return showToast("Bu kuponun son kullanma tarihi geçmiş!"); }
 
-        if (!coupon.is_active) {
-            setDiscount(0);
-            setAppliedCouponCode("");
-            showToast("Bu kupon artık geçerli değil!");
-            return;
-        }
-
-        if (coupon.is_used) {
-            setDiscount(0);
-            setAppliedCouponCode("");
-            showToast("Bu kupon kodu daha önce kullanılmış!");
-            return;
-        }
-
-        if (coupon.expiry_date && coupon.expiry_date < today) {
-            setDiscount(0);
-            setAppliedCouponCode("");
-            showToast("Bu kuponun son kullanma tarihi geçmiş!");
-            return;
-        }
-
-        const discountValue = coupon.discount_percentage / 100;
-        setDiscount(discountValue);
+        setDiscount(coupon.discount_percentage / 100);
         setAppliedCouponCode(coupon.code);
         showToast(`Kupon başarıyla uygulandı! %${coupon.discount_percentage} İndirim kazandınız.`);
     };
@@ -745,229 +521,104 @@ function App() {
     };
 
     const handleCheckout = async () => {
-        if (cartItems.length === 0) {
-            showToast("Sepetiniz boş.");
-            return;
-        }
-
-        setIsChatbotOpen(false);
-        setIsIyzicoLoading(true);
-        setShowIyzicoModal(true);
-        setIsIyzicoClosing(false);
-        closeCart();
-
+        if (cartItems.length === 0) return showToast("Sepetiniz boş.");
+        setIsChatbotOpen(false); setIsIyzicoLoading(true); setShowIyzicoModal(true); setIsIyzicoClosing(false); closeCart();
         try {
             const response = await fetch(`${BACKEND_URL}/api/iyzico-checkout`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    cartItems,
-                    totalPrice: getTotalPrice(),
-                    discount,
-                    appliedCouponCode
-                }),
+                method: "POST", headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ cartItems, totalPrice: getTotalPrice(), discount, appliedCouponCode }),
             });
-
-            if (!response.ok) {
-                throw new Error("Ödeme oturumu başlatılamadı.");
-            }
-
+            if (!response.ok) throw new Error("Ödeme oturumu başlatılamadı.");
             const data = await response.json();
-            
-            if (data && data.checkoutFormContent) {
-                setIyzicoFormHtml(data.checkoutFormContent);
-            } else {
-                throw new Error("Ödeme form içeriği alınamadı.");
-            }
+            if (data?.checkoutFormContent) setIyzicoFormHtml(data.checkoutFormContent);
+            else throw new Error("Ödeme form içeriği alınamadı.");
         } catch (error) {
-            console.error("Iyzico hatası:", error);
-            showToast("Ödeme sistemi yüklenirken hata oluştu.");
-            setShowIyzicoModal(false);
-        } finally {
-            setIsIyzicoLoading(false);
-        }
+            showToast("Ödeme sistemi yüklenirken hata oluştu."); setShowIyzicoModal(false);
+        } finally { setIsIyzicoLoading(false); }
     };
 
     const closeIyzicoModal = () => {
         setIsIyzicoClosing(true);
-        setTimeout(() => {
-            setShowIyzicoModal(false);
-            setIsIyzicoClosing(false);
-            setIyzicoFormHtml("");
-        }, 300);
+        setTimeout(() => { setShowIyzicoModal(false); setIsIyzicoClosing(false); setIyzicoFormHtml(""); }, 300);
     };
 
-    const closeOrderOptionsModal = () => {
-        setShowOrderOptionsModal(false);
-    };
+    const closeOrderOptionsModal = () => setShowOrderOptionsModal(false);
 
     const openTrackingModal = () => {
-        setIsChatbotOpen(false);
-        setShowTrackingModal(true);
-        setIsTrackingClosing(false);
-        setSearchedOrder(null);
-        setTrackingCodeInput("");
-        setTrackingError("");
+        setIsChatbotOpen(false); setShowTrackingModal(true); setIsTrackingClosing(false);
+        setSearchedOrder(null); setTrackingCodeInput(""); setTrackingError("");
     };
 
     const closeTrackingModal = () => {
         setIsTrackingClosing(true);
-        setTimeout(() => {
-            setShowTrackingModal(false);
-            setIsTrackingClosing(false);
-        }, 300);
+        setTimeout(() => { setShowTrackingModal(false); setIsTrackingClosing(false); }, 300);
     };
 
-    const generateOrderCode = () => {
-        return `ALC-${Math.floor(100000 + Math.random() * 900000)}`;
-    };
+    const generateOrderCode = () => `ALC-${Math.floor(100000 + Math.random() * 900000)}`;
 
     const handleCreateOrder = async (platform) => {
         if (cartItems.length === 0) return;
-
         const orderCode = generateOrderCode();
         const totalPrice = getTotalPrice();
 
-        const { error } = await supabase.from("orders").insert([
-            {
-                order_code: orderCode,
-                cart_items: cartItems,
-                total_price: totalPrice,
-                status: "Onay Bekleniyor"
-            }
-        ]);
-
-        if (error) {
-            console.error("Sipariş kaydedilirken hata oluştu:", error);
-            showToast("Bir hata oluştu, lütfen tekrar deneyin.");
-            return;
-        }
+        const { error } = await supabase.from("orders").insert([{ order_code: orderCode, cart_items: cartItems, total_price: totalPrice, status: "Onay Bekleniyor" }]);
+        if (error) return showToast("Bir hata oluştu, lütfen tekrar deneyin.");
 
         if (appliedCouponCode) {
-            const { error: couponError } = await supabase
-                .from('coupons')
-                .update({ 
-                    is_used: true, 
-                    used_at: new Date().toISOString()
-                })
-                .eq('code', appliedCouponCode);
-
-            if (couponError) {
-                console.error("Kupon güncellenirken bir hata oluştu:", couponError);
-            }
+            await supabase.from('coupons').update({ is_used: true, used_at: new Date().toISOString() }).eq('code', appliedCouponCode);
         }
 
         if (platform === "whatsapp") {
             const message = `Merhaba, ${orderCode} kodlu siparişimi onaylamak istiyorum:\n\n` +
                 `${cartItems.map(item => `- ${item.name} (${item.size}) x${item.quantity}`).join('\n')}\n\n` +
                 `Toplam: ${totalPrice} TL`;
-            
             window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`, '_blank');
         } else {
             navigator.clipboard.writeText(orderCode);
             showToast(`Sipariş kodunuz (${orderCode}) kopyalandı! DM'den bize iletebilirsiniz.`);
-            setTimeout(() => {
-                window.open(`https://www.instagram.com/${INSTAGRAM_USERNAME}`, '_blank');
-            }, 1500);
+            setTimeout(() => window.open(`https://www.instagram.com/${INSTAGRAM_USERNAME}`, '_blank'), 1500);
         }
-
         setShowOrderOptionsModal(false);
-        openConfirmationModal();
+        setShowConfirmationModal(true);
     };
 
     const handleTrackOrder = async () => {
-        if (!trackingCodeInput.trim()) {
-            setTrackingError("Lütfen sipariş kodunuzu girin.");
-            return;
-        }
-        
+        if (!trackingCodeInput.trim()) return setTrackingError("Lütfen sipariş kodunuzu girin.");
         let cleanCode = trackingCodeInput.replace(/\s+/g, '').toUpperCase().replace(/-/g, '');
-        
-        if (!cleanCode.startsWith('ALC')) {
-            cleanCode = 'ALC' + cleanCode;
-        }
-        
-        if (cleanCode.length > 3 && cleanCode[3] !== '-') {
-            cleanCode = cleanCode.slice(0, 3) + '-' + cleanCode.slice(3);
-        }
+        if (!cleanCode.startsWith('ALC')) cleanCode = 'ALC' + cleanCode;
+        if (cleanCode.length > 3 && cleanCode[3] !== '-') cleanCode = cleanCode.slice(0, 3) + '-' + cleanCode.slice(3);
 
-        setIsTrackingLoading(true);
-        setTrackingError("");
-        setSearchedOrder(null);
-
-        const { data, error } = await supabase
-            .from("orders")
-            .select("*")
-            .eq("order_code", cleanCode);
-
+        setIsTrackingLoading(true); setTrackingError(""); setSearchedOrder(null);
+        const { data, error } = await supabase.from("orders").select("*").eq("order_code", cleanCode);
         setIsTrackingLoading(false);
-
-        if (error || !data || data.length === 0) {
-            setTrackingError("Sipariş bulunamadı. Lütfen kodu kontrol edin (Örn: ALC-123456).");
-            return;
-        }
-
+        if (error || !data || data.length === 0) return setTrackingError("Sipariş bulunamadı. Lütfen kodu kontrol edin (Örn: ALC-123456).");
         setSearchedOrder(data[0]);
     };
 
     const handleContactFormSubmit = async (e) => {
         e.preventDefault();
-
         try {
-            await emailjs.sendForm(
-                "service_iyppib9",
-                "template_ftuypl8",
-                form.current,
-                "5dI_FI0HT2oHrlQj5"
-            );
-            showToast("Mesajınız başarıyla gönderildi!");
-            e.target.reset();
-        } catch (error) {
-            console.error("Mesaj gönderilirken hata oluştu:", error);
-            showToast("Mesajınız gönderilirken bir hata oluştu. Lütfen tekrar deneyin.");
-        }
-    };
-
-    const openConfirmationModal = () => {
-        setShowConfirmationModal(true);
-    };
-
-    const closeConfirmationModal = () => {
-        setShowConfirmationModal(false);
+            await emailjs.sendForm("service_iyppib9", "template_ftuypl8", form.current, "5dI_FI0HT2oHrlQj5");
+            showToast("Mesajınız başarıyla gönderildi!"); e.target.reset();
+        } catch (error) { showToast("Mesajınız gönderilirken bir hata oluştu."); }
     };
 
     const closeMobileMenu = () => {
         if (!isMobileMenuOpen) return;
         setIsMobileMenuClosing(true);
-        setTimeout(() => {
-            setIsMobileMenuOpen(false);
-            setIsMobileMenuClosing(false);
-        }, 350);
+        setTimeout(() => { setIsMobileMenuOpen(false); setIsMobileMenuClosing(false); }, 350);
     };
 
-    const toggleMobileMenu = () => {
-        if (isMobileMenuOpen) {
-            closeMobileMenu();
-        } else {
-            setIsMobileMenuOpen(true);
-        }
-    };
+    const toggleMobileMenu = () => { isMobileMenuOpen ? closeMobileMenu() : setIsMobileMenuOpen(true); };
 
     const handleNavLinkClick = (sectionId, customAction = null) => {
-        if (customAction) {
-            customAction();
-        } else {
+        if (customAction) customAction();
+        else {
             setCurrentSection(sectionId);
             const element = document.getElementById(sectionId);
-            if (element) {
-                element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }
+            if (element) element.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
-        if (isMobileMenuOpen) {
-            closeMobileMenu(); 
-        }
+        if (isMobileMenuOpen) closeMobileMenu(); 
     };
 
     return (
@@ -983,895 +634,226 @@ function App() {
 
                 /* LÜKS YUMUŞAK GEÇİŞ VE GLASSMORPHISM ANIMASYONLARI */
                 @keyframes fadeIn {
-                    from {
-                        opacity: 0.35;
-                        transform: scale(0.985);
-                    }
-                    to {
-                        opacity: 1;
-                        transform: scale(1);
-                    }
+                    from { opacity: 0.35; transform: scale(0.985); }
+                    to { opacity: 1; transform: scale(1); }
                 }
 
-                .animate-fadeIn {
-                    animation: fadeIn 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-                }
+                .animate-fadeIn { animation: fadeIn 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
 
                 .product-modal-image-wrapper {
-                    position: relative;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    width: 100%;
-                    overflow: hidden;
-                    border-radius: 12px;
-                    background: rgba(0, 0, 0, 0.02);
+                    position: relative; display: flex; align-items: center; justify-content: center;
+                    width: 100%; overflow: hidden; border-radius: 12px; background: rgba(0, 0, 0, 0.02);
                 }
-                body.dark-mode .product-modal-image-wrapper {
-                    background: rgba(255, 255, 255, 0.02);
-                }
+                body.dark-mode .product-modal-image-wrapper { background: rgba(255, 255, 255, 0.02); }
 
-                /* GLASSMORPHISM GEZİNME BUTONLARI */
                 .modal-nav-glass-btn {
-                    position: absolute;
-                    top: 50%;
-                    transform: translateY(-50%);
-                    width: 42px;
-                    height: 42px;
-                    border-radius: 50%;
-                    background: rgba(255, 255, 255, 0.45);
-                    backdrop-filter: blur(12px);
-                    -webkit-backdrop-filter: blur(12px);
-                    border: 1px solid rgba(255, 255, 255, 0.5);
-                    color: #111;
-                    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    cursor: pointer;
-                    opacity: 0;
-                    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-                    z-index: 10;
+                    position: absolute; top: 50%; transform: translateY(-50%); width: 42px; height: 42px;
+                    border-radius: 50%; background: rgba(255, 255, 255, 0.45); backdrop-filter: blur(12px);
+                    -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.5);
+                    color: #111; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); display: flex; align-items: center;
+                    justify-content: center; cursor: pointer; opacity: 0; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); z-index: 10;
                 }
+                .product-modal-image-wrapper:hover .modal-nav-glass-btn { opacity: 1; }
+                .modal-nav-glass-btn.left { left: 12px; }
+                .modal-nav-glass-btn.right { right: 12px; }
+                .modal-nav-glass-btn:hover { background: rgba(255, 255, 255, 0.85); transform: translateY(-50%) scale(1.08); }
+                .modal-nav-glass-btn:active { transform: translateY(-50%) scale(0.95); }
+                
+                body.dark-mode .modal-nav-glass-btn { background: rgba(0, 0, 0, 0.45); border: 1px solid rgba(255, 255, 255, 0.15); color: #fff; }
+                body.dark-mode .modal-nav-glass-btn:hover { background: rgba(0, 0, 0, 0.8); }
 
-                .product-modal-image-wrapper:hover .modal-nav-glass-btn {
-                    opacity: 1;
-                }
-
-                .modal-nav-glass-btn.left {
-                    left: 12px;
-                }
-
-                .modal-nav-glass-btn.right {
-                    right: 12px;
-                }
-
-                .modal-nav-glass-btn:hover {
-                    background: rgba(255, 255, 255, 0.85);
-                    transform: translateY(-50%) scale(1.08);
-                }
-
-                .modal-nav-glass-btn:active {
-                    transform: translateY(-50%) scale(0.95);
-                }
-
-                body.dark-mode .modal-nav-glass-btn {
-                    background: rgba(0, 0, 0, 0.45);
-                    border: 1px solid rgba(255, 255, 255, 0.15);
-                    color: #fff;
-                }
-
-                body.dark-mode .modal-nav-glass-btn:hover {
-                    background: rgba(0, 0, 0, 0.8);
-                }
-
-                /* GEZİNME NOKTALARI (DOTS) */
                 .modal-image-dots {
-                    position: absolute;
-                    bottom: 12px;
-                    left: 50%;
-                    transform: translateX(-50%);
-                    display: flex;
-                    align-items: center;
-                    gap: 6px;
-                    z-index: 10;
-                    padding: 4px 8px;
-                    background: rgba(0, 0, 0, 0.25);
-                    backdrop-filter: blur(8px);
-                    -webkit-backdrop-filter: blur(8px);
-                    border-radius: 20px;
+                    position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%);
+                    display: flex; align-items: center; gap: 6px; z-index: 10; padding: 4px 8px;
+                    background: rgba(0, 0, 0, 0.25); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border-radius: 20px;
                 }
-
                 .modal-dot {
-                    height: 6px;
-                    width: 6px;
-                    border-radius: 50%;
-                    background: rgba(255, 255, 255, 0.5);
-                    cursor: pointer;
-                    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+                    height: 6px; width: 6px; border-radius: 50%; background: rgba(255, 255, 255, 0.5);
+                    cursor: pointer; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
                 }
+                .modal-dot.active { width: 18px; border-radius: 10px; background: #ffffff; }
 
-                .modal-dot.active {
-                    width: 18px;
-                    border-radius: 10px;
-                    background: #ffffff;
-                }
-
-                /* PRODUCT CARD YUKARI KALKMA VE FADE-IN STİLLERİ */
-                .product-card {
-                    cursor: pointer;
-                    position: relative;
-                }
+                .product-card { cursor: pointer; position: relative; }
                 .product-card.reveal {
-                    opacity: 0;
-                    transform: translateY(40px) scale(0.98);
-                    transition: opacity 0.85s cubic-bezier(0.16, 1, 0.3, 1), 
-                                transform 0.85s cubic-bezier(0.16, 1, 0.3, 1),
-                                box-shadow 0.3s ease;
+                    opacity: 0; transform: translateY(40px) scale(0.98);
+                    transition: opacity 0.85s cubic-bezier(0.16, 1, 0.3, 1), transform 0.85s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease;
                 }
-                .product-card.reveal.active {
-                    opacity: 1;
-                    transform: translateY(0) scale(1);
-                }
-                .product-card.reveal.active:hover {
-                    transform: translateY(-6px);
-                    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
-                }
-                body.dark-mode .product-card.reveal.active:hover {
-                    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.4);
-                }
+                .product-card.reveal.active { opacity: 1; transform: translateY(0) scale(1); }
+                .product-card.reveal.active:hover { transform: translateY(-6px); box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08); }
+                body.dark-mode .product-card.reveal.active:hover { box-shadow: 0 12px 24px rgba(0, 0, 0, 0.4); }
 
-                .product-image-wrapper {
-                    position: relative;
-                    width: 100%;
-                    overflow: hidden;
-                    border-radius: 4px;
-                }
-                .product-card-image {
-                    width: 100%;
-                    display: block;
-                    transition: opacity 0.4s ease;
-                }
-                .product-card-image.secondary {
-                    position: absolute;
-                    top: 0;
-                    left: 0;
-                    opacity: 0;
-                }
-                .product-card:hover .product-card-image.secondary {
-                    opacity: 1;
-                }
-                .product-card:hover .product-card-image.primary {
-                    opacity: 0;
-                }
+                .product-image-wrapper { position: relative; width: 100%; overflow: hidden; border-radius: 4px; }
+                .product-card-image { width: 100%; display: block; transition: opacity 0.4s ease; }
+                .product-card-image.secondary { position: absolute; top: 0; left: 0; opacity: 0; }
+                .product-card:hover .product-card-image.secondary { opacity: 1; }
+                .product-card:hover .product-card-image.primary { opacity: 0; }
 
-                /* YENİ GELİŞMİŞ FOOTER STİLLERİ */
                 .site-footer {
-                    background-color: #0d0d0d;
-                    color: #fff;
-                    padding: 60px 20px 25px;
-                    border-top: 1px solid rgba(255, 255, 255, 0.1);
-                    font-family: 'Poppins', sans-serif;
-                    margin-top: 60px;
+                    background-color: #0d0d0d; color: #fff; padding: 60px 20px 25px;
+                    border-top: 1px solid rgba(255, 255, 255, 0.1); font-family: 'Poppins', sans-serif; margin-top: 60px;
                 }
-                body.dark-mode .site-footer {
-                    background-color: #050505;
-                    border-top-color: rgba(255, 255, 255, 0.05);
-                }
-                .footer-container {
-                    max-width: 1200px;
-                    margin: 0 auto;
-                    display: grid;
-                    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-                    gap: 40px;
-                }
-                .footer-column h4 {
-                    font-size: 14px;
-                    font-weight: 700;
-                    letter-spacing: 1.5px;
-                    text-transform: uppercase;
-                    margin-bottom: 20px;
-                    color: #ffffff;
-                    position: relative;
-                }
-                .footer-column h4::after {
-                    content: '';
-                    display: block;
-                    width: 24px;
-                    height: 2px;
-                    background: #ffffff;
-                    margin-top: 6px;
-                }
-                .footer-column p {
-                    font-size: 12.5px;
-                    color: #aaa;
-                    line-height: 1.7;
-                    margin: 0 0 10px 0;
-                }
-                .footer-column ul {
-                    list-style: none;
-                    padding: 0;
-                    margin: 0;
-                }
-                .footer-column ul li {
-                    margin-bottom: 12px;
-                }
+                body.dark-mode .site-footer { background-color: #050505; border-top-color: rgba(255, 255, 255, 0.05); }
+                .footer-container { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 40px; }
+                .footer-column h4 { font-size: 14px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 20px; color: #ffffff; position: relative; }
+                .footer-column h4::after { content: ''; display: block; width: 24px; height: 2px; background: #ffffff; margin-top: 6px; }
+                .footer-column p { font-size: 12.5px; color: #aaa; line-height: 1.7; margin: 0 0 10px 0; }
+                .footer-column ul { list-style: none; padding: 0; margin: 0; }
+                .footer-column ul li { margin-bottom: 12px; }
                 .footer-column ul li button, .footer-column ul li a {
-                    background: none;
-                    border: none;
-                    color: #aaa;
-                    font-size: 13px;
-                    cursor: pointer;
-                    padding: 0;
-                    text-align: left;
-                    transition: color 0.2s ease, transform 0.2s ease;
-                    text-decoration: none;
-                    display: inline-block;
+                    background: none; border: none; color: #aaa; font-size: 13px; cursor: pointer; padding: 0; text-align: left; transition: color 0.2s ease, transform 0.2s ease; text-decoration: none; display: inline-block;
                 }
-                .footer-column ul li button:hover, .footer-column ul li a:hover {
-                    color: #fff;
-                    transform: translateX(4px);
-                }
-                .footer-bottom {
-                    max-width: 1200px;
-                    margin: 40px auto 0;
-                    padding-top: 20px;
-                    border-top: 1px solid rgba(255, 255, 255, 0.08);
-                    display: flex;
-                    flex-wrap: wrap;
-                    justify-content: space-between;
-                    align-items: center;
-                    font-size: 12px;
-                    color: #777;
-                }
-                .legal-modal-body {
-                    line-height: 1.7;
-                    font-size: 13px;
-                    color: inherit;
-                    text-align: left;
-                    max-height: 65vh;
-                    overflow-y: auto;
-                    padding-right: 10px;
-                }
-                .legal-modal-body h3 {
-                    font-size: 15px;
-                    margin-top: 18px;
-                    margin-bottom: 8px;
-                    font-weight: 700;
-                    letter-spacing: 0.5px;
-                }
+                .footer-column ul li button:hover, .footer-column ul li a:hover { color: #fff; transform: translateX(4px); }
+                .footer-bottom { max-width: 1200px; margin: 40px auto 0; padding-top: 20px; border-top: 1px solid rgba(255, 255, 255, 0.08); display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; font-size: 12px; color: #777; }
+                .legal-modal-body { line-height: 1.7; font-size: 13px; color: inherit; text-align: left; max-height: 65vh; overflow-y: auto; padding-right: 10px; }
+                .legal-modal-body h3 { font-size: 15px; margin-top: 18px; margin-bottom: 8px; font-weight: 700; letter-spacing: 0.5px; }
 
-                /* CHATBOT STİLLERİ */
-                .chatbot-container {
-                    position: fixed;
-                    bottom: 24px;
-                    right: 24px;
-                    z-index: 9999999;
-                    font-family: sans-serif;
-                }
+                .chatbot-container { position: fixed; bottom: 24px; right: 24px; z-index: 9999999; font-family: sans-serif; }
                 .chatbot-window {
-                    position: absolute;
-                    bottom: 70px;
-                    right: 0;
-                    width: 340px;
-                    height: 480px;
-                    background-color: #fff;
-                    border-radius: 16px;
-                    box-shadow: 0 20px 40px rgba(0,0,0,0.25);
-                    border: 1px solid #e5e5e5;
-                    display: flex;
-                    flex-direction: column;
-                    overflow: hidden;
-                    opacity: 0;
-                    transform: translateY(20px) scale(0.9);
-                    pointer-events: none;
-                    transform-origin: bottom right;
-                    transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1), transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+                    position: absolute; bottom: 70px; right: 0; width: 340px; height: 480px; background-color: #fff; border-radius: 16px;
+                    box-shadow: 0 20px 40px rgba(0,0,0,0.25); border: 1px solid #e5e5e5; display: flex; flex-direction: column; overflow: hidden;
+                    opacity: 0; transform: translateY(20px) scale(0.9); pointer-events: none; transform-origin: bottom right; transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1), transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
                 }
-                body.dark-mode .chatbot-window {
-                    background-color: #1a1a1a;
-                    border-color: #333;
-                    color: #fff;
-                }
-                .chatbot-window.open {
-                    opacity: 1;
-                    transform: translateY(0) scale(1);
-                    pointer-events: all;
-                }
-                .chatbot-header {
-                    background-color: #000;
-                    color: #fff;
-                    padding: 14px 18px;
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                }
-                body.dark-mode .chatbot-header {
-                    background-color: #111;
-                    border-bottom: 1px solid #222;
-                }
-                .chatbot-title {
-                    margin: 0;
-                    font-size: 12px;
-                    font-weight: bold;
-                    letter-spacing: 1px;
-                    color: #fff;
-                }
-                .chatbot-status {
-                    margin: 3px 0 0 0;
-                    font-size: 10px;
-                    color: #34d399;
-                    display: flex;
-                    align-items: center;
-                    gap: 4px;
-                }
-                .chatbot-status-dot {
-                    width: 6px;
-                    height: 6px;
-                    border-radius: 50%;
-                    background-color: #34d399;
-                    display: inline-block;
-                }
-                .chatbot-close-btn {
-                    background: none;
-                    border: none;
-                    color: #aaa;
-                    font-size: 16px;
-                    cursor: pointer;
-                    padding: 4px;
-                }
-                .chatbot-close-btn:hover {
-                    color: #fff;
-                }
-                .chatbot-messages {
-                    flex: 1;
-                    padding: 14px;
-                    overflow-y: auto;
-                    background-color: #f9f9f9;
-                    display: flex;
-                    flex-direction: column;
-                    gap: 10px;
-                    font-size: 12px;
-                }
-                body.dark-mode .chatbot-messages {
-                    background-color: #121212;
-                }
-                .chatbot-message-wrapper {
-                    display: flex;
-                }
-                .chatbot-message-wrapper.user {
-                    justify-content: flex-end;
-                }
-                .chatbot-message-wrapper.bot {
-                    justify-content: flex-start;
-                }
-                .chatbot-message-bubble {
-                    max-width: 82%;
-                    padding: 10px 14px;
-                    border-radius: 14px;
-                    line-height: 1.4;
-                    box-shadow: 0 2px 5px rgba(0,0,0,0.03);
-                }
-                .chatbot-message-bubble.user {
-                    background-color: #000;
-                    color: #fff;
-                    border: none;
-                }
-                body.dark-mode .chatbot-message-bubble.user {
-                    background-color: #fff;
-                    color: #000;
-                }
-                .chatbot-message-bubble.bot {
-                    background-color: #fff;
-                    color: #111;
-                    border: 1px solid #eee;
-                }
-                body.dark-mode .chatbot-message-bubble.bot {
-                    background-color: #222;
-                    color: #eee;
-                    border-color: #333;
-                }
-                .chatbot-typing-indicator {
-                    background-color: #fff;
-                    border: 1px solid #eee;
-                    padding: 8px 12px;
-                    border-radius: 12px;
-                    color: #888;
-                }
-                body.dark-mode .chatbot-typing-indicator {
-                    background-color: #222;
-                    border-color: #333;
-                    color: #aaa;
-                }
-                .chatbot-quick-actions {
-                    padding: 8px;
-                    background-color: #fff;
-                    border-top: 1px solid #eee;
-                    display: flex;
-                    gap: 6px;
-                    overflow-x: auto;
-                }
-                body.dark-mode .chatbot-quick-actions {
-                    background-color: #1a1a1a;
-                    border-color: #2d2d2d;
-                }
-                .chatbot-quick-btn {
-                    font-size: 11px;
-                    background-color: #f0f0f0;
-                    color: #333;
-                    padding: 6px 12px;
-                    border-radius: 20px;
-                    border: none;
-                    cursor: pointer;
-                    white-space: nowrap;
-                    transition: background-color 0.2s;
-                }
-                body.dark-mode .chatbot-quick-btn {
-                    background-color: #2a2a2a;
-                    color: #ddd;
-                }
-                .chatbot-quick-btn:hover {
-                    background-color: #e0e0e0;
-                }
-                body.dark-mode .chatbot-quick-btn:hover {
-                    background-color: #3a3a3a;
-                }
-                .chatbot-input-form {
-                    padding: 10px;
-                    background-color: #fff;
-                    border-top: 1px solid #eee;
-                    display: flex;
-                    align-items: center;
-                    gap: 8px;
-                }
-                body.dark-mode .chatbot-input-form {
-                    background-color: #1a1a1a;
-                    border-color: #2d2d2d;
-                }
-                .chatbot-input {
-                    flex: 1;
-                    padding: 8px 12px;
-                    background-color: #f4f4f4;
-                    border: 1px solid #ddd;
-                    border-radius: 20px;
-                    font-size: 12px;
-                    outline: none;
-                    color: #000;
-                }
-                body.dark-mode .chatbot-input {
-                    background-color: #252525;
-                    border-color: #3d3d3d;
-                    color: #fff;
-                }
-                .chatbot-send-btn {
-                    background-color: #000;
-                    color: #fff;
-                    border: none;
-                    padding: 8px 14px;
-                    border-radius: 20px;
-                    cursor: pointer;
-                    font-size: 12px;
-                    transition: opacity 0.2s;
-                }
-                body.dark-mode .chatbot-send-btn {
-                    background-color: #fff;
-                    color: #000;
-                }
-                .chatbot-send-btn:disabled {
-                    opacity: 0.4;
-                    cursor: not-allowed;
-                }
+                body.dark-mode .chatbot-window { background-color: #1a1a1a; border-color: #333; color: #fff; }
+                .chatbot-window.open { opacity: 1; transform: translateY(0) scale(1); pointer-events: all; }
+                .chatbot-header { background-color: #000; color: #fff; padding: 14px 18px; display: flex; justify-content: space-between; align-items: center; }
+                body.dark-mode .chatbot-header { background-color: #111; border-bottom: 1px solid #222; }
+                .chatbot-title { margin: 0; font-size: 12px; font-weight: bold; letter-spacing: 1px; color: #fff; }
+                .chatbot-status { margin: 3px 0 0 0; font-size: 10px; color: #34d399; display: flex; align-items: center; gap: 4px; }
+                .chatbot-status-dot { width: 6px; height: 6px; border-radius: 50%; background-color: #34d399; display: inline-block; }
+                .chatbot-close-btn { background: none; border: none; color: #aaa; font-size: 16px; cursor: pointer; padding: 4px; }
+                .chatbot-close-btn:hover { color: #fff; }
+                .chatbot-messages { flex: 1; padding: 14px; overflow-y: auto; background-color: #f9f9f9; display: flex; flex-direction: column; gap: 10px; font-size: 12px; }
+                body.dark-mode .chatbot-messages { background-color: #121212; }
+                .chatbot-message-wrapper { display: flex; }
+                .chatbot-message-wrapper.user { justify-content: flex-end; }
+                .chatbot-message-wrapper.bot { justify-content: flex-start; }
+                .chatbot-message-bubble { max-width: 82%; padding: 10px 14px; border-radius: 14px; line-height: 1.4; box-shadow: 0 2px 5px rgba(0,0,0,0.03); }
+                .chatbot-message-bubble.user { background-color: #000; color: #fff; border: none; }
+                body.dark-mode .chatbot-message-bubble.user { background-color: #fff; color: #000; }
+                .chatbot-message-bubble.bot { background-color: #fff; color: #111; border: 1px solid #eee; }
+                body.dark-mode .chatbot-message-bubble.bot { background-color: #222; color: #eee; border-color: #333; }
+                .chatbot-typing-indicator { background-color: #fff; border: 1px solid #eee; padding: 8px 12px; border-radius: 12px; color: #888; }
+                body.dark-mode .chatbot-typing-indicator { background-color: #222; border-color: #333; color: #aaa; }
+                .chatbot-quick-actions { padding: 8px; background-color: #fff; border-top: 1px solid #eee; display: flex; gap: 6px; overflow-x: auto; }
+                body.dark-mode .chatbot-quick-actions { background-color: #1a1a1a; border-color: #2d2d2d; }
+                .chatbot-quick-btn { font-size: 11px; background-color: #f0f0f0; color: #333; padding: 6px 12px; border-radius: 20px; border: none; cursor: pointer; white-space: nowrap; transition: background-color 0.2s; }
+                body.dark-mode .chatbot-quick-btn { background-color: #2a2a2a; color: #ddd; }
+                .chatbot-quick-btn:hover { background-color: #e0e0e0; }
+                body.dark-mode .chatbot-quick-btn:hover { background-color: #3a3a3a; }
+                .chatbot-input-form { padding: 10px; background-color: #fff; border-top: 1px solid #eee; display: flex; align-items: center; gap: 8px; }
+                body.dark-mode .chatbot-input-form { background-color: #1a1a1a; border-color: #2d2d2d; }
+                .chatbot-input { flex: 1; padding: 8px 12px; background-color: #f4f4f4; border: 1px solid #ddd; border-radius: 20px; font-size: 12px; outline: none; color: #000; }
+                body.dark-mode .chatbot-input { background-color: #252525; border-color: #3d3d3d; color: #fff; }
+                .chatbot-send-btn { background-color: #000; color: #fff; border: none; padding: 8px 14px; border-radius: 20px; cursor: pointer; font-size: 12px; transition: opacity 0.2s; }
+                body.dark-mode .chatbot-send-btn { background-color: #fff; color: #000; }
+                .chatbot-send-btn:disabled { opacity: 0.4; cursor: not-allowed; }
                 .chatbot-toggle-btn {
-                    background-color: #000;
-                    color: #fff;
-                    border-radius: 50%;
-                    box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-                    border: 1px solid #333;
-                    cursor: pointer;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    width: 56px;
-                    height: 56px;
-                    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s;
-                    float: right;
+                    background-color: #000; color: #fff; border-radius: 50%; box-shadow: 0 10px 25px rgba(0,0,0,0.3); border: 1px solid #333; cursor: pointer;
+                    display: flex; align-items: center; justify-content: center; width: 56px; height: 56px; transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s; float: right;
                 }
-                body.dark-mode .chatbot-toggle-btn {
-                    background-color: #fff;
-                    color: #000;
-                    border-color: #fff;
-                }
-                .chatbot-toggle-btn.open {
-                    transform: rotate(90deg);
-                }
-                .chatbot-toggle-btn svg {
-                    width: 24px;
-                    height: 24px;
-                }
+                body.dark-mode .chatbot-toggle-btn { background-color: #fff; color: #000; border-color: #fff; }
+                .chatbot-toggle-btn.open { transform: rotate(90deg); }
+                .chatbot-toggle-btn svg { width: 24px; height: 24px; }
 
-                @keyframes avatar-breathe {
-                    0%, 100% { transform: scale(1); }
-                    50% { transform: scale(1.04); }
-                }
+                @keyframes avatar-breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.04); } }
+                @keyframes avatar-head-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-2px); } }
+                @keyframes avatar-arm-sway-left { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(-8deg); } }
+                @keyframes avatar-arm-sway-right { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(8deg); } }
 
-                @keyframes avatar-head-bob {
-                    0%, 100% { transform: translateY(0); }
-                    50% { transform: translateY(-2px); }
-                }
+                .avatar-breathing-layer { animation: avatar-breathe 2s ease-in-out infinite; transform-origin: bottom center; }
+                .avatar-head { animation: avatar-head-bob 2s ease-in-out infinite; transform-origin: 18px 11px; }
+                .avatar-arm-left { animation: avatar-arm-sway-left 2s ease-in-out infinite; transform-origin: 8.5px 22.5px; }
+                .avatar-arm-right { animation: avatar-arm-sway-right 2s ease-in-out infinite; transform-origin: 27.5px 22.5px; }
 
-                @keyframes avatar-arm-sway-left {
-                    0%, 100% { transform: rotate(0deg); }
-                    50% { transform: rotate(-8deg); }
-                }
-
-                @keyframes avatar-arm-sway-right {
-                    0%, 100% { transform: rotate(0deg); }
-                    50% { transform: rotate(8deg); }
-                }
-
-                .avatar-breathing-layer {
-                    animation: avatar-breathe 2s ease-in-out infinite;
-                    transform-origin: bottom center;
-                }
-                .avatar-head {
-                    animation: avatar-head-bob 2s ease-in-out infinite;
-                    transform-origin: 18px 11px;
-                }
-                .avatar-arm-left {
-                    animation: avatar-arm-sway-left 2s ease-in-out infinite;
-                    transform-origin: 8.5px 22.5px;
-                }
-                .avatar-arm-right {
-                    animation: avatar-arm-sway-right 2s ease-in-out infinite;
-                    transform-origin: 27.5px 22.5px;
-                }
-
-                .product-card.sold-out {
-                    opacity: 0.55;
-                }
+                .product-card.sold-out { opacity: 0.55; }
                 .sold-out-badge {
-                    position: absolute;
-                    top: 12px;
-                    left: 12px;
-                    background-color: #ff3b30;
-                    color: #fff;
-                    font-size: 10px;
-                    font-weight: 800;
-                    padding: 5px 10px;
-                    letter-spacing: 1.5px;
-                    text-transform: uppercase;
-                    z-index: 10;
-                    border-radius: 2px;
-                    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+                    position: absolute; top: 12px; left: 12px; background-color: #ff3b30; color: #fff; font-size: 10px;
+                    font-weight: 800; padding: 5px 10px; letter-spacing: 1.5px; text-transform: uppercase; z-index: 10; border-radius: 2px; box-shadow: 0 4px 10px rgba(0,0,0,0.15);
                 }
-                .size-select button.size-sold-out {
-                    opacity: 0.35;
-                    text-decoration: line-through;
-                    position: relative;
-                    cursor: not-allowed;
-                    background-color: rgba(0,0,0,0.05);
-                }
-                body.dark-mode .size-select button.size-sold-out {
-                    background-color: rgba(255,255,255,0.05);
-                }
+                .size-select button.size-sold-out { opacity: 0.35; text-decoration: line-through; position: relative; cursor: not-allowed; background-color: rgba(0,0,0,0.05); }
+                body.dark-mode .size-select button.size-sold-out { background-color: rgba(255,255,255,0.05); }
 
-                .marquee-wrapper {
-                    width: 100%;
-                    overflow: hidden;
-                    background-color: #000;
-                    color: #fff;
-                    padding: 10px 0;
-                    user-select: none;
-                    display: flex;
-                    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-                }
-                body.dark-mode .marquee-wrapper {
-                    background-color: #111;
-                    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-                }
-                .marquee-track {
-                    display: flex;
-                    width: max-content;
-                    animation: marquee-anim 25s linear infinite;
-                }
-                .marquee-track span {
-                    font-size: 11px;
-                    font-weight: 700;
-                    letter-spacing: 2.5px;
-                    text-transform: uppercase;
-                    white-space: nowrap;
-                    padding-right: 40px;
-                    flex-shrink: 0;
-                }
-                @keyframes marquee-anim {
-                    0% { transform: translateX(0); }
-                    100% { transform: translateX(-50%); }
-                }
+                .marquee-wrapper { width: 100%; overflow: hidden; background-color: #000; color: #fff; padding: 10px 0; user-select: none; display: flex; border-bottom: 1px solid rgba(255, 255, 255, 0.1); cursor: pointer; }
+                body.dark-mode .marquee-wrapper { background-color: #111; border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
+                .marquee-track { display: flex; width: max-content; animation: marquee-anim 25s linear infinite; }
+                .marquee-track span { font-size: 11px; font-weight: 700; letter-spacing: 2.5px; text-transform: uppercase; white-space: nowrap; padding-right: 40px; flex-shrink: 0; }
+                .marquee-wrapper:hover .marquee-track { animation-play-state: paused; }
+                @keyframes marquee-anim { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
 
-                .backdrop-blur-sm {
-                    backdrop-filter: blur(4px) !important;
-                    -webkit-backdrop-filter: blur(4px) !important;
-                }
+                .backdrop-blur-sm { backdrop-filter: blur(4px) !important; -webkit-backdrop-filter: blur(4px) !important; }
 
                 nav, html body nav {
-                    display: flex !important;
-                    flex-direction: row !important;
-                    justify-content: space-between !important;
-                    align-items: center !important;
-                    width: 100% !important;
-                    padding: 15px 20px !important;
-                    box-sizing: border-box !important;
-                    background-color: #fff !important;
-                    position: relative !important;
-                    z-index: 999999 !important;
+                    display: flex !important; flex-direction: row !important; justify-content: space-between !important; align-items: center !important;
+                    width: 100% !important; padding: 15px 20px !important; box-sizing: border-box !important; background-color: #fff !important; position: relative !important; z-index: 999999 !important;
                 }
-                body.dark-mode nav, html body.dark-mode nav {
-                    background-color: #111 !important;
-                }
-                nav h1 {
-                    margin: 0 !important;
-                    font-size: 24px !important;
-                }
+                body.dark-mode nav, html body.dark-mode nav { background-color: #111 !important; }
+                nav h1 { margin: 0 !important; font-size: 24px !important; }
 
                 .cart-panel { z-index: 1000001 !important; }
                 .cart-panel.closing { animation: cart-slide-out 0.3s ease forwards !important; }
                 .toast-container { z-index: 9999999 !important; }
 
-                .tracking-search-box {
-                    display: flex !important;
-                    flex-direction: row !important;
-                    align-items: center !important;
-                    gap: 10px !important;
-                    width: 100% !important;
-                    margin-bottom: 15px !important;
-                    box-sizing: border-box !important;
-                }
-                .tracking-search-box input {
-                    flex: 1 !important;
-                    width: 100% !important;
-                    min-width: 120px !important;
-                    padding: 12px !important;
-                    border: 1px solid #ccc !important;
-                    border-radius: 4px !important;
-                    color: #000 !important;
-                    background-color: #fff !important;
-                    user-select: text !important;
-                    -webkit-user-select: text !important;
-                    pointer-events: auto !important;
-                    box-sizing: border-box !important;
-                }
-                .tracking-search-box button {
-                    width: auto !important;
-                    padding: 12px 25px !important;
-                    background: #000 !important;
-                    color: #fff !important;
-                    border: none !important;
-                    border-radius: 4px !important;
-                    cursor: pointer !important;
-                    white-space: nowrap !important;
-                    flex-shrink: 0 !important;
-                    box-sizing: border-box !important;
-                }
-                body.dark-mode .tracking-search-box button {
-                    background: #fff !important;
-                    color: #000 !important;
-                }
+                .tracking-search-box { display: flex !important; flex-direction: row !important; align-items: center !important; gap: 10px !important; width: 100% !important; margin-bottom: 15px !important; box-sizing: border-box !important; }
+                .tracking-search-box input { flex: 1 !important; width: 100% !important; min-width: 120px !important; padding: 12px !important; border: 1px solid #ccc !important; border-radius: 4px !important; color: #000 !important; background-color: #fff !important; user-select: text !important; -webkit-user-select: text !important; pointer-events: auto !important; box-sizing: border-box !important; }
+                .tracking-search-box button { width: auto !important; padding: 12px 25px !important; background: #000 !important; color: #fff !important; border: none !important; border-radius: 4px !important; cursor: pointer !important; white-space: nowrap !important; flex-shrink: 0 !important; box-sizing: border-box !important; }
+                body.dark-mode .tracking-search-box button { background: #fff !important; color: #000 !important; }
 
-                .animated-truck-road {
-                    position: relative;
-                    width: 100%;
-                    height: 40px;
-                    background: rgba(128, 128, 128, 0.08);
-                    border-radius: 6px;
-                    margin-top: 15px;
-                    overflow: hidden;
-                }
-                .animated-truck-road::before {
-                    content: "";
-                    position: absolute;
-                    bottom: 8px;
-                    left: 0;
-                    width: 100%;
-                    height: 2px;
-                    background: repeating-linear-gradient(90deg, #ccc, #ccc 10px, transparent 10px, transparent 20px);
-                }
-                body.dark-mode .animated-truck-road::before {
-                    background: repeating-linear-gradient(90deg, #555, #555 10px, transparent 10px, transparent 20px);
-                }
-                .animated-truck {
-                    position: absolute;
-                    bottom: 10px;
-                    left: -50px;
-                    animation: truck-drive 10s linear infinite;
-                    display: flex;
-                    align-items: center;
-                }
-                .animated-truck.waiting {
-                    left: 20px !important; 
-                    animation: none !important;
-                }
-                .animated-truck svg {
-                    animation: truck-bounce 0.4s ease-in-out infinite alternate;
-                }
-                .animated-truck.waiting svg {
-                    animation: truck-idle 0.25s ease-in-out infinite alternate;
-                }
-                @keyframes truck-drive {
-                    0% { left: -50px; }
-                    100% { left: 105%; }
-                }
-                @keyframes truck-bounce {
-                    0% { transform: translateY(0) rotate(0deg); }
-                    100% { transform: translateY(-2px) rotate(1deg); }
-                }
-                @keyframes truck-idle {
-                    0% { transform: translateY(0); }
-                    100% { transform: translateY(-1.5px); }
-                }
+                .animated-truck-road { position: relative; width: 100%; height: 40px; background: rgba(128, 128, 128, 0.08); border-radius: 6px; margin-top: 15px; overflow: hidden; }
+                .animated-truck-road::before { content: ""; position: absolute; bottom: 8px; left: 0; width: 100%; height: 2px; background: repeating-linear-gradient(90deg, #ccc, #ccc 10px, transparent 10px, transparent 20px); }
+                body.dark-mode .animated-truck-road::before { background: repeating-linear-gradient(90deg, #555, #555 10px, transparent 10px, transparent 20px); }
+                .animated-truck { position: absolute; bottom: 10px; left: -50px; animation: truck-drive 10s linear infinite; display: flex; align-items: center; }
+                .animated-truck.waiting { left: 20px !important; animation: none !important; }
+                .animated-truck svg { animation: truck-bounce 0.4s ease-in-out infinite alternate; }
+                .animated-truck.waiting svg { animation: truck-idle 0.25s ease-in-out infinite alternate; }
+                @keyframes truck-drive { 0% { left: -50px; } 100% { left: 105%; } }
+                @keyframes truck-bounce { 0% { transform: translateY(0) rotate(0deg); } 100% { transform: translateY(-2px) rotate(1deg); } }
+                @keyframes truck-idle { 0% { transform: translateY(0); } 100% { transform: translateY(-1.5px); } }
 
-                nav .nav-controls, html body nav .nav-controls { 
-                    display: flex !important; 
-                    align-items: center !important; 
-                    gap: 15px !important;
-                    margin-left: auto !important;
-                    position: relative !important;
-                    inset: auto !important;
-                }
-                
-                .hamburger, nav .hamburger, html body nav .hamburger {
-                    display: none !important;
-                    cursor: pointer !important;
-                    align-items: center !important;
-                    justify-content: center !important;
-                    position: relative !important;
-                    top: auto !important;
-                    left: auto !important;
-                    right: auto !important;
-                    bottom: auto !important;
-                    margin: 0 !important;
-                    transform: none !important;
-                    z-index: 5 !important;
-                }
+                nav .nav-controls, html body nav .nav-controls { display: flex !important; align-items: center !important; gap: 15px !important; margin-left: auto !important; position: relative !important; inset: auto !important; }
+                .hamburger, nav .hamburger, html body nav .hamburger { display: none !important; cursor: pointer !important; align-items: center !important; justify-content: center !important; position: relative !important; top: auto !important; left: auto !important; right: auto !important; bottom: auto !important; margin: 0 !important; transform: none !important; z-index: 5 !important; }
 
-                .secondary-checkout-btn {
-                    margin-top: 10px !important;
-                    background-color: transparent !important;
-                    color: inherit !important;
-                    border: 1px solid rgba(128, 128, 128, 0.4) !important;
-                }
-                .secondary-checkout-btn:hover {
-                    background-color: rgba(128, 128, 128, 0.1) !important;
-                }
+                .secondary-checkout-btn { margin-top: 10px !important; background-color: transparent !important; color: inherit !important; border: 1px solid rgba(128, 128, 128, 0.4) !important; }
+                .secondary-checkout-btn:hover { background-color: rgba(128, 128, 128, 0.1) !important; }
 
-                .find-my-size-btn, .size-disclaimer, .size-calc-modal-title, .size-calc-result-box {
-                    font-family: 'Poppins', sans-serif !important;
-                }
+                .find-my-size-btn, .size-disclaimer, .size-calc-modal-title, .size-calc-result-box { font-family: 'Poppins', sans-serif !important; }
 
                 @media (max-width: 768px) {
-                    .marquee-track span {
-                        font-size: 10px;
-                        letter-spacing: 2px;
-                        padding-right: 30px;
-                    }
-
-                    nav .hamburger, html body nav .hamburger { 
-                        display: flex !important; 
-                    }
-                    nav .theme-toggle-btn, html body nav .theme-toggle-btn { 
-                        display: none !important; 
-                    }
-                    
-                    .mobile-theme-toggle { 
-                        display: block !important; 
-                        margin-top: 10px; 
-                        padding-top: 15px; 
-                        border-top: 1px solid rgba(128, 128, 128, 0.2); 
-                        color: inherit; 
-                        font-weight: bold; 
-                    }
+                    .marquee-track span { font-size: 10px; letter-spacing: 2px; padding-right: 30px; }
+                    nav .hamburger, html body nav .hamburger { display: flex !important; }
+                    nav .theme-toggle-btn, html body nav .theme-toggle-btn { display: none !important; }
+                    .mobile-theme-toggle { display: block !important; margin-top: 10px; padding-top: 15px; border-top: 1px solid rgba(128, 128, 128, 0.2); color: inherit; font-weight: bold; }
                     
                     nav ul.nav-menu, html body nav .nav-menu, html body nav ul {
-                        display: flex !important;
-                        flex-direction: column !important;
-                        justify-content: flex-start !important;
-                        position: fixed !important;
-                        top: 0 !important;
-                        right: 0 !important;
-                        width: 280px !important;
-                        height: 100vh !important;
-                        background-color: #fff !important;
-                        margin: 0 !important;
-                        padding: 80px 0 0 0 !important;
-                        box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1) !important;
-                        z-index: 1000000 !important;
-                        box-sizing: border-box !important;
-                        
-                        transform: translateX(100%) !important;
-                        opacity: 0 !important;
-                        visibility: hidden !important;
-                        transition: transform 0.35s cubic-bezier(0.32, 0.94, 0.6, 1), opacity 0.3s ease, visibility 0.35s !important;
+                        display: flex !important; flex-direction: column !important; justify-content: flex-start !important; position: fixed !important; top: 0 !important; right: 0 !important;
+                        width: 280px !important; height: 100vh !important; background-color: #fff !important; margin: 0 !important; padding: 80px 0 0 0 !important;
+                        box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1) !important; z-index: 1000000 !important; box-sizing: border-box !important;
+                        transform: translateX(100%) !important; opacity: 0 !important; visibility: hidden !important; transition: transform 0.35s cubic-bezier(0.32, 0.94, 0.6, 1), opacity 0.3s ease, visibility 0.35s !important;
                     }
-                    
-                    body.dark-mode nav ul.nav-menu, body.dark-mode html body nav .nav-menu { 
-                        background-color: #1a1a1a !important; 
-                        color: #fff !important; 
-                    }
-                    
-                    nav ul.nav-menu.open, html body nav .nav-menu.open { 
-                        transform: translateX(0) !important; 
-                        opacity: 1 !important;
-                        visibility: visible !important;
-                    }
-                    nav ul.nav-menu.closing, html body nav .nav-menu.closing { 
-                        transform: translateX(100%) !important; 
-                        opacity: 0 !important;
-                        transition: transform 0.35s cubic-bezier(0.4, 0, 1, 1), opacity 0.3s ease !important;
-                    }
+                    body.dark-mode nav ul.nav-menu, body.dark-mode html body nav .nav-menu { background-color: #1a1a1a !important; color: #fff !important; }
+                    nav ul.nav-menu.open, html body nav .nav-menu.open { transform: translateX(0) !important; opacity: 1 !important; visibility: visible !important; }
+                    nav ul.nav-menu.closing, html body nav .nav-menu.closing { transform: translateX(100%) !important; opacity: 0 !important; transition: transform 0.35s cubic-bezier(0.4, 0, 1, 1), opacity 0.3s ease !important; }
 
                     nav ul.nav-menu li, html body nav .nav-menu li {
-                        width: 100% !important;
-                        padding: 18px 25px !important;
-                        text-align: left !important;
-                        box-sizing: border-box !important;
-                        border-bottom: 1px solid rgba(128, 128, 128, 0.1) !important;
-                        list-style: none !important;
-                        cursor: pointer !important;
+                        width: 100% !important; padding: 18px 25px !important; text-align: left !important; box-sizing: border-box !important;
+                        border-bottom: 1px solid rgba(128, 128, 128, 0.1) !important; list-style: none !important; cursor: pointer !important;
                     }
-                    nav ul.nav-menu li:hover, html body nav .nav-menu li:hover {
-                        background-color: rgba(128, 128, 128, 0.05) !important;
-                    }
+                    nav ul.nav-menu li:hover, html body nav .nav-menu li:hover { background-color: rgba(128, 128, 128, 0.05) !important; }
                     
                     .menu-backdrop { 
-                        position: fixed !important;
-                        top: 0 !important;
-                        left: 0 !important;
-                        width: 100vw !important;
-                        height: 100vh !important;
-                        background-color: rgba(0, 0, 0, 0.25) !important;
-                        backdrop-filter: blur(8px) !important;
-                        -webkit-backdrop-filter: blur(8px) !important;
-                        z-index: 99998 !important;
+                        position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important;
+                        background-color: rgba(0, 0, 0, 0.25) !important; backdrop-filter: blur(8px) !important; -webkit-backdrop-filter: blur(8px) !important; z-index: 99998 !important;
                     }
                 }
 
                 @media (min-width: 769px) { 
-                    .mobile-theme-toggle, 
-                    nav ul.nav-menu li.mobile-theme-toggle, 
-                    html body nav .nav-menu li.mobile-theme-toggle { 
-                        display: none !important; 
-                    }
-                    
+                    .mobile-theme-toggle, nav ul.nav-menu li.mobile-theme-toggle, html body nav .nav-menu li.mobile-theme-toggle { display: none !important; }
                     nav ul.nav-menu, html body nav .nav-menu {
-                        display: flex !important;
-                        flex-direction: row !important;
-                        gap: 35px !important;
-                        list-style: none !important;
-                        margin: 0 !important;
-                        padding: 0 !important;
-                        position: absolute !important;
-                        left: 50% !important;
-                        top: 50% !important;
-                        transform: translate(-50%, -50%) !important;
-                        opacity: 1 !important;
-                        visibility: visible !important;
-                        width: auto !important;
-                        height: auto !important;
-                        background: transparent !important;
-                        box-shadow: none !important;
+                        display: flex !important; flex-direction: row !important; gap: 35px !important; list-style: none !important; margin: 0 !important; padding: 0 !important;
+                        position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; opacity: 1 !important; visibility: visible !important;
+                        width: auto !important; height: auto !important; background: transparent !important; box-shadow: none !important;
                     }
-                    nav ul.nav-menu li, html body nav .nav-menu li {
-                        cursor: pointer !important;
-                        width: auto !important;
-                        padding: 0 !important;
-                        border: none !important;
-                        letter-spacing: 0.5px !important;
-                        display: inline-block !important;
-                        transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1) !important;
-                    }
-                    nav ul.nav-menu li:hover, html body nav .nav-menu li:hover {
-                        opacity: 0.55 !important; 
-                        transform: translateY(-1px) !important; 
-                    }
+                    nav ul.nav-menu li, html body nav .nav-menu li { cursor: pointer !important; width: auto !important; padding: 0 !important; border: none !important; letter-spacing: 0.5px !important; display: inline-block !important; transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1) !important; }
+                    nav ul.nav-menu li:hover, html body nav .nav-menu li:hover { opacity: 0.55 !important; transform: translateY(-1px) !important; }
                 }
             `}</style>
 
@@ -1915,10 +897,10 @@ function App() {
                 </div>
             </nav>
 
-            <div className="marquee-wrapper">
+            <div className="marquee-wrapper" onClick={() => openLegalModal('manifesto')}>
                 <div className="marquee-track">
-                    <span>LIMITED DROP • TIMELESS PIECES • %100 PREMIUM COTTON • SHIPPED IN 24H • DISCOVER THE ART OF STREETWEAR • ALICCI • LIMITED DROP • TIMELESS PIECES • %100 PREMIUM COTTON • SHIPPED IN 24H • DISCOVER THE ART OF STREETWEAR • ALICCI •</span>
-                    <span>LIMITED DROP • TIMELESS PIECES • %100 PREMIUM COTTON • SHIPPED IN 24H • DISCOVER THE ART OF STREETWEAR • ALICCI • LIMITED DROP • TIMELESS PIECES • %100 PREMIUM COTTON • SHIPPED IN 24H • DISCOVER THE ART OF STREETWEAR • ALICCI •</span>
+                    <span>LIMITED DROP • TIMELESS PIECES • %100 PREMIUM COTTON • SHIPPED IN 24H • DISCOVER THE ART OF STREETWEAR • ALICCI (MARKA MANİFESTOSUNU OKUMAK İÇİN TIKLAYIN) • </span>
+                    <span>LIMITED DROP • TIMELESS PIECES • %100 PREMIUM COTTON • SHIPPED IN 24H • DISCOVER THE ART OF STREETWEAR • ALICCI (MARKA MANİFESTOSUNU OKUMAK İÇİN TIKLAYIN) • </span>
                 </div>
             </div>
 
@@ -1926,9 +908,7 @@ function App() {
                 <div 
                     className="modal-backdrop menu-backdrop" 
                     onClick={closeMobileMenu} 
-                    style={{ 
-                        animation: isMobileMenuClosing ? "fade-out 0.3s ease forwards" : "fade-in 0.3s ease forwards"
-                    }} 
+                    style={{ animation: isMobileMenuClosing ? "fade-out 0.3s ease forwards" : "fade-in 0.3s ease forwards" }} 
                 />
             )}
 
@@ -1936,10 +916,7 @@ function App() {
                 <div 
                     className="modal-backdrop cart-backdrop" 
                     onClick={closeCart} 
-                    style={{ 
-                        animation: isCartClosing ? "fade-out 0.3s ease forwards" : "fade-in 0.3s ease forwards",
-                        zIndex: 100000 
-                    }} 
+                    style={{ animation: isCartClosing ? "fade-out 0.3s ease forwards" : "fade-in 0.3s ease forwards", zIndex: 100000 }} 
                 />
             )}
 
@@ -1953,13 +930,9 @@ function App() {
                             <li key={`${item.id}-${item.size}-${index}`} className={removingId === `${item.id}-${item.size}` ? 'removing' : ''}>
                                 <div className="item-details">
                                     <span>{item.name} ({item.size})</span>
-                                    <span className="item-quantity">
-                                        Adet: {item.quantity} x {item.price} TL
-                                    </span>
+                                    <span className="item-quantity">Adet: {item.quantity} x {item.price} TL</span>
                                 </div>
-                                <button className="remove-item-button" onClick={() => removeFromCart(item)}>
-                                    &times;
-                                </button>
+                                <button className="remove-item-button" onClick={() => removeFromCart(item)}>&times;</button>
                             </li>
                         ))
                     )}
@@ -1967,12 +940,7 @@ function App() {
 
                 {cartItems.length > 0 && (
                     <div className="coupon-container">
-                        <input 
-                            type="text" 
-                            placeholder="Kupon Kodu" 
-                            value={couponInput}
-                            onChange={(e) => setCouponInput(e.target.value)}
-                        />
+                        <input type="text" placeholder="Kupon Kodu" value={couponInput} onChange={(e) => setCouponInput(e.target.value)} />
                         <button className="coupon-btn" onClick={handleApplyCoupon}>Uygula</button>
                     </div>
                 )}
@@ -1987,14 +955,11 @@ function App() {
                     <>
                         <button onClick={handleCheckout}>Güvenli Kart İle Öde (Iyzico)</button>
                         <button className="secondary-checkout-btn" onClick={() => {
-                            closeCart();
-                            setShowOrderOptionsModal(true);
+                            closeCart(); setShowOrderOptionsModal(true);
                         }}>WhatsApp / DM ile Sipariş Ver</button>
                     </>
                 )}
-                <button className="close-modal close-modal-small" onClick={closeCart}>
-                    &times;
-                </button>
+                <button className="close-modal close-modal-small" onClick={closeCart}>&times;</button>
             </div>
 
             <main>
@@ -2019,12 +984,7 @@ function App() {
                             ))
                         ) : (
                             products.map((product) => (
-                                <ProductCard
-                                    key={product.id}
-                                    product={product}
-                                    openProductModal={openProductModal}
-                                    closeCart={closeCart}
-                                />
+                                <ProductCard key={product.id} product={product} openProductModal={openProductModal} closeCart={closeCart} />
                             ))
                         )}
                     </div>
@@ -2051,20 +1011,14 @@ function App() {
                 </section>
             </main>
 
-            {/* ==========================================
-                GÜNCELLENMİŞ AKTİF MÜŞTERİ YASAL FOOTER
-               ========================================== */}
             <footer className="site-footer">
                 <div className="footer-container">
-                    
-                    {/* Kolon 1: Marka & Açıklama */}
                     <div className="footer-column">
                         <h4>ALICCI</h4>
                         <p>Zamansız sokak modası ve lüks giyim anlayışını premium %100 pamuklu kumaşlarla birleştiriyoruz.</p>
                         <p style={{ marginTop: '15px', opacity: 0.7 }}>📍 Agahefendi Mah. 2504sk. Sorgun / Yozgat</p>
                     </div>
 
-                    {/* Kolon 2: Müşteri Hizmetleri & Kısayollar */}
                     <div className="footer-column">
                         <h4>Müşteri Hizmetleri</h4>
                         <ul>
@@ -2075,17 +1029,16 @@ function App() {
                         </ul>
                     </div>
 
-                    {/* Kolon 3: Yasal Sözleşmeler & Politikalar */}
                     <div className="footer-column">
                         <h4>Yasal Sayfalar</h4>
                         <ul>
                             <li><button onClick={() => openLegalModal('terms')}>Mesafeli Satış Sözleşmesi</button></li>
                             <li><button onClick={() => openLegalModal('privacy')}>Gizlilik ve Çerez Politikası</button></li>
                             <li><button onClick={() => openLegalModal('returns')}>İptal ve İade Sözleşmesi</button></li>
+                            <li><button onClick={() => openLegalModal('manifesto')}>Marka Manifestosu</button></li>
                         </ul>
                     </div>
 
-                    {/* Kolon 4: İletişim Kanalları */}
                     <div className="footer-column">
                         <h4>Bize Ulaşın</h4>
                         <p><strong>Telefon:</strong> <a href={`tel:${WHATSAPP_NUMBER}`} style={{ color: '#aaa', textDecoration: 'none' }}>{STORE_PHONE}</a></p>
@@ -2093,7 +1046,6 @@ function App() {
                         <p><strong>Sosyal:</strong> <a href={`https://www.instagram.com/${INSTAGRAM_USERNAME}`} target="_blank" rel="noopener noreferrer" style={{ color: '#fff', textDecoration: 'underline' }}>@{INSTAGRAM_USERNAME}</a></p>
                         <p style={{ fontSize: '11px', marginTop: '10px', color: '#777' }}>7/24 aktif canlı destek.</p>
                     </div>
-
                 </div>
 
                 <div className="footer-bottom">
@@ -2102,18 +1054,13 @@ function App() {
                 </div>
             </footer>
 
-            {/* ==========================================
-                YASAL POLİTİKALAR & İLETİŞİM MODALI
-               ========================================== */}
+            {/* YASAL POLİTİKALAR & İLETİŞİM MODALI */}
             {(activeLegalModal || isLegalClosing) && (
                 <div 
                     className="modal-backdrop" 
                     onClick={closeLegalModal}
                     style={{ 
-                        zIndex: 1000008, 
-                        display: 'flex', 
-                        alignItems: 'center', 
-                        justifyContent: 'center',
+                        zIndex: 1000008, display: 'flex', alignItems: 'center', justifyContent: 'center',
                         animation: isLegalClosing ? "fade-out 0.3s ease forwards" : "fade-in 0.3s ease forwards"
                     }}
                 >
@@ -2121,125 +1068,82 @@ function App() {
                         className="modal-content-base legal-modal" 
                         onClick={(e) => e.stopPropagation()} 
                         style={{ 
-                            maxWidth: '650px', 
-                            width: '90%',
-                            padding: '30px', 
-                            borderRadius: '12px',
-                            backgroundColor: isDarkMode ? '#1a1a1a' : '#ffffff',
-                            color: isDarkMode ? '#ffffff' : '#111111',
-                            boxShadow: '0 25px 60px rgba(0,0,0,0.3)',
-                            border: isDarkMode ? '1px solid #333' : '1px solid #eee',
+                            maxWidth: '650px', width: '90%', padding: '30px', borderRadius: '12px',
+                            backgroundColor: isDarkMode ? '#1a1a1a' : '#ffffff', color: isDarkMode ? '#ffffff' : '#111111',
+                            boxShadow: '0 25px 60px rgba(0,0,0,0.3)', border: isDarkMode ? '1px solid #333' : '1px solid #eee',
                             animation: isLegalClosing ? "slide-down 0.3s ease forwards" : "slide-up 0.3s ease forwards"
                         }}
                     >
-                        <button 
-                            className="close-modal close-modal-small" 
-                            onClick={closeLegalModal}
-                            style={{ color: isDarkMode ? '#fff' : '#000' }}
-                        >
-                            &times;
-                        </button>
+                        <button className="close-modal close-modal-small" onClick={closeLegalModal} style={{ color: isDarkMode ? '#fff' : '#000' }}>&times;</button>
 
-                        {/* 1. MESAFELİ SATIŞ SÖZLEŞMESİ */}
                         {activeLegalModal === 'terms' && (
                             <div>
-                                <h2 style={{ fontSize: '18px', fontWeight: '800', marginBottom: '15px', textTransform: 'uppercase' }}>
-                                    Mesafeli Satış Sözleşmesi
-                                </h2>
+                                <h2 style={{ fontSize: '18px', fontWeight: '800', marginBottom: '15px', textTransform: 'uppercase' }}>Mesafeli Satış Sözleşmesi</h2>
                                 <div className="legal-modal-body">
                                     <h3>1. TARAFLAR</h3>
                                     <p>İşbu Sözleşme, <strong>ALICCI Tekstil & Moda</strong> (Satıcı) ile alicci.com adresi üzerinden sipariş oluşturan Müşteri (Alıcı) arasında kurulmuştur.</p>
-
                                     <h3>2. SATICI BİLGİLERİ</h3>
                                     <p><strong>Unvan:</strong> ALICCI Brand</p>
                                     <p><strong>Adres:</strong> {STORE_ADDRESS}</p>
                                     <p><strong>E-Posta:</strong> {STORE_EMAIL}</p>
                                     <p><strong>Telefon:</strong> {STORE_PHONE}</p>
-
                                     <h3>3. KONU</h3>
                                     <p>İşbu sözleşmenin konusu, ALICI'nın SATICI'ya ait web sitesinden elektronik ortamda siparişini yaptığı ürünün satışı ve teslimi ile ilgili 6502 sayılı Tüketicinin Korunması Hakkında Kanun hükümleri gereğince tarafların hak ve yükümlülüklerinin saptanmasıdır.</p>
-
                                     <h3>4. TESLİMAT VE SEVKİYAT</h3>
                                     <p>Sipariş edilen ürünler, onay aşamasından sonra en geç 24-48 saat içerisinde anlaşmalı kargo şirketine teslim edilir. Kargo takip bilgileri kullanıcıya SMS veya E-posta yoluyla iletilir.</p>
-
                                     <h3>5. CAYMA HAKKI</h3>
                                     <p>ALICI, sözleşme konusu ürünün kendisine veya gösterdiği adresteki kişi/kuruluşa tesliminden itibaren <strong>14 (ondört) gün</strong> içinde hiçbir hukuki ve cezai sorumluluk üstlenmeksizin cayma hakkını kullanabilir.</p>
                                 </div>
                             </div>
                         )}
 
-                        {/* 2. GİZLİLİK VE ÇEREZ POLİTİKASI */}
                         {activeLegalModal === 'privacy' && (
                             <div>
-                                <h2 style={{ fontSize: '18px', fontWeight: '800', marginBottom: '15px', textTransform: 'uppercase' }}>
-                                    Gizlilik ve Çerez Politikası
-                                </h2>
+                                <h2 style={{ fontSize: '18px', fontWeight: '800', marginBottom: '15px', textTransform: 'uppercase' }}>Gizlilik ve Çerez Politikası</h2>
                                 <div className="legal-modal-body">
                                     <h3>1. KİŞİSEL VERİLERİN KORUNMASI</h3>
                                     <p>ALICCI olarak kişisel verilerinizin güvenliğine yüksek önem veriyoruz. 6698 sayılı KVKK kapsamında, alışveriş yaparken paylaştığınız ad, soyad, e-posta, teslimat adresi ve telefon numaranız yalnızca siparişinizin tamamlanması amacıyla işlenir.</p>
-
                                     <h3>2. ÖDEME GÜVENLİĞİ (256-BIT SSL)</h3>
                                     <p>Kredi kartı bilgileriniz hiçbir şekilde ALICCI sunucularında saklanmaz. Ödeme işlemleri doğrudan 256-bit SSL sertifikalı Iyzico altyapısı üzerinden bankanızla sizin aranızda gerçekleşir.</p>
-
                                     <h3>3. ÇEREZ (COOKIE) KULLANIMI</h3>
                                     <p>Web sitemizde alışveriş deneyiminizi iyileştirmek, sepetinizi hatırlamak ve oturum tercihlerinizi kaydetmek amacıyla çerezler kullanılmaktadır. Dilediğiniz zaman tarayıcı ayarlarınızdan çerezleri engelleyebilirsiniz.</p>
                                 </div>
                             </div>
                         )}
 
-                        {/* 3. İPTAL VE İADE KOŞULLARI */}
                         {activeLegalModal === 'returns' && (
                             <div>
-                                <h2 style={{ fontSize: '18px', fontWeight: '800', marginBottom: '15px', textTransform: 'uppercase' }}>
-                                    İptal ve İade Koşulları
-                                </h2>
+                                <h2 style={{ fontSize: '18px', fontWeight: '800', marginBottom: '15px', textTransform: 'uppercase' }}>İptal ve İade Koşulları</h2>
                                 <div className="legal-modal-body">
                                     <h3>1. İADE ŞARTLARI</h3>
                                     <p>ALICCI'dan satın aldığınız ürünleri, teslimat tarihinden itibaren <strong>14 gün</strong> içerisinde sebep göstermeksizin iade edebilir veya beden değişimi yapabilirsiniz.</p>
-
                                     <h3>2. İADE KOŞULLARI</h3>
                                     <p>• İade edilecek ürünlerin kullanılmamış, yıkanmamış, etiketi sökülmemiş ve tekrar satılabilir özelliğini kaybetmemiş olması gerekmektedir.</p>
                                     <p>• Ürün ile birlikte gönderilen orijinal ambalaj ve faturanın da iade paketinde bulunması zorunludur.</p>
-
                                     <h3>3. İADE SÜRECİ</h3>
                                     <p>İade talebinizi web sitemizdeki İletişim sayfasından veya WhatsApp Destek hattımızdan bize bildirebilirsiniz. Tarafınıza iletilecek iade kargo kodu ile ürünü ücretsiz geri gönderebilirsiniz.</p>
-
                                     <h3>4. ÜCRET İADESİ</h3>
                                     <p>İade edilen ürün depomuza ulaşıp kontrol edildikten sonra 3 iş günü içerisinde ücret iadesi bankanıza aktarılır. Banka prosedürlerine bağlı olarak hesabınıza yansıması 2-5 gün sürebilir.</p>
                                 </div>
                             </div>
                         )}
 
-                        {/* 4. İLETİŞİM VE DETAYLAR */}
                         {activeLegalModal === 'contact' && (
                             <div>
-                                <h2 style={{ fontSize: '18px', fontWeight: '800', marginBottom: '15px', textTransform: 'uppercase' }}>
-                                    Kurumsal İletişim Bilgileri
-                                </h2>
+                                <h2 style={{ fontSize: '18px', fontWeight: '800', marginBottom: '15px', textTransform: 'uppercase' }}>Kurumsal İletişim Bilgileri</h2>
                                 <div className="legal-modal-body">
                                     <p>Sorularınız, iş birlikleri veya sipariş desteği için aşağıdaki iletişim kanallarından bize ulaşabilirsiniz:</p>
-                                    
                                     <h3>AÇIK ADRES</h3>
                                     <p>📍 {STORE_ADDRESS}</p>
-
                                     <h3>E-POSTA ADRESİ</h3>
                                     <p>✉️ {STORE_EMAIL}</p>
-
                                     <h3>MÜŞTERİ HİZMETLERİ & WHATSAPP</h3>
                                     <p>📞 {STORE_PHONE}</p>
-
                                     <h3>ÇALIŞMA SAATLERİ</h3>
                                     <p>⏰ Pazartesi - Cuma: 09:00 - 18:00</p>
                                     <p>⏰ Cumartesi: 10:00 - 15:00</p>
-
                                     <div style={{ marginTop: '20px' }}>
-                                        <a 
-                                            href={`https://wa.me/${WHATSAPP_NUMBER}`} 
-                                            target="_blank" 
-                                            rel="noopener noreferrer" 
-                                            className="themed-social-button whatsapp-contact"
-                                            style={{ textDecoration: 'none', display: 'inline-block', textAlign: 'center' }}
-                                        >
+                                        <a href={`https://wa.me/${WHATSAPP_NUMBER}`} target="_blank" rel="noopener noreferrer" className="themed-social-button whatsapp-contact" style={{ textDecoration: 'none', display: 'inline-block', textAlign: 'center' }}>
                                             WhatsApp Üzerinden Canlı Destek Al
                                         </a>
                                     </div>
@@ -2247,17 +1151,35 @@ function App() {
                             </div>
                         )}
 
+                        {activeLegalModal === 'manifesto' && (
+                            <div>
+                                <h2 style={{ fontSize: '18px', fontWeight: '800', marginBottom: '15px', textTransform: 'uppercase' }}>Marka Manifestosu & Tasarım Dosyası</h2>
+                                <div className="legal-modal-body">
+                                    <h3>BİZ KİMİZ?</h3>
+                                    <p>ALICCI, sıradanlığa meydan okuyan, zamansız parçalar yaratan bir tasarım stüdyosudur. Sokak kültürünün özgürlüğünü, lüks işçiliğin zarafetiyle birleştiriyoruz.</p>
+
+                                    <h3>VİZYONUMUZ</h3>
+                                    <p>Geçici trendlerin ötesinde, yıllarca dolabınızın baş köşesinde kalacak kalitede ve estetikte "Timeless Pieces" (Zamansız Parçalar) üretmek.</p>
+
+                                    <h3>TASARIM DOSYASI & ÜRETİM</h3>
+                                    <p>Her bir koleksiyon, özenle seçilmiş premium pamuklu kumaşlar, milimetrik hesaplanmış oversize kalıplar ve minimalist bir estetik anlayışıyla tasarlanır. Detaylardaki hassasiyet, dikiş kalitesi ve modern silüetler, markamızın değişmez DNA'sını oluşturur. Sadece kıyafet değil, bir duruş tasarlıyoruz.</p>
+
+                                    <h3>SÜRDÜRÜLEBİLİRLİK</h3>
+                                    <p>Hızlı modanın tüketim çılgınlığına karşı, uzun ömürlü ve çevreye duyarlı üretim tekniklerini benimsiyoruz.</p>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
             )}
 
+            {/* PRODUCT MODAL */}
             {(selectedProduct || isProductClosing) && (
                 <div className="modal-backdrop" onClick={closeProductModal} style={{ animation: isProductClosing ? "fade-out 0.3s ease forwards" : "fade-in 0.3s ease forwards" }}>
                     <div className="modal-content-base product-modal" onClick={(e) => e.stopPropagation()} style={{ animation: isProductClosing ? "slide-down 0.3s ease forwards" : "slide-up 0.3s ease forwards" }}>
                         <button className="close-modal close-modal-small" onClick={closeProductModal}>&times;</button>
                         {selectedProduct && (
                             <div className="product-modal-content-wrapper">
-                                {/* LÜKS CAM EFEKTLİ (GLASSMORPHISM) & ANIMASYONLU GÖRSEL GALERİSİ */}
                                 <div className="product-modal-image-wrapper">
                                     <img 
                                         key={currentModalImageIndex}
@@ -2267,44 +1189,17 @@ function App() {
                                         style={{ maxHeight: '60vh', width: 'auto', maxWidth: '100%', objectFit: 'contain' }} 
                                         loading="lazy"
                                     />
-                                    
                                     {selectedProduct.image && selectedProduct.image.length > 1 && (
                                         <>
-                                            {/* Sol Buton */}
-                                            <button 
-                                                type="button"
-                                                className="modal-nav-glass-btn left" 
-                                                onClick={prevModalImage}
-                                                aria-label="Önceki Görsel"
-                                            >
-                                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                    <polyline points="15 18 9 12 15 6"></polyline>
-                                                </svg>
+                                            <button type="button" className="modal-nav-glass-btn left" onClick={prevModalImage} aria-label="Önceki Görsel">
+                                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
                                             </button>
-
-                                            {/* Sağ Buton */}
-                                            <button 
-                                                type="button"
-                                                className="modal-nav-glass-btn right" 
-                                                onClick={nextModalImage}
-                                                aria-label="Sonraki Görsel"
-                                            >
-                                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                    <polyline points="9 18 15 12 9 6"></polyline>
-                                                </svg>
+                                            <button type="button" className="modal-nav-glass-btn right" onClick={nextModalImage} aria-label="Sonraki Görsel">
+                                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
                                             </button>
-
-                                            {/* Alt İndikatör Noktaları */}
                                             <div className="modal-image-dots">
                                                 {selectedProduct.image.map((_, idx) => (
-                                                    <span
-                                                        key={idx}
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            setCurrentModalImageIndex(idx);
-                                                        }}
-                                                        className={`modal-dot ${idx === currentModalImageIndex ? "active" : ""}`}
-                                                    />
+                                                    <span key={idx} onClick={(e) => { e.stopPropagation(); setCurrentModalImageIndex(idx); }} className={`modal-dot ${idx === currentModalImageIndex ? "active" : ""}`} />
                                                 ))}
                                             </div>
                                         </>
@@ -2337,25 +1232,12 @@ function App() {
                                     <div style={{ marginBottom: '20px', textAlign: 'left' }}>
                                         <button 
                                             type="button"
-                                            onClick={() => {
-                                                setIsChatbotOpen(false);
-                                                setShowSizeCalcModal(true);
-                                                setCalcResult(null);
-                                            }}
+                                            onClick={() => { setIsChatbotOpen(false); setShowSizeCalcModal(true); setCalcResult(null); }}
                                             className="find-my-size-btn"
                                             style={{
-                                                background: 'none',
-                                                border: 'none',
-                                                color: isDarkMode ? '#bbb' : '#333',
-                                                cursor: 'pointer',
-                                                fontSize: '12.5px',
-                                                fontWeight: '600',
-                                                textDecoration: 'underline',
-                                                padding: 0,
-                                                letterSpacing: '0.5px',
-                                                display: 'inline-flex',
-                                                alignItems: 'center',
-                                                gap: '4px'
+                                                background: 'none', border: 'none', color: isDarkMode ? '#bbb' : '#333',
+                                                cursor: 'pointer', fontSize: '12.5px', fontWeight: '600', textDecoration: 'underline',
+                                                padding: 0, letterSpacing: '0.5px', display: 'inline-flex', alignItems: 'center', gap: '4px'
                                             }}
                                         >
                                             📐 Bedenimi Bul
@@ -2368,26 +1250,13 @@ function App() {
                                         disabled={!selectedSize || selectedProduct.stock === 0 || selectedProduct.sold_out_sizes?.includes(selectedSize)}
                                         style={{ marginBottom: '20px' }}
                                     >
-                                        {selectedProduct.stock === 0 
-                                            ? "TÜKENDİ" 
-                                            : selectedSize && selectedProduct.sold_out_sizes?.includes(selectedSize)
-                                                ? "Seçilen Beden Tükendi"
-                                                : "Sepete Ekle"
-                                        }
+                                        {selectedProduct.stock === 0 ? "TÜKENDİ" : selectedSize && selectedProduct.sold_out_sizes?.includes(selectedSize) ? "Seçilen Beden Tükendi" : "Sepete Ekle"}
                                     </button>
 
-                                    <div 
-                                        className="size-disclaimer" 
-                                        style={{ 
-                                            marginTop: 'auto', 
-                                            padding: '10px 0', 
-                                            borderTop: isDarkMode ? '1px solid #2d2d2d' : '1px solid #f0f0f0',
-                                            fontSize: '11px', 
-                                            lineHeight: '1.4',
-                                            opacity: 0.6,
-                                            textAlign: 'left'
-                                        }}
-                                    >
+                                    <div className="size-disclaimer" style={{ 
+                                        marginTop: 'auto', padding: '10px 0', borderTop: isDarkMode ? '1px solid #2d2d2d' : '1px solid #f0f0f0',
+                                        fontSize: '11px', lineHeight: '1.4', opacity: 0.6, textAlign: 'left'
+                                    }}>
                                         * Kalıplar kumaş esnekliğine ve kesim tarzına bağlı olarak değişiklik gösterebilir. Ölçümler el yapımı olduğu için küçük sapmalar yaşanabilir. Tarzınıza en uygun bedeni seçtiğinizden emin olun.
                                     </div>
                                 </div>
@@ -2397,44 +1266,24 @@ function App() {
                 </div>
             )}
 
+            {/* SIZE CALCULATOR MODAL */}
             {(showSizeCalcModal || isSizeCalcClosing) && (
-                <div 
-                    className="modal-backdrop" 
-                    onClick={closeSizeCalcModal}
-                    style={{ 
-                        zIndex: 1000005, 
-                        display: 'flex', 
-                        alignItems: 'center', 
-                        justifyContent: 'center',
-                        animation: isSizeCalcClosing ? "fade-out 0.3s ease forwards" : "fade-in 0.3s ease forwards"
-                    }}
-                >
+                <div className="modal-backdrop" onClick={closeSizeCalcModal} style={{ zIndex: 1000005, display: 'flex', alignItems: 'center', justifyContent: 'center', animation: isSizeCalcClosing ? "fade-out 0.3s ease forwards" : "fade-in 0.3s ease forwards" }}>
                     <div 
                         className="modal-content-base size-calc-modal" 
                         onClick={(e) => e.stopPropagation()} 
                         onMouseMove={handleModalMouseMove}
                         onMouseLeave={handleModalMouseLeave}
                         style={{ 
-                            maxWidth: '360px', 
-                            padding: '25px', 
-                            borderRadius: '8px',
-                            backgroundColor: isDarkMode ? '#1a1a1a' : '#ffffff',
-                            color: isDarkMode ? '#ffffff' : '#000000',
+                            maxWidth: '360px', padding: '25px', borderRadius: '8px',
+                            backgroundColor: isDarkMode ? '#1a1a1a' : '#ffffff', color: isDarkMode ? '#ffffff' : '#000000',
                             boxShadow: isDarkMode ? '0 20px 50px rgba(0,0,0,0.5)' : '0 20px 50px rgba(0,0,0,0.15)',
                             border: isDarkMode ? '1px solid #333' : '1px solid #eee',
                             animation: isSizeCalcClosing ? "slide-down 0.3s cubic-bezier(0.32, 0.94, 0.6, 1) forwards" : "slide-up 0.3s cubic-bezier(0.32, 0.94, 0.6, 1) forwards",
-                            transformStyle: "preserve-3d",
-                            willChange: "transform",
-                            ...modalTiltStyle
+                            transformStyle: "preserve-3d", willChange: "transform", ...modalTiltStyle
                         }}
                     >
-                        <button 
-                            className="close-modal close-modal-small" 
-                            onClick={closeSizeCalcModal}
-                            style={{ color: isDarkMode ? '#fff' : '#000' }}
-                        >
-                            &times;
-                        </button>
+                        <button className="close-modal close-modal-small" onClick={closeSizeCalcModal} style={{ color: isDarkMode ? '#fff' : '#000' }}>&times;</button>
                         
                         <h3 className="size-calc-modal-title" style={{ margin: '0 0 5px 0', fontSize: '15px', fontWeight: '800', color: isDarkMode ? '#fff' : '#000', textTransform: 'uppercase', letterSpacing: '1px' }}>
                             ALICCI Beden Sihirbazı
@@ -2446,11 +1295,7 @@ function App() {
                                 <span>Boy</span>
                                 <span style={{ color: isDarkMode ? '#fff' : '#000', fontWeight: 'bold' }}>{calcHeight} cm</span>
                             </div>
-                            <input 
-                                type="range" min="150" max="210" value={calcHeight} 
-                                onChange={(e) => setCalcHeight(Number(e.target.value))}
-                                style={{ width: '100%', accentColor: isDarkMode ? '#fff' : '#000', cursor: 'pointer' }}
-                            />
+                            <input type="range" min="150" max="210" value={calcHeight} onChange={(e) => setCalcHeight(Number(e.target.value))} style={{ width: '100%', accentColor: isDarkMode ? '#fff' : '#000', cursor: 'pointer' }} />
                         </div>
 
                         <div style={{ marginBottom: '15px' }}>
@@ -2458,140 +1303,69 @@ function App() {
                                 <span>Kilo</span>
                                 <span style={{ color: isDarkMode ? '#fff' : '#000', fontWeight: 'bold' }}>{calcWeight} kg</span>
                             </div>
-                            <input 
-                                type="range" min="40" max="120" value={calcWeight} 
-                                onChange={(e) => setCalcWeight(Number(e.target.value))}
-                                style={{ width: '100%', accentColor: isDarkMode ? '#fff' : '#000', cursor: 'pointer' }}
-                            />
+                            <input type="range" min="40" max="120" value={calcWeight} onChange={(e) => setCalcWeight(Number(e.target.value))} style={{ width: '100%', accentColor: isDarkMode ? '#fff' : '#000', cursor: 'pointer' }} />
                         </div>
 
                         <div style={{ 
-                            display: 'flex', 
-                            justifyContent: 'center', 
-                            alignItems: 'flex-end', 
-                            height: '105px', 
-                            marginBottom: '20px',
-                            background: isDarkMode ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.01)',
-                            borderBottom: isDarkMode ? '1px dashed #333' : '1px dashed #ddd',
-                            paddingBottom: '4px',
-                            overflow: 'hidden',
-                            borderRadius: '4px'
+                            display: 'flex', justifyContent: 'center', alignItems: 'flex-end', height: '105px', marginBottom: '20px',
+                            background: isDarkMode ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.01)', borderBottom: isDarkMode ? '1px dashed #333' : '1px dashed #ddd',
+                            paddingBottom: '4px', overflow: 'hidden', borderRadius: '4px'
                         }}>
                             <div style={{
                                 transform: `scaleX(${0.65 + ((calcWeight - 40) / 80) * 0.7}) scaleY(${0.72 + ((calcHeight - 150) / 60) * 0.55})`,
-                                transformOrigin: 'bottom center',
-                                transition: 'transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)', 
-                                color: isDarkMode ? '#ffffff' : '#000000',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                alignItems: 'center'
+                                transformOrigin: 'bottom center', transition: 'transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)', 
+                                color: isDarkMode ? '#ffffff' : '#000000', display: 'flex', flexDirection: 'column', alignItems: 'center'
                             }}>
                                 <div className="avatar-breathing-layer">
-                                    <svg width="36" height="75" viewBox="0 0 36 75" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                        <circle className="avatar-head" cx="18" cy="11" r="6.5" fill="currentColor" />
-                                        <rect x="10" y="21" width="16" height="30" rx="5" fill="currentColor" />
-                                        <rect x="12" y="53" width="4.5" height="20" rx="1.5" fill="currentColor" />
-                                        <rect x="19.5" y="53" width="4.5" height="20" rx="1.5" fill="currentColor" />
-                                        <rect className="avatar-arm-left" x="4.5" y="22.5" width="4" height="22" rx="1.5" fill="currentColor" />
-                                        <rect className="avatar-arm-right" x="27.5" y="22.5" width="4" height="22" rx="1.5" fill="currentColor" />
+                                    <svg width="36" height="75" viewBox="0 0 36 75" fill="currentColor">
+                                        <path d="M18 16C21.3137 16 24 13.3137 24 10C24 6.68629 21.3137 4 18 4C14.6863 4 12 6.68629 12 10C12 13.3137 14.6863 16 18 16Z" className="avatar-head" />
+                                        <path d="M18 18C12 18 8 22 8 30V45C8 47 10 47 10 45V30C10 26 12 22 18 22C24 22 26 26 26 30V45C26 47 28 47 28 45V30C28 22 24 18 18 18Z" />
+                                        <path d="M14 45V70C14 72 17 72 17 70V50H19V70C19 72 22 72 22 70V45H14Z" />
                                     </svg>
                                 </div>
                             </div>
                         </div>
 
-                        <div style={{ marginBottom: '20px' }}>
-                            <span style={{ fontSize: '12px', display: 'block', marginBottom: '8px', fontWeight: '500' }}>Giyim Tarzı</span>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-                                <button 
-                                    type="button"
-                                    onClick={() => setCalcFit('regular')}
-                                    style={{
-                                        padding: '10px', fontSize: '11px', fontWeight: '600', border: '1px solid', borderRadius: '4px', cursor: 'pointer', transition: 'all 0.2s',
-                                        borderColor: calcFit === 'regular' ? (isDarkMode ? '#fff' : '#000') : (isDarkMode ? '#444' : '#ccc'),
-                                        backgroundColor: calcFit === 'regular' ? (isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)') : 'transparent',
-                                        color: 'inherit'
-                                    }}
-                                >
-                                    Tam Otursun (Regular)
-                                </button>
-                                <button 
-                                    type="button"
-                                    onClick={() => setCalcFit('oversize')}
-                                    style={{
-                                        padding: '10px', fontSize: '11px', fontWeight: '600', border: '1px solid', borderRadius: '4px', cursor: 'pointer', transition: 'all 0.2s',
-                                        borderColor: calcFit === 'oversize' ? (isDarkMode ? '#fff' : '#000') : (isDarkMode ? '#444' : '#ccc'),
-                                        backgroundColor: calcFit === 'oversize' ? (isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)') : 'transparent',
-                                        color: 'inherit'
-                                    }}
-                                >
-                                    Biraz Bol Olsun (Oversize)
-                                </button>
+                        <div style={{ marginBottom: '15px' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '5px', fontWeight: '500' }}>
+                                <span>Kalıp Tercihi</span>
                             </div>
+                            <select 
+                                value={calcFit}
+                                onChange={(e) => setCalcFit(e.target.value)}
+                                style={{ 
+                                    width: '100%', padding: '10px', borderRadius: '6px', 
+                                    border: isDarkMode ? '1px solid #444' : '1px solid #ccc',
+                                    background: isDarkMode ? '#222' : '#fff', color: isDarkMode ? '#fff' : '#000', fontSize: '13px'
+                                }}
+                            >
+                                <option value="regular">Tam Otursun (Regular Fit)</option>
+                                <option value="oversize">Bol Dursun (Oversize)</option>
+                            </select>
                         </div>
 
                         <button 
-                            type="button"
-                            onClick={() => {
-                                const recommended = getRecommendedSize(calcHeight, calcWeight, calcFit);
-                                setCalcResult(recommended);
-                            }}
-                            style={{ 
-                                width: '100%', 
-                                padding: '12px', 
-                                backgroundColor: isDarkMode ? '#ffffff' : '#000000', 
-                                color: isDarkMode ? '#000000' : '#ffffff', 
-                                border: 'none', 
-                                borderRadius: '4px', 
-                                fontWeight: 'bold', 
-                                fontSize: '12px', 
-                                cursor: 'pointer', 
-                                textTransform: 'uppercase', 
-                                letterSpacing: '1px' 
+                            onClick={() => { setCalcResult(getRecommendedSize(calcHeight, calcWeight, calcFit)); }}
+                            style={{
+                                width: '100%', padding: '12px', background: isDarkMode ? '#fff' : '#000', color: isDarkMode ? '#000' : '#fff',
+                                border: 'none', borderRadius: '6px', fontWeight: '700', cursor: 'pointer', fontSize: '14px', marginTop: '10px', textTransform: 'uppercase', letterSpacing: '1px'
                             }}
                         >
-                            Önerilen Bedeni Gör
+                            Bedeni Hesapla
                         </button>
 
                         {calcResult && (
-                            <div 
-                                className="size-calc-result-box"
-                                style={{ 
-                                    marginTop: '20px', 
-                                    padding: '15px', 
-                                    background: isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.02)', 
-                                    border: isDarkMode ? '1px dashed #555' : '1px dashed #bbb', 
-                                    borderRadius: '4px', 
-                                    textAlign: 'center',
-                                    animation: 'fade-in 0.3s ease'
-                                }}
-                            >
-                                <p style={{ fontSize: '11px', margin: 0, opacity: 0.7 }}>Sizin için ideal ALICCI kalıbı:</p>
-                                <p style={{ fontSize: '24px', fontWeight: '900', color: isDarkMode ? '#fff' : '#000', margin: '5px 0 12px 0', letterSpacing: '1px' }}>{calcResult}</p>
-                                <button
-                                    type="button"
-                                    onClick={() => {
-                                        const isSizeSoldOut = selectedProduct?.sold_out_sizes?.includes(calcResult);
-                                        if (isSizeSoldOut) {
-                                            showToast(`Önerilen beden (${calcResult}) maalesef tükendi.`);
-                                        } else {
-                                            setSelectedSize(calcResult);
-                                            showToast(`Beden olarak ${calcResult} seçildi!`);
-                                            closeSizeCalcModal();
-                                        }
-                                    }}
-                                    style={{ 
-                                        background: isDarkMode ? '#fff' : '#000', 
-                                        color: isDarkMode ? '#000' : '#fff', 
-                                        border: 'none', 
-                                        padding: '8px 16px', 
-                                        borderRadius: '4px', 
-                                        fontSize: '11px', 
-                                        fontWeight: '700', 
-                                        cursor: 'pointer',
-                                        textTransform: 'uppercase'
-                                    }}
+                            <div className="size-calc-result-box animate-fadeIn" style={{
+                                marginTop: '20px', padding: '15px', background: isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)',
+                                borderRadius: '8px', textAlign: 'center', border: isDarkMode ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(0,0,0,0.05)'
+                            }}>
+                                <p style={{ fontSize: '12px', margin: '0 0 5px 0', opacity: 0.7 }}>Önerilen Bedeniniz</p>
+                                <p style={{ fontSize: '28px', fontWeight: '900', margin: 0, color: isDarkMode ? '#fff' : '#000' }}>{calcResult}</p>
+                                <button 
+                                    onClick={() => { setSelectedSize(calcResult); closeSizeCalcModal(); }}
+                                    style={{ background: 'none', border: 'none', color: isDarkMode ? '#bbb' : '#333', textDecoration: 'underline', fontSize: '12px', marginTop: '10px', cursor: 'pointer', fontWeight: '600' }}
                                 >
-                                    Bu Bedeni Uygula
+                                    Bunu Seç ve Kapat
                                 </button>
                             </div>
                         )}
@@ -2599,166 +1373,95 @@ function App() {
                 </div>
             )}
 
-            {showOrderOptionsModal && (
-                <div className="modal-backdrop" onClick={closeOrderOptionsModal}>
-                    <div className="modal-content-base order-options-modal" onClick={(e) => e.stopPropagation()}>
-                        <button className="close-modal close-modal-small" onClick={closeOrderOptionsModal}>&times;</button>
-                        <h2>Siparişinizi Tamamlayın</h2>
-                        <p>Siparişiniz için ödeme yapmak üzere bizimle iletişime geçebilirsiniz:</p>
-                        <div className="contact-dm-buttons">
-                            <button className="themed-social-button whatsapp-contact" onClick={() => handleCreateOrder("whatsapp")}>
-                                WhatsApp ile Sipariş Ver
-                            </button>
-                            <button className="themed-social-button instagram-contact" onClick={() => handleCreateOrder("instagram")}>
-                                Instagram DM ile Sipariş Ver
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {showTrackingModal && (
-                <div className="modal-backdrop" style={{ animation: isTrackingClosing ? "fade-out 0.3s ease forwards" : "fade-in 0.3s ease forwards" }} onClick={closeTrackingModal}>
-                    <div className="modal-content-base tracking-modal-content" style={{ animation: isTrackingClosing ? "slide-down 0.3s ease forwards" : "slide-up 0.3s ease forwards" }} onClick={(e) => e.stopPropagation()}>
+            {/* TRACKING MODAL */}
+            {(showTrackingModal || isTrackingClosing) && (
+                <div className="modal-backdrop" onClick={closeTrackingModal} style={{ animation: isTrackingClosing ? "fade-out 0.3s ease forwards" : "fade-in 0.3s ease forwards", zIndex: 1000002 }}>
+                    <div className="modal-content-base tracking-modal" onClick={e => e.stopPropagation()} style={{ animation: isTrackingClosing ? "slide-down 0.3s ease forwards" : "slide-up 0.3s ease forwards" }}>
                         <button className="close-modal close-modal-small" onClick={closeTrackingModal}>&times;</button>
-                        <h2>Kargo Takip Paneli</h2>
-                        <p style={{ fontSize: '13px', marginBottom: '15px', opacity: 0.8 }}>Sipariş verirken size verilen ALC ile başlayan sipariş kodunu giriniz.</p>
-                        
+                        <h3>Kargo Takibi</h3>
                         <div className="tracking-search-box">
                             <input 
                                 type="text" 
-                                placeholder="Örn: ALC-123456" 
+                                placeholder="Sipariş Kodu (Örn: ALC-123456)" 
                                 value={trackingCodeInput}
                                 onChange={(e) => setTrackingCodeInput(e.target.value)}
                             />
                             <button onClick={handleTrackOrder} disabled={isTrackingLoading}>
-                                {isTrackingLoading ? (
-                                    <><span className="spinner"></span> Sorgulanıyor...</>
-                                ) : (
-                                    "Sorgula"
-                                )}
+                                {isTrackingLoading ? "Sorgulanıyor..." : "Sorgula"}
                             </button>
                         </div>
-
-                        {trackingError && <p style={{ color: 'red', fontSize: '13px' }}>{trackingError}</p>}
-
+                        {trackingError && <p style={{ color: '#ff3b30', fontSize: '13px' }}>{trackingError}</p>}
                         {searchedOrder && (
-                            <div className="tracking-result tracking-result-wrapper" style={{ background: 'rgba(128,128,128,0.1)', padding: '15px', borderRadius: '4px', textAlign: 'left', marginTop: '15px' }}>
-                                <p><strong>Sipariş Kodu:</strong> {searchedOrder.order_code}</p>
-                                <p><strong>Durum:</strong> 
-                                    <span style={{ 
-                                        color: searchedOrder.status === 'Kargoda' || searchedOrder.status === 'Teslim Edildi' ? '#34c759' : 
-                                               searchedOrder.status === 'İptal Edildi' ? '#ff3b30' : '#ff9500', 
-                                        fontWeight: 'bold',
-                                        marginLeft: '5px'
-                                    }}>
-                                        {searchedOrder.status}
-                                    </span>
-                                </p>
-                                <p><strong>Kargo Firması:</strong> {searchedOrder.cargo_company || '-'}</p>
-                                <p><strong>Kargo Takip No:</strong> {searchedOrder.cargo_tracker_code || '-'}</p>
-                                <p><strong>Toplam Tutar:</strong> {searchedOrder.total_price} TL</p>
-
-                                {searchedOrder.status === "Kargoda" ? (
-                                    <div className="animated-truck-road">
-                                        <div className="animated-truck">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="20" viewBox="0 0 24 24" fill="none" stroke={isDarkMode ? "#fff" : "#000"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                <rect x="1" y="3" width="15" height="13"></rect>
-                                                <polygon points="16 8 20 8 23 11 23 16 16 16 8"></polygon>
-                                                <circle cx="5.5" cy="18.5" r="2.5"></circle>
-                                                <circle cx="18.5" cy="18.5" r="2.5"></circle>
-                                            </svg>
-                                        </div>
+                            <div style={{ marginTop: '20px', textAlign: 'left', padding: '15px', background: isDarkMode ? '#222' : '#f9f9f9', borderRadius: '8px' }}>
+                                <h4 style={{ margin: '0 0 10px 0' }}>Sipariş: {searchedOrder.order_code}</h4>
+                                <p><strong>Durum:</strong> {searchedOrder.status}</p>
+                                <p><strong>Tutar:</strong> {searchedOrder.total_price} TL</p>
+                                <div className="animated-truck-road">
+                                    <div className={`animated-truck ${searchedOrder.status === 'Teslim Edildi' ? 'waiting' : ''}`}>
+                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={isDarkMode ? "#fff" : "#000"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
                                     </div>
-                                ) : searchedOrder.status === "Onay Bekleniyor" ? (
-                                    <div className="animated-truck-road">
-                                        <div className="animated-truck waiting">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="20" viewBox="0 0 24 24" fill="none" stroke="#ff9500" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                <rect x="1" y="3" width="15" height="13"></rect>
-                                                <polygon points="16 8 20 8 23 11 23 16 16 16 8"></polygon>
-                                                <circle cx="5.5" cy="18.5" r="2.5"></circle>
-                                                <circle cx="18.5" cy="18.5" r="2.5"></circle>
-                                            </svg>
-                                        </div>
-                                    </div>
-                                ) : null}
+                                </div>
                             </div>
                         )}
-
-                        <div className="contact-dm-buttons tracking-dm-buttons" style={{ marginTop: '20px', borderTop: '1px solid rgba(128,128,128,0.2)', paddingTop: '15px' }}>
-                            <p style={{ fontSize: '12px', marginBottom: '10px' }}>Sorun mu yaşıyorsunuz? Doğrudan destek alın:</p>
-                            <a href={`https://wa.me/${WHATSAPP_NUMBER}`} target="_blank" rel="noopener noreferrer" className="themed-social-button whatsapp-contact">WhatsApp Destek</a>
-                        </div>
                     </div>
                 </div>
             )}
 
-            {showConfirmationModal && (
-                <div className="modal-backdrop" onClick={closeConfirmationModal}>
-                    <div className="modal-content-base order-confirmation" onClick={(e) => e.stopPropagation()}>
-                        <button className="close-modal close-modal-small" onClick={closeConfirmationModal}>&times;</button>
-                        <h2>Yönlendiriliyorsunuz...</h2>
-                        <p>Siparişinizi tamamlamak için lütfen açılan uygulamada mesajı <strong>göndermeyi unutmayın.</strong></p>
-                        <button onClick={closeConfirmationModal}>Anladım</button>
-                    </div>
-                </div>
-            )}
-
-            {(showIyzicoModal || isIyzicoClosing) && (
-                <div 
-                    className="fixed inset-0 z-[1000010] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm transition-opacity duration-300"
-                    style={{ 
-                        animation: isIyzicoClosing ? "fade-out 0.3s ease forwards" : "fade-in 0.3s ease forwards"
-                    }}
-                    onClick={closeIyzicoModal}
-                >
-                    <div 
-                        className="relative w-full max-w-[550px] max-h-[90vh] overflow-y-auto bg-white dark:bg-[#1a1a1a] rounded-lg p-6 shadow-2xl border border-gray-100 dark:border-[#333] transition-all duration-300"
-                        style={{ 
-                            animation: isIyzicoClosing ? "slide-down 0.3s cubic-bezier(0.32, 0.94, 0.6, 1) forwards" : "slide-up 0.3s cubic-bezier(0.32, 0.94, 0.6, 1) forwards"
-                        }}
-                        onClick={(e) => e.stopPropagation()}
-                    >
-                        <button 
-                            className="absolute top-4 right-4 text-2xl font-bold cursor-pointer hover:opacity-70 dark:text-white text-black bg-transparent border-none outline-none"
-                            onClick={closeIyzicoModal}
-                        >
-                            &times;
+            {/* ORDER OPTIONS MODAL */}
+            {showOrderOptionsModal && (
+                <div className="modal-backdrop" onClick={closeOrderOptionsModal} style={{ zIndex: 1000002 }}>
+                    <div className="modal-content-base" onClick={e => e.stopPropagation()}>
+                        <button className="close-modal close-modal-small" onClick={closeOrderOptionsModal}>&times;</button>
+                        <h3>Siparişi Tamamla</h3>
+                        <p>Siparişinizi oluşturup bizimle iletişime geçmek için bir yöntem seçin:</p>
+                        <button onClick={() => handleCreateOrder('whatsapp')} style={{ background: '#25D366', color: '#fff', width: '100%', marginBottom: '10px' }}>
+                            WhatsApp ile Sipariş Ver
                         </button>
-                        
-                        <h3 className="text-lg font-extrabold uppercase tracking-wider mb-1 dark:text-white text-black font-sans">
-                            ALICCI GÜVENLİ ÖDEME
-                        </h3>
-                        <p className="text-xs opacity-60 mb-6 dark:text-gray-400 text-gray-600 font-sans">
-                            256-bit SSL korumalı Iyzico altyapısıyla ödemenizi güvenle tamamlayın.
-                        </p>
+                        <button onClick={() => handleCreateOrder('instagram')} style={{ background: '#E1306C', color: '#fff', width: '100%' }}>
+                            Instagram DM ile Sipariş Ver
+                        </button>
+                    </div>
+                </div>
+            )}
 
+            {/* CONFIRMATION MODAL */}
+            {showConfirmationModal && (
+                <div className="modal-backdrop" onClick={closeConfirmationModal} style={{ zIndex: 1000003 }}>
+                    <div className="modal-content-base" onClick={e => e.stopPropagation()}>
+                        <button className="close-modal close-modal-small" onClick={closeConfirmationModal}>&times;</button>
+                        <h3>Siparişiniz Alındı!</h3>
+                        <p>Sipariş kodunuz kopyalandı. Lütfen iletişime geçtiğinizde bu kodu bize iletin.</p>
+                        <button onClick={closeConfirmationModal}>Kapat</button>
+                    </div>
+                </div>
+            )}
+
+            {/* IYZICO MODAL */}
+            {(showIyzicoModal || isIyzicoClosing) && (
+                <div className="modal-backdrop" onClick={closeIyzicoModal} style={{ animation: isIyzicoClosing ? "fade-out 0.3s ease forwards" : "fade-in 0.3s ease forwards", zIndex: 1000004 }}>
+                    <div className="modal-content-base iyzico-modal" onClick={e => e.stopPropagation()} style={{ animation: isIyzicoClosing ? "slide-down 0.3s ease forwards" : "slide-up 0.3s ease forwards", minHeight: '400px' }}>
+                        <button className="close-modal close-modal-small" onClick={closeIyzicoModal}>&times;</button>
+                        <h3>Güvenli Ödeme</h3>
                         {isIyzicoLoading ? (
-                            <div className="flex flex-col items-center justify-center py-16 gap-4">
-                                <div className="w-8 h-8 border-4 border-black dark:border-white border-t-transparent rounded-full animate-spin"></div>
-                                <p className="text-sm font-semibold opacity-75 font-sans">Ödeme formu hazırlanıyor, lütfen bekleyin...</p>
-                            </div>
+                            <p>Ödeme sistemi yükleniyor...</p>
                         ) : (
-                            <div 
-                                id="iyzipay-checkout-form" 
-                                className="responsive w-full min-h-[300px]"
-                                dangerouslySetInnerHTML={{ __html: iyzicoFormHtml }}
-                            />
+                            <div id="iyzipay-checkout-form" className="responsive"></div>
                         )}
                     </div>
                 </div>
             )}
-            
+
+            {/* TOAST BİLDİRİMLERİ */}
             {toast && (
-                <div className="toast-container">
-                    <div className="toast-message">{toast}</div>
+                <div className="toast-container animate-fadeIn" style={{
+                    position: 'fixed', bottom: '20px', left: '50%', transform: 'translateX(-50%)',
+                    background: isDarkMode ? '#fff' : '#000', color: isDarkMode ? '#000' : '#fff',
+                    padding: '12px 24px', borderRadius: '30px', fontSize: '13px', fontWeight: 'bold',
+                    boxShadow: '0 10px 30px rgba(0,0,0,0.2)', zIndex: 9999999
+                }}>
+                    {toast}
                 </div>
             )}
-
-            {/* Akıllı Müşteri Destek Chatbot Bileşeni */}
-            <Chatbot isOpen={isChatbotOpen} setIsOpen={toggleChatbot} />
-
-            <Analytics />
         </>
     );
 }
