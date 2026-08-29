@@ -2049,6 +2049,7 @@ function App() {
                                 eyebrow: "ALICCI",
                                 title: "Sessiz Lüks.",
                                 text: "Gösterişten uzak. Detaylarda güçlü. Zamansız.",
+                                video: "https://uunncptklxipioiwgbav.supabase.co/storage/v1/object/public/urunler/yaka-etiketi-luks-mark.mp4",
                                 image: firstImage,
                                 action: "Koleksiyonu Keşfet",
                             },
@@ -2074,17 +2075,27 @@ function App() {
                                     {slides.map((slide, index) => (
                                         <div
                                             key={`${slide.eyebrow}-${index}`}
-                                            className={`hero-scroll-slide ${index === heroActiveSlide ? "is-active" : ""} ${!slide.image ? "no-image" : ""}`}
+                                            className={`hero-scroll-slide ${index === heroActiveSlide ? "is-active" : ""} ${!slide.image && !slide.video ? "no-image" : ""}`}
                                             aria-hidden={index !== heroActiveSlide}
                                         >
-                                            {slide.image && (
+                                            {slide.video ? (
+                                                <video
+                                                    className="hero-scroll-image"
+                                                    src={slide.video}
+                                                    autoPlay
+                                                    muted
+                                                    loop
+                                                    playsInline
+                                                    preload="auto"
+                                                />
+                                            ) : slide.image ? (
                                                 <img
                                                     src={slide.image}
                                                     alt={index === 0 ? "ALICCI ürün görseli" : `${slide.eyebrow} görseli`}
                                                     className="hero-scroll-image"
                                                     loading={index === 0 ? "eager" : "lazy"}
                                                 />
-                                            )}
+                                            ) : null}
                                             <div className="hero-scroll-overlay"></div>
                                         </div>
                                     ))}
