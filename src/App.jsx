@@ -306,6 +306,10 @@ function App() {
     const [currentSection, setCurrentSection] = useState("home");
     const [isLoading, setIsLoading] = useState(true);
     const [isDarkMode, setIsDarkMode] = useState(false);
+
+    // Scroll-driven hero state
+    const heroRef = useRef(null);
+    const [heroActiveSlide, setHeroActiveSlide] = useState(0);
     
     // AI Chatbot State'i
     const [isChatbotOpen, setIsChatbotOpen] = useState(false);
@@ -421,6 +425,30 @@ function App() {
         setCouponInput("");
         setAppliedCouponCode("");
     }, [cartItems]);
+
+    useEffect(() => {
+        const handleHeroScroll = () => {
+            const section = heroRef.current;
+            if (!section) return;
+
+            const rect = section.getBoundingClientRect();
+            const viewportHeight = window.innerHeight || 1;
+            const scrollDistance = Math.max(1, section.offsetHeight - viewportHeight);
+            const progress = Math.min(1, Math.max(0, -rect.top / scrollDistance));
+            const nextSlide = Math.min(2, Math.floor(progress * 3 + 0.05));
+
+            setHeroActiveSlide((current) => current === nextSlide ? current : nextSlide);
+        };
+
+        window.addEventListener("scroll", handleHeroScroll, { passive: true });
+        window.addEventListener("resize", handleHeroScroll);
+        handleHeroScroll();
+
+        return () => {
+            window.removeEventListener("scroll", handleHeroScroll);
+            window.removeEventListener("resize", handleHeroScroll);
+        };
+    }, [products.length]);
 
     useEffect(() => {
         const preventInstallPrompt = (e) => {
@@ -1998,10 +2026,103 @@ function App() {
             </div>
 
             <main>
-                <section id="home" className="hero">
-                    <h2>ALICCI'ye Hoş Geldiniz</h2>
-                    <p>En zarif ve şık giyim parçalarını keşfedin.</p>
-                    <button onClick={() => handleNavLinkClick("products")}>Koleksiyonu Keşfet</button>
+                <section
+                    id="home"
+                    ref={heroRef}
+                    className="hero-scroll-section"
+                    aria-label="ALICCI giriş bölümü"
+                >
+                    {(() => {
+                        const heroImages = [];
+                        products.forEach((product) => {
+                            (product.image || []).forEach((image) => {
+                                if (image && !heroImages.includes(image)) heroImages.push(image);
+                            });
+                        });
+
+                        const firstImage = heroImages[0] || null;
+                        const secondImage = heroImages[1] || firstImage;
+                        const thirdImage = heroImages[2] || firstImage;
+
+                        const slides = [
+                            {
+                                eyebrow: "ALICCI",
+                                title: "Sessiz Lüks.",
+                                text: "Gösterişten uzak. Detaylarda güçlü. Zamansız.",
+                                image: firstImage,
+                                action: "Koleksiyonu Keşfet",
+                            },
+                            {
+                                eyebrow: "THE COLLECTION",
+                                title: "Sadelik bir tavırdır.",
+                                text: "Temiz çizgiler, premium dokular ve modern bir siluet.",
+                                image: secondImage,
+                                action: "Ürünleri Gör",
+                            },
+                            {
+                                eyebrow: "ALICCI / ESSENTIALS",
+                                title: "Bugün değil, yıllarca.",
+                                text: "Koleksiyonu keşfet ve kendi stilini oluştur.",
+                                image: thirdImage,
+                                action: "Koleksiyona Git",
+                            },
+                        ];
+
+                        return (
+                            <div className="hero-scroll-sticky">
+                                <div className="hero-scroll-media">
+                                    {slides.map((slide, index) => (
+                                        <div
+                                            key={`${slide.eyebrow}-${index}`}
+                                            className={`hero-scroll-slide ${index === heroActiveSlide ? "is-active" : ""} ${!slide.image ? "no-image" : ""}`}
+                                            aria-hidden={index !== heroActiveSlide}
+                                        >
+                                            {slide.image && (
+                                                <img
+                                                    src={slide.image}
+                                                    alt={index === 0 ? "ALICCI ürün görseli" : `${slide.eyebrow} görseli`}
+                                                    className="hero-scroll-image"
+                                                    loading={index === 0 ? "eager" : "lazy"}
+                                                />
+                                            )}
+                                            <div className="hero-scroll-overlay"></div>
+                                        </div>
+                                    ))}
+                                </div>
+
+                                <div className="hero-scroll-content">
+                                    {slides.map((slide, index) => (
+                                        <div
+                                            key={`content-${index}`}
+                                            className={`hero-scroll-copy ${index === heroActiveSlide ? "is-active" : ""}`}
+                                        >
+                                            <span className="hero-scroll-eyebrow">{slide.eyebrow}</span>
+                                            <h2>{slide.title}</h2>
+                                            <p>{slide.text}</p>
+                                            <button onClick={() => handleNavLinkClick("products")}>
+                                                {slide.action}
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+
+                                <div className="hero-scroll-bottom">
+                                    <span>SCROLL TO EXPLORE</span>
+                                    <span className="hero-scroll-line"></span>
+                                </div>
+
+                                <div className="hero-scroll-progress" aria-hidden="true">
+                                    {[0, 1, 2].map((index) => (
+                                        <span key={index} className={index === heroActiveSlide ? "active" : ""}></span>
+                                    ))}
+                                </div>
+
+                                <div className="hero-scroll-index">
+                                    0{heroActiveSlide + 1} <span>/ 03</span>
+                                </div>
+                            </div>
+                        );
+                    })()}
                 </section>
 
                 <section id="products" className="products">
