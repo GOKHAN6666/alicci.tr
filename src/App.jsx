@@ -349,9 +349,9 @@ function App() {
 
     const WHATSAPP_NUMBER = "905511903118";
     const INSTAGRAM_USERNAME = "alicci.official";
-    const STORE_EMAIL = "destek@alicci.com";
+    const STORE_EMAIL = "alicci.tr@gmail.com";
     const STORE_PHONE = "+90 551 190 31 18";
-    const STORE_ADDRESS = "Nispetiye Mah. Aytar Cad. No: 12/A, Beşiktaş / İstanbul, Türkiye";
+    const STORE_ADDRESS = "Agahefendi Mah. 2054 sk. Sorgun / Yozgat, Türkiye";
 
     // AI Chatbot Açma/Kapama ve Diğer Modalları Temizleme Yönetimi
     const toggleChatbot = (explicitState) => {
