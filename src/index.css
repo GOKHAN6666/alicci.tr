@@ -2173,7 +2173,7 @@ body.no-scroll {
 .product-info-mobile-order .add-to-cart-button {
     width: 100%;
     padding: 12px 20px;
-    background-color: #007bff;
+    background-color: #111;
     color: white;
     border: none;
     border-radius: 5px;
@@ -2182,8 +2182,8 @@ body.no-scroll {
     transition: background-color 0.3s ease;
 }
 
-.product-info-mobile-order .add-to-cart-button:hover {
-    background-color: #0056b3;
+.product-info-mobile-order .add-to-cart-button:hover:not(:disabled) {
+    background-color: #333;
 }
 
 .product-info-mobile-order .add-to-cart-button:disabled {
