@@ -325,6 +325,7 @@ function App() {
     const [calcHeight, setCalcHeight] = useState(170);
     const [calcWeight, setCalcWeight] = useState(65);
     const [calcFit, setCalcFit] = useState("oversize");
+    const [calcResult, setCalcResult] = useState(null);
     
     const [couponInput, setCouponInput] = useState("");
     const [discount, setDiscount] = useState(0);
@@ -769,6 +770,52 @@ function App() {
         const subtotal = cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
         const finalTotal = subtotal - (subtotal * discount);
         return Number.isInteger(finalTotal) ? finalTotal : finalTotal.toFixed(2);
+    };
+
+    const handleCheckout = async () => {
+        if (cartItems.length === 0) {
+            showToast("Sepetiniz boş.");
+            return;
+        }
+
+        setIsChatbotOpen(false);
+        setIsIyzicoLoading(true);
+        setShowIyzicoModal(true);
+        setIsIyzicoClosing(false);
+        closeCart();
+
+        try {
+            const response = await fetch(`${BACKEND_URL}/api/iyzico-checkout`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    cartItems,
+                    totalPrice: getTotalPrice(),
+                    discount,
+                    appliedCouponCode
+                }),
+            });
+
+            if (!response.ok) {
+                throw new Error("Ödeme oturumu başlatılamadı.");
+            }
+
+            const data = await response.json();
+            
+            if (data && data.checkoutFormContent) {
+                setIyzicoFormHtml(data.checkoutFormContent);
+            } else {
+                throw new Error("Ödeme form içeriği alınamadı.");
+            }
+        } catch (error) {
+            console.error("Iyzico hatası:", error);
+            showToast("Ödeme sistemi yüklenirken hata oluştu.");
+            setShowIyzicoModal(false);
+        } finally {
+            setIsIyzicoLoading(false);
+        }
     };
 
     const closeIyzicoModal = () => {
@@ -1470,6 +1517,43 @@ function App() {
                     height: 24px;
                 }
 
+                @keyframes avatar-breathe {
+                    0%, 100% { transform: scale(1); }
+                    50% { transform: scale(1.04); }
+                }
+
+                @keyframes avatar-head-bob {
+                    0%, 100% { transform: translateY(0); }
+                    50% { transform: translateY(-2px); }
+                }
+
+                @keyframes avatar-arm-sway-left {
+                    0%, 100% { transform: rotate(0deg); }
+                    50% { transform: rotate(-8deg); }
+                }
+
+                @keyframes avatar-arm-sway-right {
+                    0%, 100% { transform: rotate(0deg); }
+                    50% { transform: rotate(8deg); }
+                }
+
+                .avatar-breathing-layer {
+                    animation: avatar-breathe 2s ease-in-out infinite;
+                    transform-origin: bottom center;
+                }
+                .avatar-head {
+                    animation: avatar-head-bob 2s ease-in-out infinite;
+                    transform-origin: 18px 11px;
+                }
+                .avatar-arm-left {
+                    animation: avatar-arm-sway-left 2s ease-in-out infinite;
+                    transform-origin: 8.5px 22.5px;
+                }
+                .avatar-arm-right {
+                    animation: avatar-arm-sway-right 2s ease-in-out infinite;
+                    transform-origin: 27.5px 22.5px;
+                }
+
                 .product-card.sold-out {
                     opacity: 0.55;
                 }
@@ -1929,6 +2013,7 @@ function App() {
                 )}
                 {cartItems.length > 0 && (
                     <>
+                        {/* Iyzico ile ödeme şimdilik devre dışı — geri eklemek için handleCheckout butonunu geri koy */}
                         <button className="secondary-checkout-btn" onClick={() => {
                             closeCart();
                             setShowOrderOptionsModal(true);
@@ -2293,401 +2378,519 @@ function App() {
                                 </div>
                             </div>
                         )}
+
                     </div>
                 </div>
             )}
 
-            {/* ==========================================
-                ÜRÜN DETAY MODALI
-               ========================================== */}
-            {(selectedProduct || isProductClosing) && selectedProduct && (
-                <div
-                    className="modal-backdrop"
-                    onClick={closeProductModal}
-                    style={{
-                        animation: isProductClosing ? "fade-out 0.3s ease forwards" : "fade-in 0.3s ease forwards",
-                        zIndex: 1000002
-                    }}
-                >
-                    <div
-                        className="modal-content-base product-modal"
-                        onClick={(e) => e.stopPropagation()}
-                        style={{
-                            animation: isProductClosing ? "slide-down 0.3s ease forwards" : "slide-up 0.3s ease forwards"
-                        }}
-                    >
-                        <button className="close-modal" onClick={closeProductModal}>
-                            &times;
-                        </button>
-                        <div className="product-modal-grid">
-                            <div className="product-modal-image-wrapper">
-                                <img
-                                    key={currentModalImageIndex}
-                                    src={selectedProduct.image[currentModalImageIndex]}
-                                    alt={selectedProduct.name}
-                                    className="product-modal-image animate-fadeIn"
-                                />
-                                {selectedProduct.image && selectedProduct.image.length > 1 && (
-                                    <>
-                                        <button
-                                            className="modal-nav-glass-btn left"
-                                            onClick={prevModalImage}
-                                            aria-label="Önceki Görsel"
-                                        >
-                                            &#10094;
-                                        </button>
-                                        <button
-                                            className="modal-nav-glass-btn right"
-                                            onClick={nextModalImage}
-                                            aria-label="Sonraki Görsel"
-                                        >
-                                            &#10095;
-                                        </button>
-                                        <div className="modal-image-dots">
-                                            {selectedProduct.image.map((_, idx) => (
-                                                <span
-                                                    key={idx}
-                                                    className={`modal-dot ${idx === currentModalImageIndex ? "active" : ""}`}
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        setCurrentModalImageIndex(idx);
-                                                    }}
-                                                />
-                                            ))}
+            {(selectedProduct || isProductClosing) && (
+                <div className="modal-backdrop" onClick={closeProductModal} style={{ animation: isProductClosing ? "fade-out 0.3s ease forwards" : "fade-in 0.3s ease forwards" }}>
+                    <div className="modal-content-base product-modal" onClick={(e) => e.stopPropagation()} style={{ animation: isProductClosing ? "slide-down 0.3s ease forwards" : "slide-up 0.3s ease forwards" }}>
+                        <button className="close-modal close-modal-small" onClick={closeProductModal}>&times;</button>
+                        {selectedProduct && (
+                            <div className="product-modal-content-wrapper">
+                                {/* LÜKS CAM EFEKTLİ (GLASSMORPHISM) & ANIMASYONLU GÖRSEL GALERİSİ */}
+                                <div className="product-modal-image-wrapper">
+                                    <img 
+                                        key={currentModalImageIndex}
+                                        src={selectedProduct.image ? selectedProduct.image[currentModalImageIndex] : "/logo.png"} 
+                                        alt={selectedProduct.name} 
+                                        className="product-modal-image zoomable-image animate-fadeIn" 
+                                        style={{ maxHeight: '60vh', width: 'auto', maxWidth: '100%', objectFit: 'contain' }} 
+                                        loading="lazy"
+                                    />
+                                    
+                                    {selectedProduct.image && selectedProduct.image.length > 1 && (
+                                        <>
+                                            {/* Sol Buton */}
+                                            <button 
+                                                type="button"
+                                                className="modal-nav-glass-btn left" 
+                                                onClick={prevModalImage}
+                                                aria-label="Önceki Görsel"
+                                            >
+                                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                    <polyline points="15 18 9 12 15 6"></polyline>
+                                                </svg>
+                                            </button>
+
+                                            {/* Sağ Buton */}
+                                            <button 
+                                                type="button"
+                                                className="modal-nav-glass-btn right" 
+                                                onClick={nextModalImage}
+                                                aria-label="Sonraki Görsel"
+                                            >
+                                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                    <polyline points="9 18 15 12 9 6"></polyline>
+                                                </svg>
+                                            </button>
+
+                                            {/* Alt İndikatör Noktaları */}
+                                            <div className="modal-image-dots">
+                                                {selectedProduct.image.map((_, idx) => (
+                                                    <span
+                                                        key={idx}
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setCurrentModalImageIndex(idx);
+                                                        }}
+                                                        className={`modal-dot ${idx === currentModalImageIndex ? "active" : ""}`}
+                                                    />
+                                                ))}
+                                            </div>
+                                        </>
+                                    )}
+                                </div>
+
+                                <div className="product-info-mobile-order" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+                                    <h2>{selectedProduct.name}</h2>
+                                    <p className="desc">{selectedProduct.description || "Bu ürün ALICCI koleksiyonunun zarif parçalarındandır."}</p>
+                                    
+                                    <div className="size-select" style={{ marginBottom: '10px' }}>
+                                        <p style={{ margin: '0 0 10px 0', fontSize: '13px', fontWeight: '600' }}>Beden Seç:</p>
+                                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                                            {(selectedProduct.sizes && selectedProduct.sizes.length > 0 ? selectedProduct.sizes : ["S", "M", "L", "XL", "XXL"]).map((size) => {
+                                                const isSizeSoldOut = selectedProduct.sold_out_sizes?.includes(size);
+                                                return (
+                                                    <button 
+                                                        key={size} 
+                                                        className={`${selectedSize === size ? "selected" : ""} ${isSizeSoldOut ? "size-sold-out" : ""}`} 
+                                                        onClick={() => !isSizeSoldOut && setSelectedSize(size)}
+                                                        disabled={isSizeSoldOut || selectedProduct.stock === 0}
+                                                    >
+                                                        {size} {isSizeSoldOut && "(Tükendi)"}
+                                                    </button>
+                                                );
+                                            })}
                                         </div>
-                                    </>
-                                )}
-                            </div>
+                                    </div>
 
-                            <div className="product-modal-details">
-                                <h2>{selectedProduct.name}</h2>
-                                <p className="modal-price">{selectedProduct.price} TL</p>
-                                <p className="modal-description">{selectedProduct.description || "Premium %100 Pamuk kumaş, özel kalıp ve zamansız tasarım."}</p>
-
-                                <div className="size-section">
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                                        <label>Beden Seçin:</label>
-                                        <button
+                                    <div style={{ marginBottom: '20px', textAlign: 'left' }}>
+                                        <button 
                                             type="button"
+                                            onClick={() => {
+                                                setIsChatbotOpen(false);
+                                                setShowSizeCalcModal(true);
+                                                setCalcResult(null);
+                                            }}
                                             className="find-my-size-btn"
-                                            onClick={() => setShowSizeCalcModal(true)}
                                             style={{
                                                 background: 'none',
                                                 border: 'none',
-                                                color: isDarkMode ? '#aaa' : '#555',
-                                                fontSize: '12px',
+                                                color: isDarkMode ? '#bbb' : '#333',
                                                 cursor: 'pointer',
+                                                fontSize: '12.5px',
+                                                fontWeight: '600',
                                                 textDecoration: 'underline',
-                                                padding: 0
+                                                padding: 0,
+                                                letterSpacing: '0.5px',
+                                                display: 'inline-flex',
+                                                alignItems: 'center',
+                                                gap: '4px'
                                             }}
                                         >
                                             📐 Bedenimi Bul
                                         </button>
                                     </div>
-                                    <div className="size-select">
-                                        {["S", "M", "L", "XL"].map((size) => {
-                                            const isSoldOut = selectedProduct.sold_out_sizes?.includes(size) || selectedProduct.stock === 0;
-                                            return (
-                                                <button
-                                                    key={size}
-                                                    disabled={isSoldOut}
-                                                    className={`${selectedSize === size ? "selected" : ""} ${isSoldOut ? "size-sold-out" : ""}`}
-                                                    onClick={() => setSelectedSize(size)}
-                                                >
-                                                    {size} {isSoldOut ? "(Tükendi)" : ""}
-                                                </button>
-                                            );
-                                        })}
+
+                                    <button 
+                                        className="add-to-cart-button" 
+                                        onClick={handleAddToCart} 
+                                        disabled={!selectedSize || selectedProduct.stock === 0 || selectedProduct.sold_out_sizes?.includes(selectedSize)}
+                                        style={{ marginBottom: '20px' }}
+                                    >
+                                        {selectedProduct.stock === 0 
+                                            ? "TÜKENDİ" 
+                                            : selectedSize && selectedProduct.sold_out_sizes?.includes(selectedSize)
+                                                ? "Seçilen Beden Tükendi"
+                                                : "Sepete Ekle"
+                                        }
+                                    </button>
+
+                                    <div 
+                                        className="size-disclaimer" 
+                                        style={{ 
+                                            marginTop: 'auto', 
+                                            padding: '10px 0', 
+                                            borderTop: isDarkMode ? '1px solid #2d2d2d' : '1px solid #f0f0f0',
+                                            fontSize: '11px', 
+                                            lineHeight: '1.4',
+                                            opacity: 0.6,
+                                            textAlign: 'left'
+                                        }}
+                                    >
+                                        * Kalıplar kumaş esnekliğine ve kesim tarzına bağlı olarak değişiklik gösterebilir. Ölçümler el yapımı olduğu için küçük sapmalar yaşanabilir. Tarzınıza en uygun bedeni seçtiğinizden emin olun.
                                     </div>
                                 </div>
-
-                                <button
-                                    className="add-to-cart-btn"
-                                    onClick={handleAddToCart}
-                                    disabled={selectedProduct.stock === 0}
-                                >
-                                    {selectedProduct.stock === 0 ? "TÜKENDİ" : "Sepete Ekle"}
-                                </button>
                             </div>
-                        </div>
+                        )}
                     </div>
                 </div>
             )}
 
-            {/* ==========================================
-                AKILLI BEDEN SİHİRBAZI MODALI
-               ========================================== */}
             {(showSizeCalcModal || isSizeCalcClosing) && (
-                <div
-                    className="modal-backdrop"
+                <div 
+                    className="modal-backdrop" 
                     onClick={closeSizeCalcModal}
-                    style={{
-                        zIndex: 1000005,
+                    style={{ 
+                        zIndex: 1000005, 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        justifyContent: 'center',
                         animation: isSizeCalcClosing ? "fade-out 0.3s ease forwards" : "fade-in 0.3s ease forwards"
                     }}
                 >
-                    <div
-                        className="modal-content-base size-calc-modal"
-                        onClick={(e) => e.stopPropagation()}
+                    <div 
+                        className="modal-content-base size-calc-modal" 
+                        onClick={(e) => e.stopPropagation()} 
                         onMouseMove={handleModalMouseMove}
                         onMouseLeave={handleModalMouseLeave}
-                        style={{
-                            ...modalTiltStyle,
-                            animation: isSizeCalcClosing ? "slide-down 0.3s ease forwards" : "slide-up 0.3s ease forwards"
+                        style={{ 
+                            maxWidth: '360px', 
+                            padding: '25px', 
+                            borderRadius: '8px',
+                            backgroundColor: isDarkMode ? '#1a1a1a' : '#ffffff',
+                            color: isDarkMode ? '#ffffff' : '#000000',
+                            boxShadow: isDarkMode ? '0 20px 50px rgba(0,0,0,0.5)' : '0 20px 50px rgba(0,0,0,0.15)',
+                            border: isDarkMode ? '1px solid #333' : '1px solid #eee',
+                            animation: isSizeCalcClosing ? "slide-down 0.3s cubic-bezier(0.32, 0.94, 0.6, 1) forwards" : "slide-up 0.3s cubic-bezier(0.32, 0.94, 0.6, 1) forwards",
+                            transformStyle: "preserve-3d",
+                            willChange: "transform",
+                            ...modalTiltStyle
                         }}
                     >
-                        <button className="close-modal close-modal-small" onClick={closeSizeCalcModal}>
+                        <button 
+                            className="close-modal close-modal-small" 
+                            onClick={closeSizeCalcModal}
+                            style={{ color: isDarkMode ? '#fff' : '#000' }}
+                        >
                             &times;
                         </button>
-                        <h3 className="size-calc-modal-title">📐 Akıllı Beden Sihirbazı</h3>
-                        <p className="size-disclaimer">Vücut ölçülerinize ve kesim tercihinize göre en ideal bedeni öneriyoruz.</p>
-
-                        <div className="size-calc-form">
-                            <div className="calc-group">
-                                <label>Boy: <strong>{calcHeight} cm</strong></label>
-                                <input
-                                    type="range"
-                                    min="150"
-                                    max="200"
-                                    value={calcHeight}
-                                    onChange={(e) => setCalcHeight(Number(e.target.value))}
-                                />
+                        
+                        <h3 className="size-calc-modal-title" style={{ margin: '0 0 5px 0', fontSize: '15px', fontWeight: '800', color: isDarkMode ? '#fff' : '#000', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                            ALICCI Beden Sihirbazı
+                        </h3>
+                        <p style={{ fontSize: '11px', opacity: 0.6, margin: '0 0 20px 0' }}>En doğru streetwear kalıbını bulmak için bilgileri girin.</p>
+                        
+                        <div style={{ marginBottom: '15px' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '5px', fontWeight: '500' }}>
+                                <span>Boy</span>
+                                <span style={{ color: isDarkMode ? '#fff' : '#000', fontWeight: 'bold' }}>{calcHeight} cm</span>
                             </div>
+                            <input 
+                                type="range" min="150" max="210" value={calcHeight} 
+                                onChange={(e) => setCalcHeight(Number(e.target.value))}
+                                style={{ width: '100%', accentColor: isDarkMode ? '#fff' : '#000', cursor: 'pointer' }}
+                            />
+                        </div>
 
-                            <div className="calc-group">
-                                <label>Kilo: <strong>{calcWeight} kg</strong></label>
-                                <input
-                                    type="range"
-                                    min="40"
-                                    max="120"
-                                    value={calcWeight}
-                                    onChange={(e) => setCalcWeight(Number(e.target.value))}
-                                />
+                        <div style={{ marginBottom: '15px' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '5px', fontWeight: '500' }}>
+                                <span>Kilo</span>
+                                <span style={{ color: isDarkMode ? '#fff' : '#000', fontWeight: 'bold' }}>{calcWeight} kg</span>
                             </div>
+                            <input 
+                                type="range" min="40" max="120" value={calcWeight} 
+                                onChange={(e) => setCalcWeight(Number(e.target.value))}
+                                style={{ width: '100%', accentColor: isDarkMode ? '#fff' : '#000', cursor: 'pointer' }}
+                            />
+                        </div>
 
-                            <div className="calc-group">
-                                <label>Kalıp Tercihi:</label>
-                                <div className="fit-options">
-                                    <button
-                                        className={`fit-btn ${calcFit === 'regular' ? 'active' : ''}`}
-                                        onClick={() => setCalcFit('regular')}
-                                    >
-                                        Standart (Regular)
-                                    </button>
-                                    <button
-                                        className={`fit-btn ${calcFit === 'oversize' ? 'active' : ''}`}
-                                        onClick={() => setCalcFit('oversize')}
-                                    >
-                                        Oversize / Dökümlü
-                                    </button>
+                        <div style={{ 
+                            display: 'flex', 
+                            justifyContent: 'center', 
+                            alignItems: 'flex-end', 
+                            height: '105px', 
+                            marginBottom: '20px',
+                            background: isDarkMode ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.01)',
+                            borderBottom: isDarkMode ? '1px dashed #333' : '1px dashed #ddd',
+                            paddingBottom: '4px',
+                            overflow: 'hidden',
+                            borderRadius: '4px'
+                        }}>
+                            <div style={{
+                                transform: `scaleX(${0.65 + ((calcWeight - 40) / 80) * 0.7}) scaleY(${0.72 + ((calcHeight - 150) / 60) * 0.55})`,
+                                transformOrigin: 'bottom center',
+                                transition: 'transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)', 
+                                color: isDarkMode ? '#ffffff' : '#000000',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'center'
+                            }}>
+                                <div className="avatar-breathing-layer">
+                                    <svg width="36" height="75" viewBox="0 0 36 75" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <circle className="avatar-head" cx="18" cy="11" r="6.5" fill="currentColor" />
+                                        <rect x="10" y="21" width="16" height="30" rx="5" fill="currentColor" />
+                                        <rect x="12" y="53" width="4.5" height="20" rx="1.5" fill="currentColor" />
+                                        <rect x="19.5" y="53" width="4.5" height="20" rx="1.5" fill="currentColor" />
+                                        <rect className="avatar-arm-left" x="4.5" y="22.5" width="4" height="22" rx="1.5" fill="currentColor" />
+                                        <rect className="avatar-arm-right" x="27.5" y="22.5" width="4" height="22" rx="1.5" fill="currentColor" />
+                                    </svg>
                                 </div>
                             </div>
+                        </div>
 
-                            <div className="size-calc-result-box">
-                                <span>Önerilen Bedeniniz:</span>
-                                <strong className="recommended-size-tag">
-                                    {getRecommendedSize(calcHeight, calcWeight, calcFit)}
-                                </strong>
+                        <div style={{ marginBottom: '20px' }}>
+                            <span style={{ fontSize: '12px', display: 'block', marginBottom: '8px', fontWeight: '500' }}>Giyim Tarzı</span>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                                <button 
+                                    type="button"
+                                    onClick={() => setCalcFit('regular')}
+                                    style={{
+                                        padding: '10px', fontSize: '11px', fontWeight: '600', border: '1px solid', borderRadius: '4px', cursor: 'pointer', transition: 'all 0.2s',
+                                        borderColor: calcFit === 'regular' ? (isDarkMode ? '#fff' : '#000') : (isDarkMode ? '#444' : '#ccc'),
+                                        backgroundColor: calcFit === 'regular' ? (isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)') : 'transparent',
+                                        color: 'inherit'
+                                    }}
+                                >
+                                    Tam Otursun (Regular)
+                                </button>
+                                <button 
+                                    type="button"
+                                    onClick={() => setCalcFit('oversize')}
+                                    style={{
+                                        padding: '10px', fontSize: '11px', fontWeight: '600', border: '1px solid', borderRadius: '4px', cursor: 'pointer', transition: 'all 0.2s',
+                                        borderColor: calcFit === 'oversize' ? (isDarkMode ? '#fff' : '#000') : (isDarkMode ? '#444' : '#ccc'),
+                                        backgroundColor: calcFit === 'oversize' ? (isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)') : 'transparent',
+                                        color: 'inherit'
+                                    }}
+                                >
+                                    Biraz Bol Olsun (Oversize)
+                                </button>
                             </div>
+                        </div>
 
-                            <button
-                                className="apply-recommended-size-btn"
-                                onClick={() => {
-                                    const recSize = getRecommendedSize(calcHeight, calcWeight, calcFit);
-                                    setSelectedSize(recSize);
-                                    closeSizeCalcModal();
-                                    showToast(`Bedeniniz (${recSize}) seçildi!`);
+                        <button 
+                            type="button"
+                            onClick={() => {
+                                const recommended = getRecommendedSize(calcHeight, calcWeight, calcFit);
+                                setCalcResult(recommended);
+                            }}
+                            style={{ 
+                                width: '100%', 
+                                padding: '12px', 
+                                backgroundColor: isDarkMode ? '#ffffff' : '#000000', 
+                                color: isDarkMode ? '#000000' : '#ffffff', 
+                                border: 'none', 
+                                borderRadius: '4px', 
+                                fontWeight: 'bold', 
+                                fontSize: '12px', 
+                                cursor: 'pointer', 
+                                textTransform: 'uppercase', 
+                                letterSpacing: '1px' 
+                            }}
+                        >
+                            Önerilen Bedeni Gör
+                        </button>
+
+                        {calcResult && (
+                            <div 
+                                className="size-calc-result-box"
+                                style={{ 
+                                    marginTop: '20px', 
+                                    padding: '15px', 
+                                    background: isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.02)', 
+                                    border: isDarkMode ? '1px dashed #555' : '1px dashed #bbb', 
+                                    borderRadius: '4px', 
+                                    textAlign: 'center',
+                                    animation: 'fade-in 0.3s ease'
                                 }}
                             >
-                                Bu Bedeni Seç ({getRecommendedSize(calcHeight, calcWeight, calcFit)})
+                                <p style={{ fontSize: '11px', margin: 0, opacity: 0.7 }}>Sizin için ideal ALICCI kalıbı:</p>
+                                <p style={{ fontSize: '24px', fontWeight: '900', color: isDarkMode ? '#fff' : '#000', margin: '5px 0 12px 0', letterSpacing: '1px' }}>{calcResult}</p>
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        const isSizeSoldOut = selectedProduct?.sold_out_sizes?.includes(calcResult);
+                                        if (isSizeSoldOut) {
+                                            showToast(`Önerilen beden (${calcResult}) maalesef tükendi.`);
+                                        } else {
+                                            setSelectedSize(calcResult);
+                                            showToast(`Beden olarak ${calcResult} seçildi!`);
+                                            closeSizeCalcModal();
+                                        }
+                                    }}
+                                    style={{ 
+                                        background: isDarkMode ? '#fff' : '#000', 
+                                        color: isDarkMode ? '#000' : '#fff', 
+                                        border: 'none', 
+                                        padding: '8px 16px', 
+                                        borderRadius: '4px', 
+                                        fontSize: '11px', 
+                                        fontWeight: '700', 
+                                        cursor: 'pointer',
+                                        textTransform: 'uppercase'
+                                    }}
+                                >
+                                    Bu Bedeni Uygula
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
+
+            {showOrderOptionsModal && (
+                <div className="modal-backdrop" onClick={closeOrderOptionsModal}>
+                    <div className="modal-content-base order-options-modal" onClick={(e) => e.stopPropagation()}>
+                        <button className="close-modal close-modal-small" onClick={closeOrderOptionsModal}>&times;</button>
+                        <h2>Siparişinizi Tamamlayın</h2>
+                        <p>Siparişiniz için ödeme yapmak üzere bizimle iletişime geçebilirsiniz:</p>
+                        <div className="contact-dm-buttons">
+                            <button className="themed-social-button whatsapp-contact" onClick={() => handleCreateOrder("whatsapp")}>
+                                WhatsApp ile Sipariş Ver
+                            </button>
+                            <button className="themed-social-button instagram-contact" onClick={() => handleCreateOrder("instagram")}>
+                                Instagram DM ile Sipariş Ver
                             </button>
                         </div>
                     </div>
                 </div>
             )}
 
-            {/* ==========================================
-                KARGO TAKİP MODALI
-               ========================================== */}
-            {(showTrackingModal || isTrackingClosing) && (
-                <div
-                    className="modal-backdrop"
-                    onClick={closeTrackingModal}
-                    style={{
-                        zIndex: 1000004,
-                        animation: isTrackingClosing ? "fade-out 0.3s ease forwards" : "fade-in 0.3s ease forwards"
-                    }}
-                >
-                    <div
-                        className="modal-content-base tracking-modal"
-                        onClick={(e) => e.stopPropagation()}
-                        style={{
-                            animation: isTrackingClosing ? "slide-down 0.3s ease forwards" : "slide-up 0.3s ease forwards"
-                        }}
-                    >
-                        <button className="close-modal close-modal-small" onClick={closeTrackingModal}>
-                            &times;
-                        </button>
-                        <h3>📦 Kargo Takibi & Sipariş Sorgulama</h3>
-                        <p style={{ fontSize: '13px', opacity: 0.8, marginBottom: '15px' }}>
-                            Siparişinizi sorgulamak için ALC-XXXXXX formatındaki sipariş kodunuzu girin.
-                        </p>
-
+            {showTrackingModal && (
+                <div className="modal-backdrop" style={{ animation: isTrackingClosing ? "fade-out 0.3s ease forwards" : "fade-in 0.3s ease forwards" }} onClick={closeTrackingModal}>
+                    <div className="modal-content-base tracking-modal-content" style={{ animation: isTrackingClosing ? "slide-down 0.3s ease forwards" : "slide-up 0.3s ease forwards" }} onClick={(e) => e.stopPropagation()}>
+                        <button className="close-modal close-modal-small" onClick={closeTrackingModal}>&times;</button>
+                        <h2>Kargo Takip Paneli</h2>
+                        <p style={{ fontSize: '13px', marginBottom: '15px', opacity: 0.8 }}>Sipariş verirken size verilen ALC ile başlayan sipariş kodunu giriniz.</p>
+                        
                         <div className="tracking-search-box">
-                            <input
-                                type="text"
-                                placeholder="Sipariş Kodu (Örn: ALC-123456)"
+                            <input 
+                                type="text" 
+                                placeholder="Örn: ALC-123456" 
                                 value={trackingCodeInput}
                                 onChange={(e) => setTrackingCodeInput(e.target.value)}
-                                onKeyDown={(e) => e.key === 'Enter' && handleTrackOrder()}
                             />
                             <button onClick={handleTrackOrder} disabled={isTrackingLoading}>
-                                {isTrackingLoading ? "Aranıyor..." : "Sorgula"}
+                                {isTrackingLoading ? (
+                                    <><span className="spinner"></span> Sorgulanıyor...</>
+                                ) : (
+                                    "Sorgula"
+                                )}
                             </button>
                         </div>
 
-                        {trackingError && <p className="tracking-error" style={{ color: '#ff3b30', fontSize: '13px' }}>{trackingError}</p>}
+                        {trackingError && <p style={{ color: 'red', fontSize: '13px' }}>{trackingError}</p>}
 
                         {searchedOrder && (
-                            <div className="searched-order-details" style={{ marginTop: '20px', borderTop: '1px solid rgba(128,128,128,0.2)', paddingTop: '15px' }}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                    <h4 style={{ margin: 0 }}>Sipariş #{searchedOrder.order_code}</h4>
-                                    <span className="order-status-badge" style={{ padding: '4px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: 'bold', background: '#34d399', color: '#000' }}>
-                                        {searchedOrder.status || "Hazırlanıyor"}
+                            <div className="tracking-result tracking-result-wrapper" style={{ background: 'rgba(128,128,128,0.1)', padding: '15px', borderRadius: '4px', textAlign: 'left', marginTop: '15px' }}>
+                                <p><strong>Sipariş Kodu:</strong> {searchedOrder.order_code}</p>
+                                <p><strong>Durum:</strong> 
+                                    <span style={{ 
+                                        color: searchedOrder.status === 'Kargoda' || searchedOrder.status === 'Teslim Edildi' ? '#34c759' : 
+                                               searchedOrder.status === 'İptal Edildi' ? '#ff3b30' : '#ff9500', 
+                                        fontWeight: 'bold',
+                                        marginLeft: '5px'
+                                    }}>
+                                        {searchedOrder.status}
                                     </span>
-                                </div>
-                                <p style={{ fontSize: '12px', opacity: 0.7, margin: '5px 0 15px' }}>
-                                    Tarih: {new Date(searchedOrder.created_at || Date.now()).toLocaleDateString('tr-TR')}
                                 </p>
+                                <p><strong>Kargo Firması:</strong> {searchedOrder.cargo_company || '-'}</p>
+                                <p><strong>Kargo Takip No:</strong> {searchedOrder.cargo_tracker_code || '-'}</p>
+                                <p><strong>Toplam Tutar:</strong> {searchedOrder.total_price} TL</p>
 
-                                <div className="order-items-list" style={{ fontSize: '13px', marginBottom: '15px' }}>
-                                    <strong>Ürünler:</strong>
-                                    <ul style={{ paddingLeft: '20px', margin: '5px 0' }}>
-                                        {(searchedOrder.cart_items || []).map((item, i) => (
-                                            <li key={i}>{item.name} ({item.size}) x{item.quantity} - {item.price} TL</li>
-                                        ))}
-                                    </ul>
-                                    <strong>Toplam Tutar: {searchedOrder.total_price} TL</strong>
-                                </div>
-
-                                <div className="animated-truck-road">
-                                    <div className={`animated-truck ${searchedOrder.status === 'Onay Bekleniyor' ? 'waiting' : ''}`}>
-                                        <svg width="32" height="20" viewBox="0 0 24 24" fill="currentColor">
-                                            <path d="M20 8h-3V4H3c-1.1 0-2 .9-2 2v11h2c0 1.66 1.34 3 3 3s3-1.34 3-3h6c0 1.66 1.34 3 3 3s3-1.34 3-3h2v-5l-3-4zM6 18.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm13.5-9l1.96 2.5H17V9.5h2.5zm-1.5 9c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/>
-                                        </svg>
+                                {searchedOrder.status === "Kargoda" ? (
+                                    <div className="animated-truck-road">
+                                        <div className="animated-truck">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="20" viewBox="0 0 24 24" fill="none" stroke={isDarkMode ? "#fff" : "#000"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                <rect x="1" y="3" width="15" height="13"></rect>
+                                                <polygon points="16 8 20 8 23 11 23 16 16 16 8"></polygon>
+                                                <circle cx="5.5" cy="18.5" r="2.5"></circle>
+                                                <circle cx="18.5" cy="18.5" r="2.5"></circle>
+                                            </svg>
+                                        </div>
                                     </div>
-                                </div>
+                                ) : searchedOrder.status === "Onay Bekleniyor" ? (
+                                    <div className="animated-truck-road">
+                                        <div className="animated-truck waiting">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="20" viewBox="0 0 24 24" fill="none" stroke="#ff9500" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                <rect x="1" y="3" width="15" height="13"></rect>
+                                                <polygon points="16 8 20 8 23 11 23 16 16 16 8"></polygon>
+                                                <circle cx="5.5" cy="18.5" r="2.5"></circle>
+                                                <circle cx="18.5" cy="18.5" r="2.5"></circle>
+                                            </svg>
+                                        </div>
+                                    </div>
+                                ) : null}
                             </div>
                         )}
-                    </div>
-                </div>
-            )}
 
-            {/* ==========================================
-                SİPARİŞ SEÇENEKLERİ MODALI
-               ========================================== */}
-            {showOrderOptionsModal && (
-                <div className="modal-backdrop" onClick={closeOrderOptionsModal} style={{ zIndex: 1000003 }}>
-                    <div className="modal-content-base order-options-modal" onClick={(e) => e.stopPropagation()}>
-                        <button className="close-modal close-modal-small" onClick={closeOrderOptionsModal}>
-                            &times;
-                        </button>
-                        <h3>Sipariş Yöntemi Seçin</h3>
-                        <p style={{ fontSize: '13px', opacity: 0.8, marginBottom: '20px' }}>
-                            Siparişinizi oluşturmak için tercih ettiğiniz iletişim kanalını seçin.
-                        </p>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                            <button
-                                className="themed-social-button whatsapp-contact"
-                                onClick={() => handleCreateOrder('whatsapp')}
-                                style={{ border: 'none', cursor: 'pointer', padding: '14px', borderRadius: '6px', fontWeight: 'bold' }}
-                            >
-                                💬 WhatsApp ile Siparişi Tamamla
-                            </button>
-                            <button
-                                className="themed-social-button instagram-contact"
-                                onClick={() => handleCreateOrder('instagram')}
-                                style={{ border: 'none', cursor: 'pointer', padding: '14px', borderRadius: '6px', fontWeight: 'bold' }}
-                            >
-                                📸 Instagram DM ile Siparişi Tamamla
-                            </button>
+                        <div className="contact-dm-buttons tracking-dm-buttons" style={{ marginTop: '20px', borderTop: '1px solid rgba(128,128,128,0.2)', paddingTop: '15px' }}>
+                            <p style={{ fontSize: '12px', marginBottom: '10px' }}>Sorun mu yaşıyorsunuz? Doğrudan destek alın:</p>
+                            <a href={`https://wa.me/${WHATSAPP_NUMBER}`} target="_blank" rel="noopener noreferrer" className="themed-social-button whatsapp-contact">WhatsApp Destek</a>
                         </div>
                     </div>
                 </div>
             )}
 
-            {/* ==========================================
-                SİPARİŞ ONAY MODALI
-               ========================================== */}
             {showConfirmationModal && (
-                <div className="modal-backdrop" onClick={closeConfirmationModal} style={{ zIndex: 1000006 }}>
-                    <div className="modal-content-base confirmation-modal" onClick={(e) => e.stopPropagation()}>
-                        <button className="close-modal close-modal-small" onClick={closeConfirmationModal}>
-                            &times;
-                        </button>
-                        <div style={{ textAlign: 'center', padding: '10px' }}>
-                            <div style={{ fontSize: '48px', marginBottom: '10px' }}>🎉</div>
-                            <h3>Siparişiniz Alındı!</h3>
-                            <p style={{ fontSize: '13px', opacity: 0.85, margin: '15px 0' }}>
-                                Sipariş kodunuz kopyalandı. Bize WhatsApp veya Instagram DM üzerinden ileterek siparişinizi onaylayabilirsiniz.
-                            </p>
-                            <button
-                                onClick={closeConfirmationModal}
-                                style={{ padding: '12px 24px', background: '#000', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}
-                            >
-                                Anladım
-                            </button>
-                        </div>
+                <div className="modal-backdrop" onClick={closeConfirmationModal}>
+                    <div className="modal-content-base order-confirmation" onClick={(e) => e.stopPropagation()}>
+                        <button className="close-modal close-modal-small" onClick={closeConfirmationModal}>&times;</button>
+                        <h2>Yönlendiriliyorsunuz...</h2>
+                        <p>Siparişinizi tamamlamak için lütfen açılan uygulamada mesajı <strong>göndermeyi unutmayın.</strong></p>
+                        <button onClick={closeConfirmationModal}>Anladım</button>
                     </div>
                 </div>
             )}
 
-            {/* ==========================================
-                IYZICO ÖDEME MODALI
-               ========================================== */}
             {(showIyzicoModal || isIyzicoClosing) && (
-                <div
-                    className="modal-backdrop"
-                    onClick={closeIyzicoModal}
-                    style={{
-                        zIndex: 1000007,
+                <div 
+                    className="fixed inset-0 z-[1000010] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm transition-opacity duration-300"
+                    style={{ 
                         animation: isIyzicoClosing ? "fade-out 0.3s ease forwards" : "fade-in 0.3s ease forwards"
                     }}
+                    onClick={closeIyzicoModal}
                 >
-                    <div
-                        className="modal-content-base iyzico-modal"
-                        onClick={(e) => e.stopPropagation()}
-                        style={{
-                            maxWidth: '600px',
-                            maxHeight: '90vh',
-                            overflowY: 'auto',
-                            animation: isIyzicoClosing ? "slide-down 0.3s ease forwards" : "slide-up 0.3s ease forwards"
+                    <div 
+                        className="relative w-full max-w-[550px] max-h-[90vh] overflow-y-auto bg-white dark:bg-[#1a1a1a] rounded-lg p-6 shadow-2xl border border-gray-100 dark:border-[#333] transition-all duration-300"
+                        style={{ 
+                            animation: isIyzicoClosing ? "slide-down 0.3s cubic-bezier(0.32, 0.94, 0.6, 1) forwards" : "slide-up 0.3s cubic-bezier(0.32, 0.94, 0.6, 1) forwards"
                         }}
+                        onClick={(e) => e.stopPropagation()}
                     >
-                        <button className="close-modal close-modal-small" onClick={closeIyzicoModal}>
+                        <button 
+                            className="absolute top-4 right-4 text-2xl font-bold cursor-pointer hover:opacity-70 dark:text-white text-black bg-transparent border-none outline-none"
+                            onClick={closeIyzicoModal}
+                        >
                             &times;
                         </button>
+                        
+                        <h3 className="text-lg font-extrabold uppercase tracking-wider mb-1 dark:text-white text-black font-sans">
+                            ALICCI GÜVENLİ ÖDEME
+                        </h3>
+                        <p className="text-xs opacity-60 mb-6 dark:text-gray-400 text-gray-600 font-sans">
+                            256-bit SSL korumalı Iyzico altyapısıyla ödemenizi güvenle tamamlayın.
+                        </p>
+
                         {isIyzicoLoading ? (
-                            <div style={{ textAlign: 'center', padding: '40px 20px' }}>
-                                <p style={{ fontWeight: 'bold' }}>Ödeme Formu Yükleniyor...</p>
-                                <p style={{ fontSize: '12px', opacity: 0.6 }}>Lütfen bekleyiniz, güvenli ödeme sayfasına yönlendiriliyorsunuz.</p>
+                            <div className="flex flex-col items-center justify-center py-16 gap-4">
+                                <div className="w-8 h-8 border-4 border-black dark:border-white border-t-transparent rounded-full animate-spin"></div>
+                                <p className="text-sm font-semibold opacity-75 font-sans">Ödeme formu hazırlanıyor, lütfen bekleyin...</p>
                             </div>
                         ) : (
-                            <div id="iyzipay-checkout-form" className="responsive" dangerouslySetInnerHTML={{ __html: iyzicoFormHtml }} />
+                            <div 
+                                id="iyzipay-checkout-form" 
+                                className="responsive w-full min-h-[300px]"
+                                dangerouslySetInnerHTML={{ __html: iyzicoFormHtml }}
+                            />
                         )}
                     </div>
                 </div>
             )}
+            
+            {toast && (
+                <div className="toast-container">
+                    <div className="toast-message">{toast}</div>
+                </div>
+            )}
 
-            {/* ==========================================
-                AI CHATBOT BİLEŞENİ
-               ========================================== */}
+            {/* Akıllı Müşteri Destek Chatbot Bileşeni */}
             <Chatbot isOpen={isChatbotOpen} setIsOpen={toggleChatbot} />
 
-            {/* ==========================================
-                TOAST BİLDİRİMİ
-               ========================================== */}
-            {toast && <div className="toast-container">{toast}</div>}
+            <Analytics />
         </>
     );
 }
