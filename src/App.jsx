@@ -2445,6 +2445,9 @@ function App() {
 
                                 <div className="product-info-mobile-order" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
                                     <h2>{selectedProduct.name}</h2>
+                                    <p className="modal-price" style={{ fontSize: '1.3em', fontWeight: '600', margin: '4px 0 12px' }}>
+                                        {selectedProduct.price} TL
+                                    </p>
                                     <p className="desc">{selectedProduct.description || "Bu ürün ALICCI koleksiyonunun zarif parçalarındandır."}</p>
                                     
                                     <div className="size-select" style={{ marginBottom: '10px' }}>
