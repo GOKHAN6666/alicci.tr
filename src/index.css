@@ -4295,6 +4295,43 @@ body.dark-mode .review-textarea {
     margin: 0;
 }
 
+.testimonial-cta {
+    text-align: center;
+    padding: 8px 0;
+}
+
+.testimonial-cta-text {
+    font-size: 15px;
+    font-weight: 500;
+    margin: 0 0 16px;
+    opacity: 0.85;
+}
+
+.testimonial-cta-btn {
+    padding: 12px 28px;
+    background: #111;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    font-size: 13px;
+    letter-spacing: 0.3px;
+    cursor: pointer;
+    transition: background 0.25s ease;
+}
+
+.testimonial-cta-btn:hover {
+    background: #333;
+}
+
+body.dark-mode .testimonial-cta-btn {
+    background: #f4f4f4;
+    color: #111;
+}
+
+body.dark-mode .testimonial-cta-btn:hover {
+    background: #ccc;
+}
+
 body.dark-mode .testimonial-card {
     background: rgba(255,255,255,0.05);
 }
