@@ -298,6 +298,22 @@ function App() {
     const [isCartClosing, setIsCartClosing] = useState(false); 
     const [currentModalImageIndex, setCurrentModalImageIndex] = useState(0);
     const [showOrderOptionsModal, setShowOrderOptionsModal] = useState(false);
+    const [reviews, setReviews] = useState([]);
+    const [isLoadingReviews, setIsLoadingReviews] = useState(false);
+    const [reviewName, setReviewName] = useState("");
+    const [reviewRating, setReviewRating] = useState(0);
+    const [reviewHoverRating, setReviewHoverRating] = useState(0);
+    const [reviewComment, setReviewComment] = useState("");
+    const [isSubmittingReview, setIsSubmittingReview] = useState(false);
+    const [siteTestimonials, setSiteTestimonials] = useState([]);
+    const [isLoadingTestimonials, setIsLoadingTestimonials] = useState(false);
+    const [testimonialName, setTestimonialName] = useState("");
+    const [testimonialRating, setTestimonialRating] = useState(0);
+    const [testimonialHoverRating, setTestimonialHoverRating] = useState(0);
+    const [testimonialComment, setTestimonialComment] = useState("");
+    const [testimonialHoneypot, setTestimonialHoneypot] = useState("");
+    const [isSubmittingTestimonial, setIsSubmittingTestimonial] = useState(false);
+    const [testimonialSubmitted, setTestimonialSubmitted] = useState(false);
     const [showTrackingModal, setShowTrackingModal] = useState(false);
     const [isTrackingClosing, setIsTrackingClosing] = useState(false);
     const [showConfirmationModal, setShowConfirmationModal] = useState(false);
@@ -478,6 +494,49 @@ function App() {
     };
 
     useEffect(() => {
+        const fetchSiteTestimonials = async () => {
+            setIsLoadingTestimonials(true);
+            const { data, error } = await supabase
+                .from("testimonials")
+                .select("*")
+                .eq("approved", true)
+                .order("created_at", { ascending: false })
+                .limit(12);
+            setIsLoadingTestimonials(false);
+            if (!error) setSiteTestimonials(data || []);
+        };
+        fetchSiteTestimonials();
+    }, []);
+
+    const handleSubmitTestimonial = async () => {
+        // Honeypot: bot ise bu alan dolu gelir, sessizce yut
+        if (testimonialHoneypot) {
+            setTestimonialSubmitted(true);
+            return;
+        }
+        if (!testimonialName.trim() || testimonialRating === 0 || !testimonialComment.trim()) {
+            showToast("Lütfen isim, puan ve yorum alanlarını doldur.");
+            return;
+        }
+        setIsSubmittingTestimonial(true);
+        const { error } = await supabase.from("testimonials").insert([{
+            customer_name: testimonialName.trim(),
+            rating: testimonialRating,
+            comment: testimonialComment.trim(),
+            approved: false,
+        }]);
+        setIsSubmittingTestimonial(false);
+        if (error) {
+            showToast("Yorum gönderilemedi, tekrar dene.");
+            return;
+        }
+        setTestimonialSubmitted(true);
+        setTestimonialName("");
+        setTestimonialRating(0);
+        setTestimonialComment("");
+    };
+
+    useEffect(() => {
         const fetchProducts = async () => {
             setIsLoading(true);
             const { data, error } = await supabase.from("products").select("*");
@@ -599,12 +658,70 @@ function App() {
         };
     }, [iyzicoFormHtml, showIyzicoModal]);
 
+    const fetchReviews = async (productId) => {
+        setIsLoadingReviews(true);
+        const { data, error } = await supabase
+            .from("reviews")
+            .select("*")
+            .eq("product_id", String(productId))
+            .order("created_at", { ascending: false });
+        setIsLoadingReviews(false);
+        if (!error) setReviews(data || []);
+    };
+
+    const handleSubmitReview = async () => {
+        if (!reviewName.trim() || reviewRating === 0) {
+            showToast("Lütfen isim ve puan girin.");
+            return;
+        }
+        setIsSubmittingReview(true);
+        const { error } = await supabase.from("reviews").insert([{
+            product_id: String(selectedProduct.id),
+            customer_name: reviewName.trim(),
+            rating: reviewRating,
+            comment: reviewComment.trim(),
+        }]);
+        setIsSubmittingReview(false);
+        if (error) {
+            showToast("Yorum gönderilemedi, tekrar dene.");
+            return;
+        }
+        showToast("Yorumun için teşekkürler!");
+        setReviewName("");
+        setReviewRating(0);
+        setReviewComment("");
+        fetchReviews(selectedProduct.id);
+    };
+
     const openProductModal = (product) => {
         setIsChatbotOpen(false);
         setSelectedProduct(product);
         setIsProductClosing(false);
         setCurrentModalImageIndex(0);
         setSelectedSize("");
+        setReviews([]);
+        setReviewName("");
+        setReviewRating(0);
+        setReviewHoverRating(0);
+        setReviewComment("");
+        fetchReviews(product.id);
+
+        // Analytics: ürün görüntülendi
+        if (typeof window !== "undefined" && window.gtag) {
+            window.gtag("event", "view_item", {
+                currency: "TRY",
+                value: product.price,
+                items: [{ item_id: String(product.id), item_name: product.name, price: product.price }],
+            });
+        }
+        if (typeof window !== "undefined" && window.fbq) {
+            window.fbq("track", "ViewContent", {
+                content_ids: [String(product.id)],
+                content_name: product.name,
+                currency: "TRY",
+                value: product.price,
+            });
+        }
     };
 
     const closeProductModal = () => {
@@ -693,6 +810,23 @@ function App() {
             closeProductModal();
             setIsChatbotOpen(false);
             setIsCartOpen(true);
+
+            // Analytics: sepete eklendi
+            if (typeof window !== "undefined" && window.gtag) {
+                window.gtag("event", "add_to_cart", {
+                    currency: "TRY",
+                    value: selectedProduct.price,
+                    items: [{ item_id: String(selectedProduct.id), item_name: selectedProduct.name, price: selectedProduct.price, item_variant: selectedSize }],
+                });
+            }
+            if (typeof window !== "undefined" && window.fbq) {
+                window.fbq("track", "AddToCart", {
+                    content_ids: [String(selectedProduct.id)],
+                    content_name: selectedProduct.name,
+                    currency: "TRY",
+                    value: selectedProduct.price,
+                });
+            }
         }
     };
 
@@ -2017,6 +2151,12 @@ function App() {
                         <button className="secondary-checkout-btn" onClick={() => {
                             closeCart();
                             setShowOrderOptionsModal(true);
+                            if (typeof window !== "undefined" && window.gtag) {
+                                window.gtag("event", "begin_checkout", { currency: "TRY" });
+                            }
+                            if (typeof window !== "undefined" && window.fbq) {
+                                window.fbq("track", "InitiateCheckout");
+                            }
                         }}>WhatsApp / DM ile Sipariş Ver</button>
                     </>
                 )}
@@ -2179,6 +2319,83 @@ function App() {
                     <div className="contact-dm-buttons">
                         <a href={`https://wa.me/${WHATSAPP_NUMBER}`} target="_blank" rel="noopener noreferrer" className="themed-social-button whatsapp-contact">WhatsApp ile İletişime Geç</a>
                         <a href={`https://www.instagram.com/${INSTAGRAM_USERNAME}`} target="_blank" rel="noopener noreferrer" className="themed-social-button instagram-contact">Instagram ile İletişime Geç</a>
+                    </div>
+                </section>
+
+                <section className="testimonials-section" id="testimonials">
+                    <h2 className="testimonials-heading">Müşterilerimiz Ne Diyor?</h2>
+
+                    {isLoadingTestimonials && <p style={{ textAlign: 'center', opacity: 0.6 }}>Yükleniyor...</p>}
+
+                    {!isLoadingTestimonials && siteTestimonials.length === 0 && (
+                        <p style={{ textAlign: 'center', opacity: 0.6 }}>Henüz onaylanmış bir değerlendirme yok.</p>
+                    )}
+
+                    <div className="testimonials-grid">
+                        {siteTestimonials.map((t) => (
+                            <div key={t.id} className="testimonial-card">
+                                <span className="testimonial-stars">
+                                    {"★".repeat(t.rating)}{"☆".repeat(5 - t.rating)}
+                                </span>
+                                <p className="testimonial-comment">"{t.comment}"</p>
+                                <p className="testimonial-author">— {t.customer_name}</p>
+                            </div>
+                        ))}
+                    </div>
+
+                    <div className="testimonial-form">
+                        {testimonialSubmitted ? (
+                            <p className="testimonial-thanks">Teşekkürler! Yorumun incelendikten sonra yayınlanacak.</p>
+                        ) : (
+                            <>
+                                <p className="testimonial-form-title">Bizimle deneyimini paylaş</p>
+                                <div className="review-star-picker">
+                                    {[1, 2, 3, 4, 5].map((star) => (
+                                        <span
+                                            key={star}
+                                            className="review-star-pick"
+                                            onMouseEnter={() => setTestimonialHoverRating(star)}
+                                            onMouseLeave={() => setTestimonialHoverRating(0)}
+                                            onClick={() => setTestimonialRating(star)}
+                                        >
+                                            {(testimonialHoverRating || testimonialRating) >= star ? "★" : "☆"}
+                                        </span>
+                                    ))}
+                                </div>
+                                <input
+                                    type="text"
+                                    placeholder="Adın"
+                                    value={testimonialName}
+                                    onChange={(e) => setTestimonialName(e.target.value)}
+                                    className="review-input"
+                                />
+                                {/* Honeypot alanı — botlar için gizli, insanlar görmez/doldurmaz */}
+                                <input
+                                    type="text"
+                                    name="website"
+                                    value={testimonialHoneypot}
+                                    onChange={(e) => setTestimonialHoneypot(e.target.value)}
+                                    style={{ position: 'absolute', left: '-9999px', width: '1px', height: '1px', opacity: 0 }}
+                                    tabIndex={-1}
+                                    autoComplete="off"
+                                />
+                                <textarea
+                                    placeholder="Deneyimini yaz..."
+                                    value={testimonialComment}
+                                    onChange={(e) => setTestimonialComment(e.target.value)}
+                                    className="review-textarea"
+                                    rows={3}
+                                />
+                                <button
+                                    className="review-submit-btn"
+                                    onClick={handleSubmitTestimonial}
+                                    disabled={isSubmittingTestimonial}
+                                >
+                                    {isSubmittingTestimonial ? "Gönderiliyor..." : "Yorumu Gönder"}
+                                </button>
+                                <p className="testimonial-moderation-note">Yorumlar onaylandıktan sonra yayınlanır.</p>
+                            </>
+                        )}
                     </div>
                 </section>
             </main>
@@ -2445,9 +2662,23 @@ function App() {
 
                                 <div className="product-info-mobile-order" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
                                     <h2>{selectedProduct.name}</h2>
-                                    <p className="modal-price" style={{ fontSize: '1.3em', fontWeight: '600', margin: '4px 0 12px' }}>
+                                    <p className="modal-price" style={{ fontSize: '1.3em', fontWeight: '600', margin: '4px 0 4px' }}>
                                         {selectedProduct.price} TL
                                     </p>
+                                    {reviews.length > 0 && (
+                                        <div
+                                            style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '12px', cursor: 'pointer' }}
+                                            onClick={() => document.getElementById('reviews-section')?.scrollIntoView({ behavior: 'smooth' })}
+                                        >
+                                            <span style={{ color: '#f5a623', fontSize: '14px', letterSpacing: '1px' }}>
+                                                {"★".repeat(Math.round(reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length))}
+                                                {"☆".repeat(5 - Math.round(reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length))}
+                                            </span>
+                                            <span style={{ fontSize: '12px', opacity: 0.7 }}>
+                                                {(reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1)} ({reviews.length} değerlendirme)
+                                            </span>
+                                        </div>
+                                    )}
                                     <p className="desc">{selectedProduct.description || "Bu ürün ALICCI koleksiyonunun zarif parçalarındandır."}</p>
                                     
                                     <div className="size-select" style={{ marginBottom: '10px' }}>
@@ -2524,6 +2755,68 @@ function App() {
                                         }}
                                     >
                                         * Kalıplar kumaş esnekliğine ve kesim tarzına bağlı olarak değişiklik gösterebilir. Ölçümler el yapımı olduğu için küçük sapmalar yaşanabilir. Tarzınıza en uygun bedeni seçtiğinizden emin olun.
+                                    </div>
+
+                                    <div id="reviews-section" className="reviews-section">
+                                        <h3 className="reviews-title">Değerlendirmeler ({reviews.length})</h3>
+
+                                        {isLoadingReviews && <p style={{ fontSize: '13px', opacity: 0.6 }}>Yükleniyor...</p>}
+
+                                        {!isLoadingReviews && reviews.length === 0 && (
+                                            <p style={{ fontSize: '13px', opacity: 0.6 }}>Bu ürün için henüz değerlendirme yok. İlk yorumu sen yaz!</p>
+                                        )}
+
+                                        <div className="reviews-list">
+                                            {reviews.map((r) => (
+                                                <div key={r.id} className="review-item">
+                                                    <div className="review-item-head">
+                                                        <span className="review-stars">
+                                                            {"★".repeat(r.rating)}{"☆".repeat(5 - r.rating)}
+                                                        </span>
+                                                        <span className="review-author">{r.customer_name}</span>
+                                                    </div>
+                                                    {r.comment && <p className="review-comment">{r.comment}</p>}
+                                                </div>
+                                            ))}
+                                        </div>
+
+                                        <div className="review-form">
+                                            <p className="review-form-title">Yorum yaz</p>
+                                            <div className="review-star-picker">
+                                                {[1, 2, 3, 4, 5].map((star) => (
+                                                    <span
+                                                        key={star}
+                                                        className="review-star-pick"
+                                                        onMouseEnter={() => setReviewHoverRating(star)}
+                                                        onMouseLeave={() => setReviewHoverRating(0)}
+                                                        onClick={() => setReviewRating(star)}
+                                                    >
+                                                        {(reviewHoverRating || reviewRating) >= star ? "★" : "☆"}
+                                                    </span>
+                                                ))}
+                                            </div>
+                                            <input
+                                                type="text"
+                                                placeholder="Adın"
+                                                value={reviewName}
+                                                onChange={(e) => setReviewName(e.target.value)}
+                                                className="review-input"
+                                            />
+                                            <textarea
+                                                placeholder="Ürün hakkında ne düşünüyorsun? (opsiyonel)"
+                                                value={reviewComment}
+                                                onChange={(e) => setReviewComment(e.target.value)}
+                                                className="review-textarea"
+                                                rows={3}
+                                            />
+                                            <button
+                                                className="review-submit-btn"
+                                                onClick={handleSubmitReview}
+                                                disabled={isSubmittingReview}
+                                            >
+                                                {isSubmittingReview ? "Gönderiliyor..." : "Yorumu Gönder"}
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
