@@ -314,6 +314,7 @@ function App() {
     const [testimonialHoneypot, setTestimonialHoneypot] = useState("");
     const [isSubmittingTestimonial, setIsSubmittingTestimonial] = useState(false);
     const [testimonialSubmitted, setTestimonialSubmitted] = useState(false);
+    const [showTestimonialForm, setShowTestimonialForm] = useState(false);
     const [showTrackingModal, setShowTrackingModal] = useState(false);
     const [isTrackingClosing, setIsTrackingClosing] = useState(false);
     const [showConfirmationModal, setShowConfirmationModal] = useState(false);
@@ -2346,6 +2347,16 @@ function App() {
                     <div className="testimonial-form">
                         {testimonialSubmitted ? (
                             <p className="testimonial-thanks">Teşekkürler! Yorumun incelendikten sonra yayınlanacak.</p>
+                        ) : !showTestimonialForm ? (
+                            <div className="testimonial-cta">
+                                <p className="testimonial-cta-text">Sen de deneyimini paylaşmak ister misin?</p>
+                                <button
+                                    className="testimonial-cta-btn"
+                                    onClick={() => setShowTestimonialForm(true)}
+                                >
+                                    Yorum Yap
+                                </button>
+                            </div>
                         ) : (
                             <>
                                 <p className="testimonial-form-title">Bizimle deneyimini paylaş</p>
