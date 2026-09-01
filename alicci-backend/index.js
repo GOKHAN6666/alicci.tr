@@ -92,10 +92,14 @@ app.post('/api/chat', async (req, res) => {
 
             let productDetailsText = "Şu an sistemde aktif ürün bilgisi bulunamadı.";
             if (product) {
+                const shortDescription = (product.description || "")
+                    .toString()
+                    .slice(0, 220)
+                    .trim();
                 productDetailsText = `
 - Ürün Adı: ${product.name}
 - Fiyatı: ${product.price} TL
-- Açıklama / Detay: ${product.description}
+- Açıklama (özet, bunu birebir kopyalama): ${shortDescription}${(product.description || "").length > 220 ? "..." : ""}
 - Stok Durumu: ${product.stock > 0 ? `${product.stock} adet stokta var` : 'Stok tükendi'}
                 `;
             }
@@ -116,6 +120,8 @@ KESİN KURAL VE YASAKLAR:
 3. Müşteri sadece selam verdiğinde ürün veya iade anlatma. Sadece kibarca karşıla.
 4. Müşteri kargo takip kodu yazdığında örn."alc-123456" ona bu kodu yukarıdaki kargo takip menüsüne girmesi gerektiğini söyle.
 5. Müşteri genel kültür, tarih, günlük sohbet veya e-ticaret dışı bir soru sorduğunda sorusunu cevapsız bırakma; kısa ve doğru yanıt verdikten sonra konuyu mağazaya bağla.
+6. Aynı bilgiyi, cümleyi veya açıklamayı yanıt içinde ASLA iki kez tekrar etme. Ürün açıklamasını olduğu gibi kopyalayıp yapıştırma; kendi cümlelerinle EN FAZLA 2-3 cümlede özetle.
+7. Yanıtların kısa ve öz olsun, gereksiz uzatma.
 
 MÜŞTERİ YÖNLENDİRME AKIŞI:
 
@@ -130,7 +136,7 @@ MÜŞTERİ YÖNLENDİRME AKIŞI:
    - Öne çıkan ürünü, fiyatını ve stok bilgisini özetle.
 
 4. AŞAMA - DETAY VEYA ALMA ONAYI:
-   - Veritabanındaki ürün açıklamasını (description) aktar ve sepete yönlendir.
+   - Ürünü kendi cümlelerinle KISA (2-3 cümle) anlat, veritabanındaki açıklamayı birebir/uzun şekilde kopyalama. Sonrasında sepete yönlendir.
 
 5. AŞAMA - GENEL BİLGİ VE SİTE DIŞI SORULAR (örneğin "İstanbul'u kim aldı"):
    - Sorulan genel soruyu doğrudan, doğru ve kısa bir şekilde yanıtla. Yanıtın sonuna soru işareti kullanmadan mağaza yardımına hazır olduğunu ekle.
@@ -180,6 +186,18 @@ MÜŞTERİ YÖNLENDİRME AKIŞI:
 
                 // 3. Boşluk düzenleme
                 reply = reply.replace(/\s+/g, " ").trim();
+
+                // 4. Tekrar eden cümleleri temizle (model aynı bilgiyi iki kez yazarsa)
+                const sentences = reply.split(/(?<=[.!])\s+/);
+                const seen = new Set();
+                const deduped = [];
+                for (const sentence of sentences) {
+                    const key = sentence.toLowerCase().replace(/[^a-zçğıöşü0-9]/gi, "").trim();
+                    if (key.length > 15 && seen.has(key)) continue;
+                    if (key.length > 15) seen.add(key);
+                    deduped.push(sentence);
+                }
+                reply = deduped.join(" ").trim();
 
                 return res.json({ reply });
             }
