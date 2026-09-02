@@ -1,5 +1,6 @@
 name: Fix cargo tracking RPC
 
+# Triggered once to apply the cargo tracking handler fix.
 on:
   push:
     branches: [main]
