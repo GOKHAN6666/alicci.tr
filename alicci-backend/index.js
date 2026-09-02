@@ -227,141 +227,107 @@ MÜŞTERİ YÖNLENDİRME AKIŞI:
 });
 
 // ==========================================
-// 2b. ÖDEME FORMU BAŞLATMA ROTASI (SHOPIER)
+// 2b. ÖDEME BAŞLATMA ROTASI (SHOPIER — GERÇEK REST API v1)
 // ==========================================
-// Shopier klasik entegrasyonu Iyzico gibi JSON API değil; tarayıcıyı
-// gizli bir <form> ile doğrudan Shopier'ın ödeme sayfasına
-// yönlendiriyor. Bu yüzden frontend buraya gerçek bir <form
-// method="POST"> ile geliyor (fetch değil), biz de HTML döndürüyoruz.
-function generateShopierSignature(randomNr, orderId, apiSecret) {
-    return crypto
-        .createHmac('sha256', apiSecret)
-        .update(randomNr + orderId)
-        .digest('base64');
-}
-
+// Shopier'ın yeni REST API'si: sepet tutarı kadar bir "ürün"
+// oluşturuyoruz, Shopier bize o ürünün ödeme linkini (url) dönüyor,
+// müşteriyi oraya yönlendiriyoruz. Kimlik doğrulama: Bearer token (PAT).
 app.post('/api/shopier-checkout', async (req, res) => {
     try {
-        const API_KEY = process.env.SHOPIER_API_KEY || '';
-        const API_SECRET = process.env.SHOPIER_API_SECRET || '';
-
-        if (!API_KEY || !API_SECRET) {
-            return res.status(500).send('Shopier API anahtarları tanımlı değil (.env dosyasını kontrol et).');
+        const SHOPIER_PAT = process.env.SHOPIER_PAT || '';
+        if (!SHOPIER_PAT) {
+            return res.status(500).json({ error: 'SHOPIER_PAT tanımlı değil (.env dosyasını kontrol et).' });
         }
 
-        const {
-            cartItems,      // JSON string olarak gelen sepet
-            totalPrice,
-            buyerName,
-            buyerSurname,
-            buyerEmail,
-            buyerPhone,
-            buyerAddress,
-            buyerCity,
-        } = req.body;
+        const { cartItems, totalPrice } = req.body;
 
-        const platformOrderId = 'ALC-' + Date.now();
-        const randomNr = Math.floor(Math.random() * 999999).toString();
-        const signature = generateShopierSignature(randomNr, platformOrderId, API_SECRET);
+        let parsedItems = [];
+        try {
+            parsedItems = typeof cartItems === 'string' ? JSON.parse(cartItems) : (cartItems || []);
+        } catch (e) {
+            parsedItems = [];
+        }
+
         const formattedPrice = parseFloat(totalPrice || 0).toFixed(2);
+        const orderTitle = `ALICCI Sipariş (${parsedItems.map(i => i.name).join(', ').slice(0, 150) || 'Ürünler'})`;
 
-        // Siparişi Supabase'e "ödeme bekleniyor" durumuyla kaydet
+        // Ürün görseli zorunlu (media alanı required) — sepetteki ilk ürünün
+        // görselini kullan (image alanı dizi olabilir), yoksa genel bir marka
+        // görseline düş.
+        const fallbackImage = 'https://alicci-tr.vercel.app/favicon.png';
+        let productImage = fallbackImage;
+        if (parsedItems[0] && parsedItems[0].image) {
+            productImage = Array.isArray(parsedItems[0].image)
+                ? (parsedItems[0].image[0] || fallbackImage)
+                : parsedItems[0].image;
+        }
+
+        const shopierResponse = await fetch('https://api.shopier.com/v1/products', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${SHOPIER_PAT}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                title: orderTitle,
+                type: 'physical',
+                media: [
+                    { type: 'image', url: productImage, placement: 1 }
+                ],
+                priceData: {
+                    currency: 'TRY',
+                    price: formattedPrice,
+                },
+                shippingPayer: 'buyerPays', // İstersen 'sellerPays' yap
+                customListing: true,
+            }),
+        });
+
+        const shopierData = await shopierResponse.json();
+
+        if (!shopierResponse.ok) {
+            console.error('Shopier ürün oluşturma hatası:', shopierData);
+            return res.status(400).json({ error: 'Ödeme başlatılamadı.', details: shopierData });
+        }
+
+        // Siparişi Supabase'e kaydet (best-effort)
         try {
             await supabase.from('orders').insert([{
-                order_code: platformOrderId,
-                items: cartItems,
+                order_code: shopierData.id || null,
+                items: JSON.stringify(parsedItems),
                 total: formattedPrice,
-                buyer_name: `${buyerName || ''} ${buyerSurname || ''}`.trim(),
-                buyer_email: buyerEmail || '',
-                buyer_phone: buyerPhone || '',
                 status: 'ödeme bekleniyor',
             }]);
         } catch (dbErr) {
-            console.warn('Sipariş Supabase\'e kaydedilemedi:', dbErr.message);
+            console.warn("Sipariş Supabase'e kaydedilemedi:", dbErr.message);
         }
 
-        const fields = {
-            API_key: API_KEY,
-            website_index: '1',
-            platform_order_id: platformOrderId,
-            product_name: `ALICCI Sipariş (${platformOrderId})`,
-            product_type: '1', // 1 = fiziksel ürün
-            buyer_name: buyerName || '',
-            buyer_surname: buyerSurname || '',
-            buyer_email: buyerEmail || '',
-            buyer_account_age: '0',
-            buyer_id_nr: '11111111111',
-            buyer_phone: buyerPhone || '',
-            billing_address: buyerAddress || '',
-            billing_city: buyerCity || 'Istanbul',
-            billing_country: 'Turkey',
-            billing_postcode: '00000',
-            shipping_address: buyerAddress || '',
-            shipping_city: buyerCity || 'Istanbul',
-            shipping_country: 'Turkey',
-            shipping_postcode: '00000',
-            total_order_value: formattedPrice,
-            currency: '0', // 0 = TL
-            platform: '0',
-            is_in_frame: '0',
-            current_language: '0', // 0 = TR
-            modul_version: '1.0.0',
-            random_nr: randomNr,
-            signature: signature,
-        };
-
-        const inputsHtml = Object.entries(fields)
-            .map(([key, value]) => `<input type="hidden" name="${key}" value="${String(value).replace(/"/g, '&quot;')}" />`)
-            .join('\n');
-
-        const html = `<!DOCTYPE html>
-<html lang="tr">
-<head><meta charset="UTF-8" /><title>Ödemeye yönlendiriliyorsunuz...</title></head>
-<body style="font-family: sans-serif; text-align:center; padding-top: 80px;">
-    <p>Güvenli ödeme sayfasına yönlendiriliyorsunuz, lütfen bekleyin...</p>
-    <form id="shopierForm" method="POST" action="https://www.shopier.com/ShowProduct/api_pay4.php">
-        ${inputsHtml}
-    </form>
-    <script>document.getElementById('shopierForm').submit();</script>
-</body>
-</html>`;
-
-        res.set('Content-Type', 'text/html');
-        return res.send(html);
+        // Frontend bu URL'e yönlendirecek (window.location.href = redirectUrl)
+        return res.json({ redirectUrl: shopierData.url });
     } catch (error) {
         console.error('Shopier Checkout Hatası:', error);
-        res.status(500).send('Ödeme başlatılırken bir hata oluştu.');
+        return res.status(500).json({ error: 'Ödeme başlatılırken bir hata oluştu.' });
     }
 });
 
 // ==========================================
-// 2c. SHOPIER SONUÇ BİLDİRİMİ (OSB - Otomatik Sipariş Bildirimi)
+// 2c. SHOPIER WEBHOOK — ÖDEME TAMAMLANDI BİLDİRİMİ
 // ==========================================
-// Bu URL'i Shopier panelinde Ayarlar > API Ayarları kısmındaki
-// "Bildirim URL'si" alanına gireceksin, örn:
-// https://alicci-backend-us.onrender.com/api/shopier-callback
-app.post('/api/shopier-callback', async (req, res) => {
+// Bu endpoint'i Shopier Geliştirici Portalı'nda bir webhook subscription
+// (POST /webhooks) oluşturarak bağlaman gerekiyor. Hangi event adını
+// dinleyeceğimizi netleştirmek için "The Webhook model" sayfasına bakmamız
+// lazım — şimdilik gelen her şeyi logluyoruz, event adını görünce filtreyi
+// ekleyeceğiz.
+app.post('/api/shopier-webhook', async (req, res) => {
     try {
-        const API_SECRET = process.env.SHOPIER_API_SECRET || '';
-        const { status, platform_order_id, payment_id, installment, random_nr, signature } = req.body;
+        console.log('Shopier webhook alındı:', JSON.stringify(req.body));
 
-        // Gelen bildirimin gerçekten Shopier'dan geldiğini imza ile doğrula
-        const expectedSignature = generateShopierSignature(random_nr || '', platform_order_id || '', API_SECRET);
-        if (signature !== expectedSignature) {
-            console.warn('Shopier callback: imza doğrulanamadı, istek yok sayıldı.');
-            return res.status(400).send('invalid signature');
-        }
-
-        const newStatus = status === 'success' ? 'ödendi' : 'ödeme başarısız';
-
-        await supabase
-            .from('orders')
-            .update({ status: newStatus, payment_id: payment_id || null, installment: installment || null })
-            .eq('order_code', platform_order_id);
+        // TODO: event tipi netleşince (örn. "order.paid") burada filtrele
+        // ve orders tablosunu order_code üzerinden güncelle.
 
         return res.status(200).send('OK');
     } catch (error) {
-        console.error('Shopier Callback Hatası:', error);
+        console.error('Shopier Webhook Hatası:', error);
         return res.status(500).send('error');
     }
 });
