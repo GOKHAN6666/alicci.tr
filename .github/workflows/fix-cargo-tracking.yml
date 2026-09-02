@@ -1,0 +1,91 @@
+name: Fix cargo tracking RPC
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  fix-cargo-tracking:
+    if: ${{ !contains(github.event.head_commit.message, 'fix: use track_order RPC for cargo tracking') }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Replace cargo tracking handler
+        shell: python
+        run: |
+          from pathlib import Path
+          import re
+
+          path = Path("src/App.jsx")
+          text = path.read_text(encoding="utf-8")
+
+          pattern = re.compile(
+              r'    const handleTrackOrder = async \(\) => \{.*?\n    \};\n\n    const handleContactFormSubmit',
+              re.S,
+          )
+
+          replacement = '''    const handleTrackOrder = async () => {
+        if (!trackingCodeInput.trim()) {
+            setTrackingError("Lütfen sipariş kodunuzu girin.");
+            return;
+        }
+
+        const inputOrderCode = trackingCodeInput.trim().toUpperCase();
+
+        setIsTrackingLoading(true);
+        setTrackingError("");
+        setSearchedOrder(null);
+
+        try {
+            const { data, error } = await supabase.rpc("track_order", {
+                order_code_param: inputOrderCode,
+            });
+
+            console.log("KARGO KODU:", inputOrderCode);
+            console.log("RPC DATA:", data);
+            console.log("RPC ERROR:", error);
+
+            if (error || !data || data.length === 0 || !data[0].success) {
+                setTrackingError("Sipariş bulunamadı. Lütfen kodu kontrol edin (Örn: ALC-111111).");
+                return;
+            }
+
+            setSearchedOrder({
+                order_code: inputOrderCode,
+                status: data[0].order_status,
+                cargo_tracker_code: data[0].cargo_tracking_code,
+                cargo_company: data[0].cargo_company,
+            });
+        } catch (error) {
+            console.error("Kargo takip RPC hatası:", error);
+            setTrackingError("Sipariş sorgulanırken bir hata oluştu. Lütfen tekrar deneyin.");
+        } finally {
+            setIsTrackingLoading(false);
+        }
+    };
+
+    const handleContactFormSubmit'''
+
+          new_text, count = pattern.subn(replacement, text, count=1)
+          if count != 1:
+              raise SystemExit("handleTrackOrder bloğu bulunamadı; dosya değiştirilmedi.")
+
+          path.write_text(new_text, encoding="utf-8")
+
+      - name: Commit and push
+        shell: bash
+        run: |
+          if git diff --quiet -- src/App.jsx; then
+            echo "No changes needed."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/App.jsx
+          git commit -m "fix: use track_order RPC for cargo tracking"
+          git push
