@@ -298,10 +298,7 @@ function App() {
     const [isCartClosing, setIsCartClosing] = useState(false); 
     const [currentModalImageIndex, setCurrentModalImageIndex] = useState(0);
     const [showOrderOptionsModal, setShowOrderOptionsModal] = useState(false);
-    const [showShopierModal, setShowShopierModal] = useState(false);
-    const [shopierBuyer, setShopierBuyer] = useState({
-        name: "", surname: "", email: "", phone: "", address: "", city: ""
-    });
+    const [isShopierLoading, setIsShopierLoading] = useState(false);
     const [siteTestimonials, setSiteTestimonials] = useState([]);
     const [isLoadingTestimonials, setIsLoadingTestimonials] = useState(false);
     const [testimonialName, setTestimonialName] = useState("");
@@ -611,7 +608,7 @@ function App() {
 
     // SCROLL ENGELLEME (no-scroll) EFEKTİ
     useEffect(() => {
-        const isAnyModalOpen = selectedProduct || showOrderOptionsModal || showShopierModal || showConfirmationModal || showTrackingModal || isCartOpen || isMobileMenuOpen || showSizeCalcModal || isSizeCalcClosing || showIyzicoModal || isIyzicoClosing || activeLegalModal;
+        const isAnyModalOpen = selectedProduct || showOrderOptionsModal || showConfirmationModal || showTrackingModal || isCartOpen || isMobileMenuOpen || showSizeCalcModal || isSizeCalcClosing || showIyzicoModal || isIyzicoClosing || activeLegalModal;
         if (isAnyModalOpen) {
             document.body.classList.add('no-scroll');
         } else {
@@ -620,7 +617,7 @@ function App() {
         return () => {
             document.body.classList.remove('no-scroll');
         };
-    }, [selectedProduct, showOrderOptionsModal, showShopierModal, showConfirmationModal, showTrackingModal, isCartOpen, isMobileMenuOpen, showSizeCalcModal, isSizeCalcClosing, showIyzicoModal, isIyzicoClosing, activeLegalModal]);
+    }, [selectedProduct, showOrderOptionsModal, showConfirmationModal, showTrackingModal, isCartOpen, isMobileMenuOpen, showSizeCalcModal, isSizeCalcClosing, showIyzicoModal, isIyzicoClosing, activeLegalModal]);
 
     useEffect(() => {
         if (!showIyzicoModal || !iyzicoFormHtml) return;
@@ -861,6 +858,44 @@ function App() {
         const subtotal = cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
         const finalTotal = subtotal - (subtotal * discount);
         return Number.isInteger(finalTotal) ? finalTotal : finalTotal.toFixed(2);
+    };
+
+    const handleShopierCheckout = async () => {
+        if (cartItems.length === 0) {
+            showToast("Sepetiniz boş.");
+            return;
+        }
+
+        setIsShopierLoading(true);
+        if (typeof window !== "undefined" && window.gtag) {
+            window.gtag("event", "begin_checkout", { currency: "TRY" });
+        }
+        if (typeof window !== "undefined" && window.fbq) {
+            window.fbq("track", "InitiateCheckout");
+        }
+        try {
+            const response = await fetch(`${BACKEND_URL}/api/shopier-checkout`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    cartItems: JSON.stringify(cartItems),
+                    totalPrice: getTotalPrice(),
+                }),
+            });
+
+            const data = await response.json();
+
+            if (!response.ok || !data.redirectUrl) {
+                throw new Error(data.error || "Ödeme başlatılamadı.");
+            }
+
+            closeCart();
+            window.location.href = data.redirectUrl;
+        } catch (error) {
+            console.error("Shopier Checkout Hatası:", error);
+            showToast("Ödeme başlatılırken bir hata oluştu, lütfen tekrar dene.");
+            setIsShopierLoading(false);
+        }
     };
 
     const handleCheckout = async () => {
@@ -2104,16 +2139,9 @@ function App() {
                 )}
                 {cartItems.length > 0 && (
                     <>
-                        <button onClick={() => {
-                            closeCart();
-                            setShowShopierModal(true);
-                            if (typeof window !== "undefined" && window.gtag) {
-                                window.gtag("event", "begin_checkout", { currency: "TRY" });
-                            }
-                            if (typeof window !== "undefined" && window.fbq) {
-                                window.fbq("track", "InitiateCheckout");
-                            }
-                        }}>Kartla Öde (Shopier)</button>
+                        <button onClick={handleShopierCheckout} disabled={isShopierLoading}>
+                            {isShopierLoading ? "Yönlendiriliyor..." : "Kartla Öde (Shopier)"}
+                        </button>
                         <button className="secondary-checkout-btn" onClick={() => {
                             closeCart();
                             setShowOrderOptionsModal(true);
@@ -2941,72 +2969,6 @@ function App() {
                                 Instagram DM ile Sipariş Ver
                             </button>
                         </div>
-                    </div>
-                </div>
-            )}
-
-            {showShopierModal && (
-                <div className="modal-backdrop" onClick={() => setShowShopierModal(false)}>
-                    <div className="modal-content-base order-options-modal" onClick={(e) => e.stopPropagation()}>
-                        <button className="close-modal close-modal-small" onClick={() => setShowShopierModal(false)}>&times;</button>
-                        <h2>Kart ile Ödeme</h2>
-                        <p style={{ fontSize: '13px', marginBottom: '15px', opacity: 0.8 }}>
-                            Güvenli ödeme sayfasına yönlendirilmeden önce birkaç bilgiye ihtiyacımız var.
-                        </p>
-                        {/*
-                          Bu form gerçek bir HTML form submit'i (fetch değil) — çünkü
-                          backend, Shopier'ın kendi ödeme sayfasına yönlendiren bir
-                          HTML sayfası döndürüyor ve tarayıcının doğrudan o sayfaya
-                          geçmesi gerekiyor.
-                        */}
-                        <form
-                            method="POST"
-                            action={`${BACKEND_URL}/api/shopier-checkout`}
-                            target="_self"
-                            style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}
-                        >
-                            <input type="hidden" name="cartItems" value={JSON.stringify(cartItems)} />
-                            <input type="hidden" name="totalPrice" value={getTotalPrice()} />
-                            <input
-                                type="text" name="buyerName" placeholder="Adın" required
-                                className="review-input"
-                                value={shopierBuyer.name}
-                                onChange={(e) => setShopierBuyer({ ...shopierBuyer, name: e.target.value })}
-                            />
-                            <input
-                                type="text" name="buyerSurname" placeholder="Soyadın" required
-                                className="review-input"
-                                value={shopierBuyer.surname}
-                                onChange={(e) => setShopierBuyer({ ...shopierBuyer, surname: e.target.value })}
-                            />
-                            <input
-                                type="email" name="buyerEmail" placeholder="E-posta" required
-                                className="review-input"
-                                value={shopierBuyer.email}
-                                onChange={(e) => setShopierBuyer({ ...shopierBuyer, email: e.target.value })}
-                            />
-                            <input
-                                type="tel" name="buyerPhone" placeholder="Telefon (05xxxxxxxxx)" required
-                                className="review-input"
-                                value={shopierBuyer.phone}
-                                onChange={(e) => setShopierBuyer({ ...shopierBuyer, phone: e.target.value })}
-                            />
-                            <input
-                                type="text" name="buyerAddress" placeholder="Adres" required
-                                className="review-input"
-                                value={shopierBuyer.address}
-                                onChange={(e) => setShopierBuyer({ ...shopierBuyer, address: e.target.value })}
-                            />
-                            <input
-                                type="text" name="buyerCity" placeholder="Şehir" required
-                                className="review-input"
-                                value={shopierBuyer.city}
-                                onChange={(e) => setShopierBuyer({ ...shopierBuyer, city: e.target.value })}
-                            />
-                            <button type="submit" className="review-submit-btn" style={{ marginTop: '6px' }}>
-                                Ödemeye Geç
-                            </button>
-                        </form>
                     </div>
                 </div>
             )}
