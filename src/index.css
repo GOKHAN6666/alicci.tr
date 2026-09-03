@@ -418,10 +418,22 @@ nav ul.nav-menu li button:hover {
 }
 
 .hero-scroll-line {
+    position: relative;
     width: 1px;
     height: 48px;
-    background: linear-gradient(to bottom, rgba(255,255,255,0.85), transparent);
-    animation: heroScrollLine 1.8s ease-in-out infinite;
+    overflow: hidden;
+    background: rgba(255,255,255,0.18);
+}
+
+.hero-scroll-line::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: -60%;
+    width: 100%;
+    height: 60%;
+    background: linear-gradient(to bottom, transparent, rgba(255,255,255,0.95), transparent);
+    animation: heroScrollFlow 1.6s linear infinite;
 }
 
 .hero-scroll-progress {
@@ -468,23 +480,20 @@ nav ul.nav-menu li button:hover {
     100% { transform: scale(1.13); }
 }
 
-@keyframes heroScrollLine {
-    0%, 100% {
-        opacity: 0.35;
-        transform: scaleY(0.75);
-        transform-origin: top;
+@keyframes heroScrollFlow {
+    0% {
+        top: -60%;
     }
-    50% {
-        opacity: 1;
-        transform: scaleY(1);
-        transform-origin: top;
+    100% {
+        top: 100%;
     }
 }
 
 @media (prefers-reduced-motion: reduce) {
     .hero-scroll-slide,
     .hero-scroll-copy,
-    .hero-scroll-image {
+    .hero-scroll-image,
+    .hero-scroll-line::after {
         transition: none !important;
         animation: none !important;
     }
