@@ -2511,7 +2511,7 @@ function App() {
                                     <p>İşbu Sözleşme, <strong>ALICCI Tekstil & Moda</strong> (Satıcı) ile alicci.com adresi üzerinden sipariş oluşturan Müşteri (Alıcı) arasında kurulmuştur.</p>
 
                                     <h3>2. SATICI BİLGİLERİ</h3>
-                                    <p><strong>Unvan:</strong> ALICCI Brand</p>
+                                    <p><strong>Unvan:</strong> ALICCI_Apparel</p>
                                     <p><strong>Adres:</strong> {STORE_ADDRESS}</p>
                                     <p><strong>E-Posta:</strong> {STORE_EMAIL}</p>
                                     <p><strong>Telefon:</strong> {STORE_PHONE}</p>
@@ -2523,7 +2523,7 @@ function App() {
                                     <p>Sipariş edilen ürünler, onay aşamasından sonra en geç 24-48 saat içerisinde anlaşmalı kargo şirketine teslim edilir. Kargo takip bilgileri kullanıcıya SMS veya E-posta yoluyla iletilir.</p>
 
                                     <h3>5. CAYMA HAKKI</h3>
-                                    <p>ALICI, sözleşme konusu ürünün kendisine veya gösterdiği adresteki kişi/kuruluşa tesliminden itibaren <strong>14 (ondört) gün</strong> içinde hiçbir hukuki ve cezai sorumluluk üstlenmeksizin cayma hakkını kullanabilir.</p>
+                                    <p>ALICI, sözleşme konusu ürünün kendisine veya gösterdiği adresteki kişi/kuruluşa tesliminden itibaren <strong>7 (yedi) gün</strong> içinde hiçbir hukuki ve cezai sorumluluk üstlenmeksizin cayma hakkını kullanabilir.</p>
                                 </div>
                             </div>
                         )}
@@ -2539,7 +2539,7 @@ function App() {
                                     <p>ALICCI olarak kişisel verilerinizin güvenliğine yüksek önem veriyoruz. 6698 sayılı KVKK kapsamında, alışveriş yaparken paylaştığınız ad, soyad, e-posta, teslimat adresi ve telefon numaranız yalnızca siparişinizin tamamlanması amacıyla işlenir.</p>
 
                                     <h3>2. ÖDEME GÜVENLİĞİ (256-BIT SSL)</h3>
-                                    <p>Kredi kartı bilgileriniz hiçbir şekilde ALICCI sunucularında saklanmaz. Ödeme işlemleri doğrudan 256-bit SSL sertifikalı Iyzico altyapısı üzerinden bankanızla sizin aranızda gerçekleşir.</p>
+                                    <p>Kredi kartı bilgileriniz hiçbir şekilde ALICCI sunucularında saklanmaz. Ödeme işlemleri doğrudan Shopier altyapısı üzerinden bankanızla sizin aranızda gerçekleşir.</p>
 
                                     <h3>3. ÇEREZ (COOKIE) KULLANIMI</h3>
                                     <p>Web sitemizde alışveriş deneyiminizi iyileştirmek, sepetinizi hatırlamak ve oturum tercihlerinizi kaydetmek amacıyla çerezler kullanılmaktadır. Dilediğiniz zaman tarayıcı ayarlarınızdan çerezleri engelleyebilirsiniz.</p>
@@ -2555,14 +2555,14 @@ function App() {
                                 </h2>
                                 <div className="legal-modal-body">
                                     <h3>1. İADE ŞARTLARI</h3>
-                                    <p>ALICCI'dan satın aldığınız ürünleri, teslimat tarihinden itibaren <strong>14 gün</strong> içerisinde sebep göstermeksizin iade edebilir veya beden değişimi yapabilirsiniz.</p>
+                                    <p>ALICCI'dan satın aldığınız ürünleri, teslimat tarihinden itibaren <strong>7 gün</strong> içerisinde sebep göstermeksizin iade edebilir veya beden değişimi yapabilirsiniz.</p>
 
                                     <h3>2. İADE KOŞULLARI</h3>
                                     <p>• İade edilecek ürünlerin kullanılmamış, yıkanmamış, etiketi sökülmemiş ve tekrar satılabilir özelliğini kaybetmemiş olması gerekmektedir.</p>
                                     <p>• Ürün ile birlikte gönderilen orijinal ambalaj ve faturanın da iade paketinde bulunması zorunludur.</p>
 
                                     <h3>3. İADE SÜRECİ</h3>
-                                    <p>İade talebinizi web sitemizdeki İletişim sayfasından veya WhatsApp Destek hattımızdan bize bildirebilirsiniz. Tarafınıza iletilecek iade kargo kodu ile ürünü ücretsiz geri gönderebilirsiniz.</p>
+                                    <p>İade talebinizi web sitemizdeki İletişim sayfasından veya WhatsApp Destek hattımızdan bize bildirebilirsiniz. Tarafınıza iletilecek iade kargo kodu ile ürünü geri gönderebilirsiniz.</p>
 
                                     <h3>4. ÜCRET İADESİ</h3>
                                     <p>İade edilen ürün depomuza ulaşıp kontrol edildikten sonra 3 iş günü içerisinde ücret iadesi bankanıza aktarılır. Banka prosedürlerine bağlı olarak hesabınıza yansıması 2-5 gün sürebilir.</p>
@@ -2588,10 +2588,7 @@ function App() {
                                     <h3>MÜŞTERİ HİZMETLERİ & WHATSAPP</h3>
                                     <p>📞 {STORE_PHONE}</p>
 
-                                    <h3>ÇALIŞMA SAATLERİ</h3>
-                                    <p>⏰ Pazartesi - Cuma: 09:00 - 18:00</p>
-                                    <p>⏰ Cumartesi: 10:00 - 15:00</p>
-
+                                   
                                     <div style={{ marginTop: '20px' }}>
                                         <a 
                                             href={`https://wa.me/${WHATSAPP_NUMBER}`} 
@@ -2887,7 +2884,7 @@ function App() {
                                         color: 'inherit'
                                     }}
                                 >
-                                    Biraz Bol Olsun (Oversize)
+                                     Bol Olsun (Oversize)
                                 </button>
                             </div>
                         </div>
