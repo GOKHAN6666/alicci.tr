@@ -3,6 +3,7 @@ const cors = require('cors');
 const Iyzipay = require('iyzipay');
 const Groq = require("groq-sdk");
 const crypto = require('crypto');
+const rateLimit = require('express-rate-limit');
 const { createClient } = require('@supabase/supabase-js');
 require('dotenv').config();
 
@@ -38,14 +39,19 @@ if (process.env.GROQ_API_KEY) {
 }
 
 // Supabase Bağlantı Ayarları
+// ÖNEMLİ: Burada SERVICE_ROLE key kullanıyoruz (anon key değil), çünkü
+// artık orders tablosunda public UPDATE/DELETE policy'si yok — sadece
+// backend'in (bu servisin) sipariş durumunu güncelleyebilmesi gerekiyor.
+// SUPABASE_SERVICE_ROLE_KEY'i ASLA frontend'e veya GitHub'a koyma,
+// sadece Render'ın Environment Variables kısmına ekle.
 const supabase = createClient(
     process.env.SUPABASE_URL || '',
-    process.env.SUPABASE_ANON_KEY || ''
+    process.env.SUPABASE_SERVICE_ROLE_KEY || ''
 );
 
 async function getProductData() {
     try {
-        if (!process.env.SUPABASE_URL || !process.env.SUPABASE_ANON_KEY) {
+        if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
             return null;
         }
         const { data, error } = await supabase
@@ -64,6 +70,55 @@ async function getProductData() {
         return null;
     }
 }
+
+// ==========================================
+// 1b. KARGO TAKİP ROTASI (RATE LIMIT'Lİ)
+// ==========================================
+// Direkt Supabase'e frontend'den sorgulamak yerine buradan geçiriyoruz,
+// çünkü IP bazlı sınır (rate limit) sadece backend'de koyulabilir.
+// Aynı IP 10 dakikada en fazla 8 deneme yapabilir — kod tahmin etmeye
+// çalışan biri (brute-force) engellenmiş olur.
+const trackOrderLimiter = rateLimit({
+    windowMs: 10 * 60 * 1000, // 10 dakika
+    max: 8,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { error: 'Çok fazla deneme yaptınız. Lütfen birkaç dakika sonra tekrar deneyin.' },
+});
+
+app.post('/api/track-order', trackOrderLimiter, async (req, res) => {
+    try {
+        const { code } = req.body;
+        if (!code || typeof code !== 'string') {
+            return res.status(400).json({ error: 'Sipariş kodu gerekli.' });
+        }
+
+        // Basit format kontrolü: ALC-123456 gibi
+        const cleanCode = code.trim().toUpperCase();
+        if (!/^ALC-[A-Z0-9]{3,}$/.test(cleanCode)) {
+            return res.status(400).json({ error: 'Geçersiz sipariş kodu formatı.' });
+        }
+
+        const { data, error } = await supabase
+            .from('orders')
+            .select('*')
+            .eq('order_code', cleanCode);
+
+        if (error) {
+            console.error('Sipariş sorgu hatası:', error);
+            return res.status(500).json({ error: 'Sipariş sorgulanırken bir hata oluştu.' });
+        }
+
+        if (!data || data.length === 0) {
+            return res.status(404).json({ error: 'Sipariş bulunamadı. Lütfen kodu kontrol edin.' });
+        }
+
+        return res.json({ order: data[0] });
+    } catch (error) {
+        console.error('Kargo Takip Hatası:', error);
+        return res.status(500).json({ error: 'Sipariş sorgulanırken bir hata oluştu.' });
+    }
+});
 
 app.get('/', (req, res) => {
     res.send('ALICCI Backend Aktif ve Çalışıyor! 🚀');
