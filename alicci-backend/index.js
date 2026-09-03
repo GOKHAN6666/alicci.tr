@@ -406,24 +406,37 @@ app.post('/api/shopier-webhook', async (req, res) => {
 
         console.log(`Shopier webhook doğrulandı — event: ${shopierEvent}`, JSON.stringify(data));
 
-        if (shopierEvent === 'order.created') {
+        if (shopierEvent === 'order.created' && data.paymentStatus === 'paid') {
             const shopierOrderId = data.id;
-            const orderStatus = data.status;
 
-            // Shopier'ın order id'sini, ürün oluştururken sakladığımız
-            // shopier_product_id ile eşleştirmeye çalışıyoruz. Order
-            // modelinin tam alan yapısı netleşince (hangi alanda ürün
-            // referansı geliyor) bu kısmı kesinleştireceğiz.
-            const productRef = data.productId || data.product_id ||
-                (Array.isArray(data.products) && data.products[0]?.id) || null;
+            // Order modelinde ürün referansı lineItems[].productId altında geliyor.
+            const productRef = Array.isArray(data.lineItems) && data.lineItems[0]
+                ? data.lineItems[0].productId
+                : null;
+
+            const shipping = data.shippingInfo || {};
+            const buyerName = `${shipping.firstName || ''} ${shipping.lastName || ''}`.trim();
 
             if (productRef) {
-                await supabase
+                const { data: updated, error: updateError } = await supabase
                     .from('orders')
-                    .update({ status: 'ödendi', shopier_order_id: shopierOrderId })
-                    .eq('shopier_product_id', productRef);
+                    .update({
+                        status: 'ödendi',
+                        shopier_order_id: shopierOrderId,
+                        buyer_name: buyerName || null,
+                        buyer_email: shipping.email || null,
+                        buyer_phone: shipping.phone || null,
+                    })
+                    .eq('shopier_product_id', productRef)
+                    .select();
+
+                if (updateError) {
+                    console.error('Sipariş güncellenemedi:', updateError);
+                } else if (!updated || updated.length === 0) {
+                    console.warn(`Webhook: shopier_product_id=${productRef} ile eşleşen sipariş bulunamadı.`);
+                }
             } else {
-                console.warn('Webhook: sipariş ürünle eşleştirilemedi, manuel kontrol gerekebilir. Payload:', JSON.stringify(data));
+                console.warn('Webhook: lineItems içinde productId bulunamadı. Payload:', JSON.stringify(data));
             }
         }
 
