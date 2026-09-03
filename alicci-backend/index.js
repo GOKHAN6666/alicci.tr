@@ -18,7 +18,17 @@ app.use(cors({
     credentials: true
 }));
 
-app.use(express.json());
+// ÖNEMLİ: Shopier webhook imzası, gönderdiği isteğin HAM (raw) byte'ları
+// üzerinden hesaplanıyor. Body'yi JSON.parse edip sonra tekrar
+// JSON.stringify ile string'e çevirirsek (key sırası/boşluk/sayı formatı
+// farklılaşabildiği için) imza asla eşleşmeyebilir. Bu yüzden 'verify'
+// callback'i ile ham body'yi req.rawBody içinde saklıyoruz; webhook
+// route'u imza kontrolünü bunun üzerinden yapacak.
+app.use(express.json({
+    verify: (req, res, buf) => {
+        req.rawBody = buf;
+    }
+}));
 app.use(express.urlencoded({ extended: true })); // Shopier form POST + callback için gerekli
 
 // Iyzico Bağlantı Ayarları
@@ -394,13 +404,21 @@ app.post('/api/shopier-webhook', async (req, res) => {
             return res.status(500).send('webhook token missing');
         }
 
+        if (!req.rawBody) {
+            console.error('Shopier webhook: ham (raw) body bulunamadı, imza doğrulanamaz.');
+            return res.status(400).send('raw body missing');
+        }
+
         const expectedHash = crypto
             .createHmac('sha256', WEBHOOK_TOKEN)
-            .update(JSON.stringify(data))
+            .update(req.rawBody)
             .digest('hex');
 
         if (expectedHash !== shopierSignature) {
-            console.warn('Shopier webhook: imza doğrulanamadı, istek reddedildi.');
+            console.warn('Shopier webhook: imza doğrulanamadı, istek reddedildi.', {
+                expectedHash,
+                gelenImza: shopierSignature,
+            });
             return res.status(401).send('invalid request');
         }
 
