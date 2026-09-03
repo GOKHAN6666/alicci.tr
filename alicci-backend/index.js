@@ -304,7 +304,14 @@ app.post('/api/shopier-checkout', async (req, res) => {
         }
 
         const formattedPrice = parseFloat(totalPrice || 0).toFixed(2);
-        const orderTitle = `ALICCI Sipariş (${parsedItems.map(i => i.name).join(', ').slice(0, 150) || 'Ürünler'})`;
+
+        // Kendi takip kodumuzu Shopier'a gitmeden ÖNCE üretiyoruz ve ürün
+        // başlığına/açıklamasına gömüyoruz. Böylece müşteri, Shopier'ın kendi
+        // ödeme sayfasında/onay e-postasında bu kodu görecek ve "Kargo Takip"
+        // özelliğimizde kullanabilecek.
+        const ourOrderCode = 'ALC-' + Math.floor(100000 + Math.random() * 900000);
+        const orderTitle = `ALICCI Sipariş — Kod: ${ourOrderCode}`;
+        const orderDescription = `Sipariş Takip Kodunuz: ${ourOrderCode}\nBu kodu "Kargo Takip" bölümüne girerek sipariş durumunuzu sorgulayabilirsiniz.\n\nÜrünler: ${parsedItems.map(i => `${i.name} (${i.size || 'Standart'}) x${i.quantity || 1}`).join(', ')}`;
 
         // Ürün görseli zorunlu (media alanı required) — sepetteki ilk ürünün
         // görselini kullan (image alanı dizi olabilir), yoksa genel bir marka
@@ -325,6 +332,7 @@ app.post('/api/shopier-checkout', async (req, res) => {
             },
             body: JSON.stringify({
                 title: orderTitle,
+                description: orderDescription,
                 type: 'physical',
                 media: [
                     { type: 'image', url: productImage, placement: 1 }
@@ -345,10 +353,12 @@ app.post('/api/shopier-checkout', async (req, res) => {
             return res.status(400).json({ error: 'Ödeme başlatılamadı.', details: shopierData });
         }
 
-        // Siparişi Supabase'e kaydet (best-effort)
+        // Siparişi Supabase'e KENDİ kodumuzla kaydet (Shopier'ın id'sini de
+        // ayrıca sakla, webhook geldiğinde eşleştirmek için işe yarayabilir).
         try {
             await supabase.from('orders').insert([{
-                order_code: shopierData.id || null,
+                order_code: ourOrderCode,
+                shopier_product_id: shopierData.id || null,
                 items: JSON.stringify(parsedItems),
                 total: formattedPrice,
                 status: 'ödeme bekleniyor',
@@ -358,7 +368,7 @@ app.post('/api/shopier-checkout', async (req, res) => {
         }
 
         // Frontend bu URL'e yönlendirecek (window.location.href = redirectUrl)
-        return res.json({ redirectUrl: shopierData.url });
+        return res.json({ redirectUrl: shopierData.url, orderCode: ourOrderCode });
     } catch (error) {
         console.error('Shopier Checkout Hatası:', error);
         return res.status(500).json({ error: 'Ödeme başlatılırken bir hata oluştu.' });
@@ -368,19 +378,56 @@ app.post('/api/shopier-checkout', async (req, res) => {
 // ==========================================
 // 2c. SHOPIER WEBHOOK — ÖDEME TAMAMLANDI BİLDİRİMİ
 // ==========================================
-// Bu endpoint'i Shopier Geliştirici Portalı'nda bir webhook subscription
-// (POST /webhooks) oluşturarak bağlaman gerekiyor. Hangi event adını
-// dinleyeceğimizi netleştirmek için "The Webhook model" sayfasına bakmamız
-// lazım — şimdilik gelen her şeyi logluyoruz, event adını görünce filtreyi
-// ekleyeceğiz.
+// Shopier'ın resmi Node.js webhook örneğine göre:
+// - İmza 'shopier-signature' header'ında geliyor
+// - İmza = HMAC-SHA256(webhook token, JSON.stringify(body)) hex
+// - Event tipi 'shopier-event' header'ında geliyor (body'de değil)
 app.post('/api/shopier-webhook', async (req, res) => {
     try {
-        console.log('Shopier webhook alındı:', JSON.stringify(req.body));
+        const WEBHOOK_TOKEN = process.env.SHOPIER_WEBHOOK_TOKEN || '';
+        const data = req.body;
+        const shopierSignature = req.headers['shopier-signature'];
+        const shopierEvent = req.headers['shopier-event'];
 
-        // TODO: event tipi netleşince (örn. "order.paid") burada filtrele
-        // ve orders tablosunu order_code üzerinden güncelle.
+        if (!WEBHOOK_TOKEN) {
+            console.error('SHOPIER_WEBHOOK_TOKEN tanımlı değil.');
+            return res.status(500).send('webhook token missing');
+        }
 
-        return res.status(200).send('OK');
+        const expectedHash = crypto
+            .createHmac('sha256', WEBHOOK_TOKEN)
+            .update(JSON.stringify(data))
+            .digest('hex');
+
+        if (expectedHash !== shopierSignature) {
+            console.warn('Shopier webhook: imza doğrulanamadı, istek reddedildi.');
+            return res.status(401).send('invalid request');
+        }
+
+        console.log(`Shopier webhook doğrulandı — event: ${shopierEvent}`, JSON.stringify(data));
+
+        if (shopierEvent === 'order.created') {
+            const shopierOrderId = data.id;
+            const orderStatus = data.status;
+
+            // Shopier'ın order id'sini, ürün oluştururken sakladığımız
+            // shopier_product_id ile eşleştirmeye çalışıyoruz. Order
+            // modelinin tam alan yapısı netleşince (hangi alanda ürün
+            // referansı geliyor) bu kısmı kesinleştireceğiz.
+            const productRef = data.productId || data.product_id ||
+                (Array.isArray(data.products) && data.products[0]?.id) || null;
+
+            if (productRef) {
+                await supabase
+                    .from('orders')
+                    .update({ status: 'ödendi', shopier_order_id: shopierOrderId })
+                    .eq('shopier_product_id', productRef);
+            } else {
+                console.warn('Webhook: sipariş ürünle eşleştirilemedi, manuel kontrol gerekebilir. Payload:', JSON.stringify(data));
+            }
+        }
+
+        return res.status(200).send('success');
     } catch (error) {
         console.error('Shopier Webhook Hatası:', error);
         return res.status(500).send('error');
