@@ -1051,19 +1051,26 @@ function App() {
         setTrackingError("");
         setSearchedOrder(null);
 
-        const { data, error } = await supabase
-            .from("orders")
-            .select("*")
-            .eq("order_code", cleanCode);
+        try {
+            const response = await fetch(`${BACKEND_URL}/api/track-order`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ code: cleanCode }),
+            });
 
-        setIsTrackingLoading(false);
+            const data = await response.json();
+            setIsTrackingLoading(false);
 
-        if (error || !data || data.length === 0) {
-            setTrackingError("Sipariş bulunamadı. Lütfen kodu kontrol edin (Örn: ALC-123456).");
-            return;
+            if (!response.ok) {
+                setTrackingError(data.error || "Sipariş bulunamadı. Lütfen kodu kontrol edin (Örn: ALC-123456).");
+                return;
+            }
+
+            setSearchedOrder(data.order);
+        } catch (err) {
+            setIsTrackingLoading(false);
+            setTrackingError("Bir bağlantı hatası oluştu, lütfen tekrar deneyin.");
         }
-
-        setSearchedOrder(data[0]);
     };
 
     const handleContactFormSubmit = async (e) => {
