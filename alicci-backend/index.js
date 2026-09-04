@@ -351,12 +351,20 @@ app.post('/api/shopier-checkout', async (req, res) => {
                     currency: 'TRY',
                     price: formattedPrice,
                 },
+                // NOT: Ürün "Tükendi" görünüyordu çünkü stok/adet hiç
+                // gönderilmiyordu, Shopier de yeni ürünleri varsayılan
+                // olarak 0 stokla oluşturuyor gibi görünüyor. Bu alan
+                // adını (stock) Shopier'ın kendi API referansından
+                // teyit et — deploy sonrası test siparişiyle
+                // "Tükendi" yazısı gidiyor mu kontrol edilmeli.
+                stock: 999,
                 shippingPayer: 'buyerPays', // İstersen 'sellerPays' yap
                 customListing: true,
             }),
         });
 
         const shopierData = await shopierResponse.json();
+        console.log('Shopier ürün oluşturma yanıtı (stok alanını kontrol için):', shopierData);
 
         if (!shopierResponse.ok) {
             console.error('Shopier ürün oluşturma hatası:', shopierData);
