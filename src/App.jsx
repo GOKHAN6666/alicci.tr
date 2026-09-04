@@ -438,7 +438,10 @@ function App() {
     }, [cartItems]);
 
     useEffect(() => {
-        const handleHeroScroll = () => {
+        let ticking = false;
+
+        const computeHeroSlide = () => {
+            ticking = false;
             const section = heroRef.current;
             if (!section) return;
 
@@ -451,9 +454,21 @@ function App() {
             setHeroActiveSlide((current) => current === nextSlide ? current : nextSlide);
         };
 
+        // ÖNEMLİ: Ham 'scroll' eventi saniyede onlarca kez ateşlenebiliyor;
+        // her seferinde getBoundingClientRect/offsetHeight çağırmak tarayıcıya
+        // sayfa düzenini yeniden hesaplattırıyor (layout reflow) ve özellikle
+        // mobilde donmaya (jank) yol açıyordu. requestAnimationFrame ile bu
+        // hesaplamayı frame başına en fazla 1 kere çalışacak şekilde sınırlıyoruz.
+        const handleHeroScroll = () => {
+            if (!ticking) {
+                ticking = true;
+                window.requestAnimationFrame(computeHeroSlide);
+            }
+        };
+
         window.addEventListener("scroll", handleHeroScroll, { passive: true });
         window.addEventListener("resize", handleHeroScroll);
-        handleHeroScroll();
+        computeHeroSlide();
 
         return () => {
             window.removeEventListener("scroll", handleHeroScroll);
