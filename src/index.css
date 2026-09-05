@@ -628,18 +628,13 @@ nav ul.nav-menu li button:hover {
 }
 
 /* Genel Modal Stilleri */
+/* NOT: position/z-index/backdrop-filter bu dosyada aşağıda
+   "!important" ile tek bir yerden yönetiliyor (bkz. KATMAN VE
+   MODAL SIRALAMASI bölümü) — burada tekrar tanımlamıyoruz. */
 .modal-backdrop {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(5px);
     display: flex;
     justify-content: center;
     align-items: center;
-    z-index: 1000;
 }
 
 .modal-content-base {
@@ -816,7 +811,7 @@ nav ul.nav-menu li button:hover {
     padding: 10px 14px;
     cursor: pointer;
     border-radius: 4px;
-    transition: all 0.2s ease;
+    transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
     font-size: 0.95rem;
     margin: 0;
 }
@@ -1685,7 +1680,7 @@ nav ul.nav-menu.open {
   width: 100%;
   font-size: 16px;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: background-color 0.3s ease, transform 0.3s ease, opacity 0.3s ease;
   border-radius: 4px;
   text-transform: uppercase;
   font-weight: 600;
@@ -1748,7 +1743,7 @@ nav ul.nav-menu.open {
   font-size: 20px;
   cursor: pointer;
   padding: 0 10px;
-  transition: all 0.2s ease;
+  transition: color 0.2s ease, transform 0.2s ease;
 }
 
 .remove-item-button:hover {
@@ -1771,7 +1766,7 @@ nav ul.nav-menu.open {
   width: 100%;
   height: 100%;
   background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.2), transparent);
-  transition: all 0.5s ease;
+  transition: left 0.5s ease;
 }
 
 .cart-panel button.luxury:hover::after {
@@ -1780,7 +1775,7 @@ nav ul.nav-menu.open {
 
 /* Animasyonlu kapatma butonu */
 .cart-panel .close-modal-small.animated {
-  transition: all 0.3s ease;
+  transition: opacity 0.3s ease, transform 0.3s ease;
 }
 
 .cart-panel .close-modal-small.animated:hover {
@@ -1822,7 +1817,7 @@ nav ul.nav-menu li {
   padding: 0.5rem 1rem;
   border-radius: 4px;
   cursor: pointer; /* Üzerine gelindiğinde el işareti çıkar */
-  transition: all 0.3s ease;
+  transition: opacity 0.3s ease, transform 0.3s ease;
   font-weight: 500;
 }
 
@@ -1841,7 +1836,7 @@ nav ul.nav-menu li:hover {
   padding: 0.5rem;
   border-radius: 4px;
   cursor: pointer; /* Üzerine gelindiğinde el işareti çıkar */
-  transition: all 0.3s ease;
+  transition: background-color 0.3s ease, transform 0.3s ease;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2029,17 +2024,13 @@ body.no-scroll {
 }
 
 /* Product Modal Genel Stilleri */
+/* NOT: position/background/z-index yine aşağıdaki !important kuralı
+   tarafından belirleniyor; burada sadece bu bloğa özel taşma/kaydırma
+   davranışını tanımlıyoruz. */
 .modal-backdrop {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background-color: rgba(0, 0, 0, 0.7);
     display: flex;
     justify-content: center;
     align-items: center;
-    z-index: 1000;
     overflow-y: auto; /* Modal içeriği fazla olursa kaydırılabilir olsun */
     -webkit-overflow-scrolling: touch; /* iOS için yumuşak kaydırma */
 }
@@ -2513,7 +2504,7 @@ body.dark-mode .toast-message {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.3s ease; /* Yumuşak geçiş */
+  transition: background-color 0.3s ease, border-color 0.3s ease, transform 0.3s ease; /* Yumuşak geçiş */
   margin-right: 15px; /* Hamburger menü ile arasına boşluk bırakır */
   outline: none;
 }
@@ -2534,7 +2525,7 @@ body.dark-mode .toast-message {
     transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
 }
 .cart-item {
-  transition: all 0.4s ease-in-out; /* 0.4 saniyede yumuşak geçiş */
+  transition: opacity 0.4s ease-in-out, transform 0.4s ease-in-out; /* 0.4 saniyede yumuşak geçiş */
   opacity: 1;
   transform: translateX(0);
 }
@@ -2677,7 +2668,7 @@ nav h1 {
     opacity: 0;
     visibility: hidden;
     transform: translateY(-10px);
-    transition: all 0.3s ease-in-out; 
+    transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out, transform 0.3s ease-in-out;
     z-index: 1000;
 }
 
@@ -2709,7 +2700,7 @@ nav h1 {
 .reveal {
     opacity: 0;
     transform: translateY(40px); /* Aşağıdan başlar */
-    transition: all 0.8s cubic-bezier(0.5, 0, 0, 1); /* Çok yumuşak bir geçiş */
+    transition: opacity 0.8s cubic-bezier(0.5, 0, 0, 1), transform 0.8s cubic-bezier(0.5, 0, 0, 1); /* Çok yumuşak bir geçiş */
 }
 
 .reveal.active {
@@ -3170,7 +3161,7 @@ body.dark-mode .spinner { border-top: 2px solid #000; }
   opacity: 0 !important;
   pointer-events: none !important;
   transform: scale(0.8) !important;
-  transition: all 0.2s ease-in-out !important;
+  transition: opacity 0.2s ease-in-out, transform 0.2s ease-in-out !important;
 }
 /* ==========================================
    GÖNDER BUTONU NABIZ (PULSE) ANİMASYONU
@@ -3268,339 +3259,6 @@ body.dark-mode .chatbot-send-btn {
   overflow-y: auto !important;
   overflow-x: hidden !important;
 }
-.chat-container {
-    position: fixed;
-    z-index: 9999; /* Sayfadaki her şeyin üstünde görünmesini sağlar */
-    bottom: 15px;
-    right: 15px;
-    width: calc(100% - 30px); /* Mobilde ekran kenarlarına yapışmaz */
-    max-width: 380px;
-    height: 550px;
-    max-height: 85vh; /* Ekrandan dışarı taşmaz */
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-}
-
-@media (min-width: 768px) {
-    .chat-container {
-        width: 380px;
-        right: 25px;
-        bottom: 25px;
-    }
-}
-.ai-toggle-btn {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  z-index: 40;
-  transition: filter 0.3s ease, opacity 0.3s ease;
-}
-
-/* Menü veya Modal açıldığında eklenecek sınıf */
-.ai-toggle-btn.blurred {
-  filter: blur(4px);         /* Buğulama efekti */
-  opacity: 0.4;              /* Saydamlık */
-  pointer-events: none;      /* Menü açıkken butonun tıklanmasını engeller */
-}
-/* 1. AI Chat Açma Butonu (En alt katmanda kalmalı) */
-.ai-chat-button {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  z-index: 30; /* Karartma katmanından DÜŞÜK olmalı */
-}
-
-/* 2. Menü Açıldığında Ekranı Kaplayan Karartma/Buğulama Katmanı (Overlay) */
-.menu-backdrop {
-  position: fixed;
-  inset: 0; /* top:0, left:0, right:0, bottom:0 */
-  background: rgba(0, 0, 0, 0.4); /* Siyah karartma */
-  backdrop-filter: blur(5px);      /* CSS ile arkasındaki HER ŞEYİ (AI butonu dahil) buğular */
-  -webkit-backdrop-filter: blur(5px);
-  z-index: 40;                     /* AI Butonundan YÜKSEK olmalı (40 > 30) */
-}
-
-/* 3. Sol Açılır Hamburger Menünün Kendisi */
-.mobile-menu-drawer {
-  position: fixed;
-  top: 0;
-  left: 0;
-  z-index: 50;                     /* En üstte görünmeli (50 > 40) */
-}
-/* Chat penceresi kapsayıcısına bu sınıfı ekleyin */
-.chat-window {
-  animation: chatOpen 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  transform-origin: bottom right;
-}
-
-@keyframes chatOpen {
-  from {
-    opacity: 0;
-    transform: translateY(20px) scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-.chat-bubble {
-  animation: bubbleSlide 0.25s ease-out forwards;
-}
-
-@keyframes bubbleSlide {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-.dot-flashing {
-  display: inline-block;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background-color: #888;
-  animation: dotFlashing 1s infinite alternate;
-}
-
-.dot-flashing:nth-child(2) { animation-delay: 0.2s; }
-.dot-flashing:nth-child(3) { animation-delay: 0.4s; }
-
-@keyframes dotFlashing {
-  0% { transform: translateY(0); opacity: 0.4; }
-  100% { transform: translateY(-6px); opacity: 1; }
-}
-/* ==========================================
-   AI BUTON VE MENÜ BACKDROP Z-INDEX DÜZELTMESİ
-   ========================================== */
-
-/* 1. AI Chat Butonu (Backdrop'un (40) altında kalması için z-index: 30 yapıyoruz) */
-.chatbot-toggle-btn,
-.ai-toggle-btn,
-.ai-chat-button {
-  z-index: 30 
-}
-
-/* 2. Menü Açıldığında Ekranı Kaplayan Karartma/Buğulama Katmanı (Overlay) */
-.menu-backdrop {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.4);
-  backdrop-filter: blur(5px);
-  -webkit-backdrop-filter: blur(5px);
-  z-index: 40 !important; /* AI butonunun (30) ÜSTÜNE geçer ve onu da buğular */
-}
-
-/* 3. Açılır Mobil Menünün Kendisi */
-.mobile-menu-drawer,
-.nav-menu.open {
-  z-index: 50 !important; /* Her şeyin en üstünde durur */
-}
-/* ==========================================
-   MODAL / KATMAN Z-INDEX DÜZELTMESİ
-   ========================================== */
-
-/* 1. Üst Navbar / Header (Modal açıldığında altta kalmalı) */
-header, 
-.header, 
-.navbar,
-.top-nav {
-  z-index: 100 !important; /* Arka plan karartmasından DÜŞÜK olmalı */
-}
-
-/* 2. Tüm Modalların Siyah Karartma Arka Planı (Backdrop) */
-.modal-overlay,
-.backdrop,
-.drawer-overlay,
-.kargo-overlay {
-  position: fixed !important;
-  top: 0 !important;
-  left: 0 !important;
-  width: 100vw !important;
-  height: 100vh !important;
-  background-color: rgba(0, 0, 0, 0.65); /* Ekranı karartan katman */
-  z-index: 9998 !important; /* Header'ın (100) ÜSTÜNE çıkar, tıklamayı keser */
-}
-
-/* 3. Açılan Pencere Panelleri (Kargo Takip, Sepet, AI Chat) */
-.modal-content,
-.kargo-takip-modal,
-.cart-drawer,
-.ai-chat-window {
-  z-index: 9999 !important; /* En üstte duran ana pencere */
-}
-header, .header {
-  /* Header'ın z-index değerini karartma katmanından düşük tutuyoruz */
-  z-index: 10 !important;
-}
-
-/* Siyah Karartma (Backdrop) */
-.modal-overlay, .backdrop {
-  position: fixed !important;
-  inset: 0 !important; /* top:0, left:0, right:0, bottom:0 kapsar */
-  z-index: 9998 !important;
-}
-
-/* Açılan Pencere */
-.modal-content, .kargo-takip-modal {
-  position: fixed !important;
-  z-index: 9999 !important;
-}
-/* ==========================================
-   ALICCI AI PANELİ - TASARIM & ANİMASYON DÜZELTMESİ
-   ========================================== */
-
-/* 1. Panel Açılış Animasyonu */
-.ai-chat-window,
-.chat-drawer {
-  animation: slideInRight 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  box-shadow: -10px 0 30px rgba(0, 0, 0, 0.5);
-}
-
-@keyframes slideInRight {
-  from {
-    opacity: 0;
-    transform: translateX(40px) scale(0.98);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0) scale(1);
-  }
-}
-
-/* 2. Resimdeki Boşluğu Çözen Mesaj Alanı Düzenlemesi */
-.chat-messages-container,
-.chat-body {
-  padding: 16px 12px !important; /* İç boşluğu dengeler */
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  overflow-y: auto;
-}
-
-/* Mesaj Balonlarının Genişliği (Boşluğu kapatan kısım) */
-.chat-message,
-.message-bubble {
-  max-width: 90% !important; /* %70-80 olan darlığı genişletip boşluğu bitirir */
-  word-break: break-word;
-  animation: messagePop 0.25s ease-out forwards;
-}
-
-/* Mesaj Belirme Animasyonu */
-@keyframes messagePop {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* 3. İnce ve Şık Scrollbar (Kaydırma Çubuğu) */
-.chat-messages-container::-webkit-scrollbar,
-.chat-body::-webkit-scrollbar {
-  width: 5px;
-}
-
-.chat-messages-container::-webkit-scrollbar-track,
-.chat-body::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.chat-messages-container::-webkit-scrollbar-thumb,
-.chat-body::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.15);
-  border-radius: 10px;
-}
-
-.chat-messages-container::-webkit-scrollbar-thumb:hover,
-.chat-body::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.3);
-}
-
-/* 4. "Online AI" Canlılık Işığı Animasyonu (Header İçin) */
-.ai-status-dot {
-  width: 8px;
-  height: 8px;
-  background-color: #10b981;
-  border-radius: 50%;
-  display: inline-block;
-  box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
-  animation: pulseGreen 2s infinite;
-}
-
-@keyframes pulseGreen {
-  0% {
-    transform: scale(0.95);
-    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
-  }
-  70% {
-    transform: scale(1);
-    box-shadow: 0 0 0 6px rgba(16, 185, 129, 0);
-  }
-  100% {
-    transform: scale(0.95);
-    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
-  }
-}
-
-/* 5. Gönder Butonu Hover Efekti */
-.chat-send-btn {
-  transition: all 0.2s ease;
-}
-
-.chat-send-btn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(255, 255, 255, 0.15);
-}
-/* ==========================================
-   1. GENEL PENCERE VE BOŞLUK DÜZELTMELERİ
-   ========================================== */
-
-/* Mesaj Alanı İç Boşluğu */
-.chat-messages-container {
-  padding: 16px 12px; /* Sağ ve soldaki gereksiz boşluğu dengeler */
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  overflow-y: auto;
-  scroll-behavior: smooth;
-}
-
-/* Mesaj Balonlarının Boşluk ve Genişlik Ayarı (BOŞLUĞU ÇÖZEN KISIM) */
-.message-bubble {
-  max-width: 88% !important; /* Eskiden %70-75 civarı duruyordu, %88 yaptık */
-  padding: 12px 16px;
-  border-radius: 16px;
-  word-break: break-word;
-  line-height: 1.5;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-/* Kullanıcı Mesajı (Sağa Tam Yapışık) */
-.message-user {
-  align-self: flex-end;
-  background: #ffffff;
-  color: #111111;
-  border-bottom-right-radius: 4px;
-  /* Animasyonu uygula */
-  animation: userMessageSlide 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards;
-}
-
-/* Asistan Mesajı (Sola Yapışık) */
-.message-bot {
-  align-self: flex-start;
-  background: #1c1c1e;
-  color: #f1f1f1;
-  border-bottom-left-radius: 4px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  /* Animasyonu uygula */
-  animation: botMessageSlide 0.35s ease-out forwards;
-}
 /* ==========================================
    KATMAN (Z-INDEX) VE MODAL SIRALAMASI
    ========================================== */
@@ -3611,9 +3269,7 @@ header, .header, nav {
 }
 
 /* 2. Kapalı AI Chat Açma Butonu (Ekranın en alt katmanında kalır) */
-.chatbot-toggle-btn,
-.ai-toggle-btn,
-.ai-chat-button {
+.chatbot-toggle-btn {
   position: fixed !important;
   bottom: 25px !important;
   right: 25px !important;
@@ -3628,8 +3284,8 @@ header, .header, nav {
   position: fixed !important;
   inset: 0 !important;
   background-color: rgba(0, 0, 0, 0.65) !important;
-  backdrop-filter: blur(5px);
-  -webkit-backdrop-filter: blur(5px);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
   z-index: 9998 !important; /* AI butonunun (30) üstüne geçer */
 }
 
@@ -3637,60 +3293,15 @@ header, .header, nav {
 .modal-content-base,
 .product-modal,
 .cart-panel,
-.chatbot-window,
-.chat-container,
-.ai-chat-window {
+.chatbot-window {
   z-index: 9999 !important; /* Karartmanın (9998) üstünde durur */
 }
 
 /* 5. Mobil Menü Çekmecesi */
-.nav-menu.open,
-.mobile-menu-drawer {
+.nav-menu.open {
   z-index: 10000 !important;
 }
 
-
-/* Kullanıcı Mesajı (Sağa Tam Yapışık) */
-.message-user {
-  align-self: flex-end;
-  background: #ffffff;
-  color: #111111;
-  border-bottom-right-radius: 4px;
-  animation: userMessageSlide 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards;
-}
-
-/* Asistan Mesajı (Sola Yapışık) */
-.message-bot {
-  align-self: flex-start;
-  background: #1c1c1e;
-  color: #f1f1f1;
-  border-bottom-left-radius: 4px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  animation: botMessageSlide 0.35s ease-out forwards;
-}
-
-/* Eksik Animasyon Tanımları */
-@keyframes userMessageSlide {
-  from {
-    opacity: 0;
-    transform: translateY(10px) translateX(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) translateX(0);
-  }
-}
-
-@keyframes botMessageSlide {
-  from {
-    opacity: 0;
-    transform: translateY(10px) translateX(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) translateX(0);
-  }
-}
 .toast-container {
     position: fixed;
     bottom: 100px; /* Chatbot butonunun üst seviyesine taşır */
@@ -3698,45 +3309,17 @@ header, .header, nav {
     z-index: 1000020;
     pointer-events: none;
 }
-/* 1. Mesaj alanının genel kapsayıcısı */
-.chat-messages {
-  padding: 16px; /* Sağ ve sol padding eşit olmalı */
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
 
-/* 2. Bot mesaj balonu genişliğini biraz artırmak istersen */
-.bot-message {
-  align-self: flex-start;
-  max-width: 88%; /* %75 yerine %88 veya %90 yaparak sağdaki boşluğu küçültebilirsin */
-  word-break: break-word;
-}
-
-/* 3. Alt girdi alanının padding'ini mesaj alanı ile eşitleme */
-.chat-input-container {
-  padding: 12px 16px; /* Yandaki 16px mesaj alanı ile aynı olmalı */
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-/* 1. Sağ taraftaki 70px'lik devasa boşluk kısıtlamasını kaldırıyoruz */
-.chatbot-message-bubble, 
+/* Sağ taraftaki devasa boşluk kısıtlamasını kaldırıyoruz */
+.chatbot-message-bubble,
 .chatbot-preview-container {
   margin-right: 0 !important;
 }
 
-/* 2. Kapsayıcı alanın padding değerini dengeliyoruz */
-.chat-messages-container {
-  padding: 12px 10px !important;
-}
-
-/* 3. Mesaj balonlarının genişliğini kısıtlamadan tam kaplamasını sağlıyoruz */
-.chat-message,
-.message-bubble,
+/* Mesaj balonlarının genişliğini kısıtlamadan tam kaplamasını sağlıyoruz */
 .chatbot-message-bubble {
   width: 100% !important;
-  max-width: 100% !important; /* Eğer baloncukların sağ/sol ayrımı belirgin kalsın istersen %95 yapabilirsin */
+  max-width: 100% !important;
   box-sizing: border-box !important;
 }
 /* 1. KARTIN YUKARI KALKMA EFEKTİ VE GÖLGE */
