@@ -299,6 +299,12 @@ function App() {
     const [currentModalImageIndex, setCurrentModalImageIndex] = useState(0);
     const [showOrderOptionsModal, setShowOrderOptionsModal] = useState(false);
     const [isShopierLoading, setIsShopierLoading] = useState(false);
+    // Sepet değişmediği sürece aynı Shopier ürününü/linkini tekrar
+    // kullanmak için basit bir önbellek. Kullanıcı "Kartla Öde"ye
+    // birden fazla kez basarsa (hata sonrası tekrar deneme, geri gelip
+    // tekrar tıklama vs.) her seferinde Shopier'da yeni bir ürün
+    // oluşturmak yerine, sepet aynıysa mevcut linke yönlendiriyoruz.
+    const shopierCheckoutCache = useRef(null);
     const [siteTestimonials, setSiteTestimonials] = useState([]);
     const [isLoadingTestimonials, setIsLoadingTestimonials] = useState(false);
     const [testimonialName, setTestimonialName] = useState("");
@@ -881,20 +887,34 @@ function App() {
             return;
         }
 
-        setIsShopierLoading(true);
+        const totalPrice = getTotalPrice();
+        // Sepetin "imzası": ürünler + beden + adet + toplam tutar aynıysa
+        // aynı sipariş denemesi kabul edilir.
+        const cartSignature = JSON.stringify(cartItems) + "|" + totalPrice;
+
         if (typeof window !== "undefined" && window.gtag) {
             window.gtag("event", "begin_checkout", { currency: "TRY" });
         }
         if (typeof window !== "undefined" && window.fbq) {
             window.fbq("track", "InitiateCheckout");
         }
+
+        // Sepet son başarılı denemeyle birebir aynıysa, Shopier'da yeni
+        // bir ürün oluşturmadan doğrudan var olan linke yönlendir.
+        if (shopierCheckoutCache.current && shopierCheckoutCache.current.signature === cartSignature) {
+            closeCart();
+            window.location.href = shopierCheckoutCache.current.redirectUrl;
+            return;
+        }
+
+        setIsShopierLoading(true);
         try {
             const response = await fetch(`${BACKEND_URL}/api/shopier-checkout`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     cartItems: JSON.stringify(cartItems),
-                    totalPrice: getTotalPrice(),
+                    totalPrice,
                 }),
             });
 
@@ -903,6 +923,8 @@ function App() {
             if (!response.ok || !data.redirectUrl) {
                 throw new Error(data.error || "Ödeme başlatılamadı.");
             }
+
+            shopierCheckoutCache.current = { signature: cartSignature, redirectUrl: data.redirectUrl };
 
             closeCart();
             window.location.href = data.redirectUrl;
