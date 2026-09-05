@@ -351,13 +351,9 @@ app.post('/api/shopier-checkout', async (req, res) => {
                     currency: 'TRY',
                     price: formattedPrice,
                 },
-                // NOT: Ürün "Tükendi" görünüyordu çünkü stok/adet hiç
-                // gönderilmiyordu, Shopier de yeni ürünleri varsayılan
-                // olarak 0 stokla oluşturuyor gibi görünüyor. Bu alan
-                // adını (stock) Shopier'ın kendi API referansından
-                // teyit et — deploy sonrası test siparişiyle
-                // "Tükendi" yazısı gidiyor mu kontrol edilmeli.
-                stock: 999,
+                // Shopier'ın döndürdüğü yanıtta alan adının "stockQuantity"
+                // olduğu doğrulandı (stock: 999 denemesi görmezden geliniyordu).
+                stockQuantity: 999,
                 shippingPayer: 'buyerPays', // İstersen 'sellerPays' yap
                 customListing: true,
             }),
