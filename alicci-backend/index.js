@@ -367,6 +367,26 @@ app.post('/api/shopier-checkout', async (req, res) => {
             return res.status(400).json({ error: 'Ödeme başlatılamadı.', details: shopierData });
         }
 
+        // NOT: POST /v1/products isteğinde stockQuantity göndermek işe
+        // yaramıyor (Shopier ürünü her zaman stockQuantity: 0 ile
+        // oluşturuyor). Panelden manuel "Güncelle" yapınca stok
+        // değiştiği için, oluşturduğumuz ürünün stoğunu ayrı bir
+        // PATCH isteğiyle güncellemeyi deniyoruz.
+        try {
+            const stockUpdateResponse = await fetch(`https://api.shopier.com/v1/products/${shopierData.id}`, {
+                method: 'PATCH',
+                headers: {
+                    'Authorization': `Bearer ${SHOPIER_PAT}`,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ stockQuantity: 999 }),
+            });
+            const stockUpdateData = await stockUpdateResponse.json();
+            console.log('Shopier stok güncelleme yanıtı:', stockUpdateResponse.status, stockUpdateData);
+        } catch (stockErr) {
+            console.warn('Shopier stok güncellemesi başarısız oldu (ürün yine de oluşturuldu):', stockErr.message);
+        }
+
         // Siparişi Supabase'e KENDİ kodumuzla kaydet (Shopier'ın id'sini de
         // ayrıca sakla, webhook geldiğinde eşleştirmek için işe yarayabilir).
         try {
