@@ -475,14 +475,45 @@ function App() {
             media.addEventListener('scroll', handleHeroScroll, { passive: true });
         }
 
+        // Masaüstünde normal fare tekerleği dikey hareket üretir, yatay değil.
+        // Bu yüzden touchpad/dokunmatik olmayan kullanıcılar hero'yu hiç
+        // kaydıramaz. Dikey tekerlek hareketini yatay kaydırmaya çeviriyoruz.
+        const handleWheel = (e) => {
+            if (!media) return;
+            // Kullanıcı zaten yatay kaydırıyorsa (trackpad/shift+wheel) müdahale etme
+            if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) return;
+
+            const atStart = media.scrollLeft <= 0;
+            const atEnd = media.scrollLeft >= media.scrollWidth - media.clientWidth - 1;
+
+            // Sadece hero içinde daha kaydırılacak yer varsa sayfa scroll'unu
+            // engelle; baştaysa yukarı, sondaysa aşağı normal sayfa scroll'una
+            // izin ver (kullanıcı hero'dan çıkıp devam edebilsin).
+            if ((e.deltaY < 0 && atStart) || (e.deltaY > 0 && atEnd)) {
+                return;
+            }
+
+            e.preventDefault();
+            media.scrollLeft += e.deltaY;
+        };
+        heroRef.current?.addEventListener('wheel', handleWheel, { passive: false });
+
         computeHeroSlide();
 
         return () => {
             if (media) {
                 media.removeEventListener('scroll', handleHeroScroll);
             }
+            heroRef.current?.removeEventListener('wheel', handleWheel);
         };
     }, [products.length]);
+
+    const goToHeroSlide = (index) => {
+        const media = heroRef.current?.querySelector('.hero-scroll-media');
+        if (!media) return;
+        const slideWidth = media.clientWidth;
+        media.scrollTo({ left: slideWidth * index, behavior: 'smooth' });
+    };
 
     useEffect(() => {
         const preventInstallPrompt = (e) => {
@@ -2291,14 +2322,39 @@ function App() {
                                     ))}
                                 </div>
 
+                                <button
+                                    type="button"
+                                    className="hero-scroll-arrow hero-scroll-arrow-prev"
+                                    onClick={() => goToHeroSlide(Math.max(0, heroActiveSlide - 1))}
+                                    disabled={heroActiveSlide === 0}
+                                    aria-label="Önceki görsel"
+                                >
+                                    ‹
+                                </button>
+                                <button
+                                    type="button"
+                                    className="hero-scroll-arrow hero-scroll-arrow-next"
+                                    onClick={() => goToHeroSlide(Math.min(2, heroActiveSlide + 1))}
+                                    disabled={heroActiveSlide === 2}
+                                    aria-label="Sonraki görsel"
+                                >
+                                    ›
+                                </button>
+
                                 <div className="hero-scroll-bottom">
                                     <span>SWIPE TO EXPLORE</span>
                                     <span className="hero-scroll-line"></span>
                                 </div>
 
-                                <div className="hero-scroll-progress" aria-hidden="true">
+                                <div className="hero-scroll-progress" aria-hidden="false">
                                     {[0, 1, 2].map((index) => (
-                                        <span key={index} className={index === heroActiveSlide ? "active" : ""}></span>
+                                        <button
+                                            key={index}
+                                            type="button"
+                                            className={index === heroActiveSlide ? "active" : ""}
+                                            onClick={() => goToHeroSlide(index)}
+                                            aria-label={`${index + 1}. görsele git`}
+                                        ></button>
                                     ))}
                                 </div>
 
