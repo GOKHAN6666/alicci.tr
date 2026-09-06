@@ -443,6 +443,7 @@ function App() {
         setAppliedCouponCode("");
     }, [cartItems]);
 
+    // Yatay scroll ile active slide hesaplama
     useEffect(() => {
         let ticking = false;
 
@@ -451,20 +452,17 @@ function App() {
             const section = heroRef.current;
             if (!section) return;
 
-            const rect = section.getBoundingClientRect();
-            const viewportHeight = window.innerHeight || 1;
-            const scrollDistance = Math.max(1, section.offsetHeight - viewportHeight);
-            const progress = Math.min(1, Math.max(0, -rect.top / scrollDistance));
+            const media = section.querySelector('.hero-scroll-media');
+            if (!media) return;
+
+            const scrollLeft = media.scrollLeft;
+            const slideWidth = media.clientWidth || 1;
+            const progress = Math.min(1, Math.max(0, scrollLeft / (slideWidth * 2))); // 3 slide olduğu için 2 aralık
             const nextSlide = Math.min(2, Math.floor(progress * 3 + 0.05));
 
             setHeroActiveSlide((current) => current === nextSlide ? current : nextSlide);
         };
 
-        // ÖNEMLİ: Ham 'scroll' eventi saniyede onlarca kez ateşlenebiliyor;
-        // her seferinde getBoundingClientRect/offsetHeight çağırmak tarayıcıya
-        // sayfa düzenini yeniden hesaplattırıyor (layout reflow) ve özellikle
-        // mobilde donmaya (jank) yol açıyordu. requestAnimationFrame ile bu
-        // hesaplamayı frame başına en fazla 1 kere çalışacak şekilde sınırlıyoruz.
         const handleHeroScroll = () => {
             if (!ticking) {
                 ticking = true;
@@ -472,13 +470,17 @@ function App() {
             }
         };
 
-        window.addEventListener("scroll", handleHeroScroll, { passive: true });
-        window.addEventListener("resize", handleHeroScroll);
+        const media = heroRef.current?.querySelector('.hero-scroll-media');
+        if (media) {
+            media.addEventListener('scroll', handleHeroScroll, { passive: true });
+        }
+
         computeHeroSlide();
 
         return () => {
-            window.removeEventListener("scroll", handleHeroScroll);
-            window.removeEventListener("resize", handleHeroScroll);
+            if (media) {
+                media.removeEventListener('scroll', handleHeroScroll);
+            }
         };
     }, [products.length]);
 
@@ -2186,6 +2188,7 @@ function App() {
                         <button onClick={handleShopierCheckout} disabled={isShopierLoading}>
                             {isShopierLoading ? "Yönlendiriliyor..." : "Kartla Öde (Shopier)"}
                         </button>
+                        {/* Bu buton CSS ile gizlendi (secondary-checkout-btn) */}
                         <button className="secondary-checkout-btn" onClick={() => {
                             closeCart();
                             setShowOrderOptionsModal(true);
@@ -2275,28 +2278,21 @@ function App() {
                                                 />
                                             ) : null}
                                             <div className="hero-scroll-overlay"></div>
-                                        </div>
-                                    ))}
-                                </div>
-
-                                <div className="hero-scroll-content">
-                                    {slides.map((slide, index) => (
-                                        <div
-                                            key={`content-${index}`}
-                                            className={`hero-scroll-copy ${index === heroActiveSlide ? "is-active" : ""}`}
-                                        >
-                                            <span className="hero-scroll-eyebrow">{slide.eyebrow}</span>
-                                            <h2>{slide.title}</h2>
-                                            <p>{slide.text}</p>
-                                            <button onClick={() => handleNavLinkClick("products")}>
-                                                {slide.action}
-                                            </button>
+                                            {/* İçerik artık slide'ın içinde */}
+                                            <div className={`hero-scroll-copy ${index === heroActiveSlide ? "is-active" : ""}`}>
+                                                <span className="hero-scroll-eyebrow">{slide.eyebrow}</span>
+                                                <h2>{slide.title}</h2>
+                                                <p>{slide.text}</p>
+                                                <button onClick={() => handleNavLinkClick("products")}>
+                                                    {slide.action}
+                                                </button>
+                                            </div>
                                         </div>
                                     ))}
                                 </div>
 
                                 <div className="hero-scroll-bottom">
-                                    <span>SCROLL TO EXPLORE</span>
+                                    <span>SWIPE TO EXPLORE</span>
                                     <span className="hero-scroll-line"></span>
                                 </div>
 
