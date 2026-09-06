@@ -2340,29 +2340,6 @@ function App() {
                                     ))}
                                 </div>
 
-                                <button
-                                    type="button"
-                                    className="hero-scroll-arrow hero-scroll-arrow-prev"
-                                    onClick={() => goToHeroSlide(Math.max(0, heroActiveSlide - 1))}
-                                    disabled={heroActiveSlide === 0}
-                                    aria-label="Önceki görsel"
-                                >
-                                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                        <polyline points="15 18 9 12 15 6"></polyline>
-                                    </svg>
-                                </button>
-                                <button
-                                    type="button"
-                                    className="hero-scroll-arrow hero-scroll-arrow-next"
-                                    onClick={() => goToHeroSlide(Math.min(2, heroActiveSlide + 1))}
-                                    disabled={heroActiveSlide === 2}
-                                    aria-label="Sonraki görsel"
-                                >
-                                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                        <polyline points="9 18 15 12 9 6"></polyline>
-                                    </svg>
-                                </button>
-
                                 <div className="hero-scroll-bottom">
                                     <span>SWIPE TO EXPLORE</span>
                                     <span className="hero-scroll-line"></span>
@@ -2378,10 +2355,6 @@ function App() {
                                             aria-label={`${index + 1}. görsele git`}
                                         ></button>
                                     ))}
-                                </div>
-
-                                <div className="hero-scroll-index">
-                                    0{heroActiveSlide + 1} <span>/ 03</span>
                                 </div>
                             </div>
                         );
