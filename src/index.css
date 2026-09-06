@@ -3933,55 +3933,61 @@ body.dark-mode .testimonial-form {
     border-color: rgba(255,255,255,0.1);
 }
 /* =========================================================
-   ALICCI — YATAY HERO (SWIPE) STİLLERİ
+   ALICCI — HERO YATAY KAYDIRMA: OK BUTONLARI + TIKLANABİLİR NOKTALAR
    ========================================================= */
-.hero-scroll-section {
-    position: relative;
-    height: 100vh; /* Dikey 300vh yerine tam ekran */
-    background: #090909;
-    color: #fff;
-    isolation: isolate;
-    overflow: hidden;
-}
 
-.hero-scroll-sticky {
-    position: relative; /* sticky kaldırıldı */
-    height: 100vh;
-    min-height: 680px;
-    overflow: hidden;
-    background: #090909;
-}
-
-.hero-scroll-media {
-    display: flex;
-    overflow-x: auto;
-    scroll-snap-type: x mandatory;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none; /* scrollbar gizle */
-    height: 100%;
-}
-
-.hero-scroll-media::-webkit-scrollbar {
-    display: none;
-}
-
-.hero-scroll-slide {
-    flex: 0 0 100%;
-    scroll-snap-align: start;
-    position: relative;
-    height: 100%;
-    overflow: hidden;
-}
-
-.hero-scroll-copy {
+.hero-scroll-arrow {
     position: absolute;
-    left: 0;
-    bottom: 15%;
-    width: min(620px, 82%);
-    opacity: 0;
-    visibility: hidden;
-    transform: translateY(38px);
-    transition: opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1),
-                visibility 0.65s ease,
-                transform 0
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 10;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 1px solid rgba(255,255,255,0.3);
+    background: rgba(0,0,0,0.35);
+    color: #fff;
+    font-size: 24px;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.25s ease, opacity 0.25s ease;
+    backdrop-filter: blur(4px);
+}
+
+.hero-scroll-arrow:hover:not(:disabled) {
+    background: rgba(0,0,0,0.55);
+}
+
+.hero-scroll-arrow:disabled {
+    opacity: 0.25;
+    cursor: not-allowed;
+}
+
+.hero-scroll-arrow-prev { left: 20px; }
+.hero-scroll-arrow-next { right: 20px; }
+
+@media (max-width: 768px) {
+    /* Mobilde parmakla kaydırma zaten doğal, okları gizleyip alanı sadeleştir */
+    .hero-scroll-arrow { display: none; }
+}
+
+/* Progress noktaları artık <button>, eski <span> stilini button'a taşıyoruz */
+.hero-scroll-progress button {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    border: none;
+    padding: 0;
+    background: rgba(255,255,255,0.4);
+    cursor: pointer;
+    transition: all 0.25s ease;
+}
+
+.hero-scroll-progress button.active {
+    background: #fff;
+    width: 22px;
+    border-radius: 4px;
 }
