@@ -3932,3 +3932,55 @@ body.dark-mode .testimonial-form {
     background: rgba(255,255,255,0.03);
     border-color: rgba(255,255,255,0.1);
 }
+/* =========================================================
+   ALICCI — YATAY HERO (SWIPE) STİLLERİ
+   ========================================================= */
+.hero-scroll-section {
+    position: relative;
+    height: 100vh; /* Dikey 300vh yerine tam ekran */
+    background: #090909;
+    color: #fff;
+    isolation: isolate;
+    overflow: hidden;
+}
+
+.hero-scroll-sticky {
+    position: relative; /* sticky kaldırıldı */
+    height: 100vh;
+    min-height: 680px;
+    overflow: hidden;
+    background: #090909;
+}
+
+.hero-scroll-media {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none; /* scrollbar gizle */
+    height: 100%;
+}
+
+.hero-scroll-media::-webkit-scrollbar {
+    display: none;
+}
+
+.hero-scroll-slide {
+    flex: 0 0 100%;
+    scroll-snap-align: start;
+    position: relative;
+    height: 100%;
+    overflow: hidden;
+}
+
+.hero-scroll-copy {
+    position: absolute;
+    left: 0;
+    bottom: 15%;
+    width: min(620px, 82%);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(38px);
+    transition: opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1),
+                visibility 0.65s ease,
+                transform 0
