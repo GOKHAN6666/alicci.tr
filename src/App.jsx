@@ -512,7 +512,25 @@ function App() {
         const media = heroRef.current?.querySelector('.hero-scroll-media');
         if (!media) return;
         const slideWidth = media.clientWidth;
-        media.scrollTo({ left: slideWidth * index, behavior: 'smooth' });
+        const targetLeft = slideWidth * index;
+        const startLeft = media.scrollLeft;
+        const distance = targetLeft - startLeft;
+        const duration = 280; // ms — kısa ve hızlı geçiş
+        let startTime = null;
+
+        const easeOutQuad = (t) => t * (2 - t);
+
+        const step = (timestamp) => {
+            if (startTime === null) startTime = timestamp;
+            const elapsed = timestamp - startTime;
+            const progress = Math.min(1, elapsed / duration);
+            media.scrollLeft = startLeft + distance * easeOutQuad(progress);
+            if (progress < 1) {
+                requestAnimationFrame(step);
+            }
+        };
+
+        requestAnimationFrame(step);
     };
 
     useEffect(() => {
@@ -2329,7 +2347,9 @@ function App() {
                                     disabled={heroActiveSlide === 0}
                                     aria-label="Önceki görsel"
                                 >
-                                    ‹
+                                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <polyline points="15 18 9 12 15 6"></polyline>
+                                    </svg>
                                 </button>
                                 <button
                                     type="button"
@@ -2338,7 +2358,9 @@ function App() {
                                     disabled={heroActiveSlide === 2}
                                     aria-label="Sonraki görsel"
                                 >
-                                    ›
+                                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <polyline points="9 18 15 12 9 6"></polyline>
+                                    </svg>
                                 </button>
 
                                 <div className="hero-scroll-bottom">
