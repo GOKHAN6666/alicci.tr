@@ -515,7 +515,7 @@ function App() {
         const targetLeft = slideWidth * index;
         const startLeft = media.scrollLeft;
         const distance = targetLeft - startLeft;
-        const duration = 280; // ms — kısa ve hızlı geçiş
+        const duration = 180; // ms — kısa ve hızlı geçiş
         let startTime = null;
 
         const easeOutQuad = (t) => t * (2 - t);
